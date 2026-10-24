@@ -2,6 +2,37 @@
 
 Songs composed by a procedural composer, then **produced like records** in a chosen genre.
 
+## Bountiful, the app
+
+```bash
+scripts/install.sh          # install: start menu (Multimedia → Bountiful), launcher `bountiful`, icons
+```
+
+This installs a clone of this repo into `~/.local/lib/bountiful/app`, with its own Python in `~/.local/lib/bountiful/venv`. Your music stays where it is: the `data` path in `~/.config/bountiful/config.toml`.
+
+**Updating.** Commit changes here. Then, in the app, click **⬆ Update** in the status bar (or use Help → Check for updates). It pulls the new commits from this repository, refreshes dependencies, the menu entry and icons, and restarts.
+
+To update from GitHub instead, point the clone there: `git -C ~/.local/lib/bountiful/app remote set-url origin <url>`.
+
+Other install commands: `scripts/install.sh --uninstall` removes the app, launcher, menu entry and icons, but keeps your music and config. `scripts/install.sh --refresh` reinstalls dependencies, menu entry and icons only.
+
+| View | What it does |
+|---|---|
+| **Arrange** | Every part shown as a lane, with the song's sections on top. Click to move the playhead; double-click a lane to open it in the **piano roll**. |
+| **Piano roll** | Double-click to add a note, drag to move it, drag its edge to change the length. Right-click or Delete removes a note. Alt+wheel sets velocity, ↑/↓ transposes (Shift: by an octave). Ctrl+S saves the MIDI, then **Render**. |
+| **Mixer** | One strip per rendered stem: fader, pan, mute, solo, meter. **Bounce** (Ctrl+B) writes the mix to `exports/<name>_mix.wav`. "Play the mastered export" switches to the mastered file. |
+| **Song from a Bounty** | Key, tempo, length and colour (reharmonisation). Pick the **operator** that plays the machine's knobs through the song: the rules, or **your Ollama model** (qwen3 by default, chosen from a list of the models you have) with a brief such as "slow burn, big last chorus". **Plan** shows the chords, sections and every move with its reason; **Make & render** builds the track. |
+| **Electronium live** | The machine plays the song as it goes, synthesised a bar ahead. Its knobs, channel mutes and gates take effect from the next bar, and each change is recorded as a move. **Make this take a song** turns the take into a track. The panel also lists its ideas, best first: **Audition** one, then 👍 / 👎 it. The critic learns your taste after 5 ratings. |
+| **A day of ideas** | Runs N Bounties at once, ranked by the critic plus your taste, each with an audition of its best idea. The best few are written as whole songs. You can rate them, open them, or take one to Song or Live. |
+
+Command line equivalents: `bountiful/electronium_song.py`, `bountiful/live.py`, `bountiful/batch.py`, `bountiful/operator_.py`, `bountiful/taste.py`, `bountiful/updater.py`.
+
+Tests:
+- `$ENGINE_PY tests/test_electronium.py`: the music
+- `~/.local/lib/bountiful/venv/bin/python tests/test_app.py`: the updater, audio, the MIDI round trip, and a headless run of the window
+
+The older Tk app (`./bountiful-music`) still works.
+
 ```bash
 ~/Documents/Projects/bountiful-music/bountiful-music        # the app
 ```

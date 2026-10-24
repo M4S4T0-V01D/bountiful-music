@@ -1,0 +1,7 @@
+PySide6-Essentials>=6.8
+numpy
+scipy
+soundfile
+sounddevice
+mido
+pyloudnorm

@@ -47,7 +47,6 @@ class Live:
     def __init__(self, bounty="1969", key=None, bpm=None, length="normal", reharm=0.25, operator: dict | None = None,
                  lookahead_bars: int = 2):
         self.lock = threading.RLock()
-        self.user_moves: list[dict] = []
         self.ahead = lookahead_bars
         self.load(bounty, key, bpm, length, reharm, operator)
 
@@ -60,6 +59,7 @@ class Live:
             self.beat = 60 / self.pl["bpm"]
             self.bar_n = int(round(4 * self.beat * SR))
             self.bar = 0                      # the next bar to synthesise
+            self.user_moves: list[dict] = []
             self.dirty = True
             self.perf = None
             self.chans = {c["name"]: c for c in EL.channels(self.pl["patch"])}

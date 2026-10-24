@@ -39,7 +39,7 @@ def _data() -> Path:
         return _p(os.environ["BOUNTIFUL_DATA"])
     if c.get("data"):
         return _p(c["data"])
-    if (CODE / "tracks").exists() or (CODE / ".git").exists():
+    if (CODE / "tracks").exists():
         return CODE
     return Path.home() / "Music" / "Bountiful"
 
