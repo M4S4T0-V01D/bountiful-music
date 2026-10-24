@@ -20,10 +20,11 @@ notes and the same sound), runs on the CPU, and works within hard limits on time
 | | `evaluators.py` | Six judges (composition, rhythm, arrangement, sound, production, and taste from your ratings) plus Pareto ranking |
 | | `evolve.py` | Small, reversible, seeded changes (melody, rhythm, harmony, arrangement) and breeding |
 | | `discover.py` | Writes hundreds of candidates, rejects any that break a law, ranks the rest, shows a few |
-| 04 Studio | `daw/` | The PySide6 app: Arrange, Mixer, Song from a Bounty, Electronium live, Synthesis Lab, Observatory |
+| 04 Studio | `daw/` | The PySide6 app: Start, Arrange, Mixer, New song, Game music, Play live, Batch of ideas, Sound lab, Ideas and history |
+| | `gamemusic.py` | Game music: a seamless loop in four intensity states, layers, stingers, Godot/Unity players ([game-music.md](game-music.md)) |
 | | `live.py` | Live performance: the Electronium plays bar by bar while you turn knobs; every turn is recorded as a move |
 | 05 Ecosystem | `lineage.py` | Each song's DNA (origin + list of changes), the family tree, export to a track folder |
-| | `observatory.py` | The data behind the Observatory tab: ideas, ratings, producer changes, clocks, spectra, passage branching |
+| | `observatory.py` | The data behind the Ideas and history tab (the Observatory): ideas, ratings, producer changes, clocks, spectra, passage branching |
 
 ## A song's DNA
 
@@ -50,7 +51,7 @@ $PY bountiful/timbre.py hit.wav --save "glass hit"       # find the instrument b
 $PY bountiful/live.py --bounty 1969 --bars 16 --wav take.wav
 ```
 
-## The Observatory tab
+## The Observatory (the Ideas and history tab)
 
 - **Clocks** (top strip): one column per bar. It shows sections, chords, the energy line, lead activity and phrase
   lines, with a third-octave heat map of the rendered mix (the master, or else the preview) underneath. Click a bar
@@ -78,6 +79,7 @@ $PY bountiful/live.py --bounty 1969 --bars 16 --wav take.wav
 
 ```sh
 $PY tests/test_ecosystem.py          # laws, judges, evolution, DNA, discovery, network, producer, timbre, observatory
+$PY tests/test_gamemusic.py          # game loops, layers, states, stingers
 QT_QPA_PLATFORM=offscreen <daw venv>/python bountiful/daw/main.py --smoke
 ```
 

@@ -76,6 +76,34 @@ def test_audio_sources():
         p.close()
 
 
+def test_game_music_preview_loops_glides_and_waits_for_the_beat():
+    import gamemusic as GM
+    from bountiful.daw import gamemusic as GP
+    with tempfile.TemporaryDirectory() as tmp:
+        out = Path(tmp)
+        n, bar = 4000, 1000
+        GM.write_wav(out / "bed.wav", np.full((n, 2), 0.01), (0, n - 1))
+        GM.write_wav(out / "beat.wav", np.full((n, 2), 0.02) * (np.arange(n) % 2 * 2 - 1)[:, None], (0, n - 1))
+        GM.write_wav(out / "hit.wav", np.r_[[0.3], np.zeros(9)])
+        man = {"beats_per_bar": 4, "loop": {"samples": n, "bar_samples": bar},
+               "layers": {"bed": {"file": "bed.wav"}, "beat": {"file": "beat.wav"}},
+               "states": {"calm": {"mix": {"bed": 1.0}, "rms_db": -40.0},
+                          "combat": {"mix": {"bed": 1.0, "beat": 1.0}, "rms_db": -30.0}},
+               "stingers": {"pickup": {"file": "hit.wav", "quantize": "beat"}}}
+        src = GP.GameSource(out, man)
+        assert src.length is None and src.state == "calm"
+        a = src.render(0, 100)
+        assert np.allclose(a, a[0]) and abs(GM.rms(a) - 0.01) < 1e-3          # calm: the bed at -40 dB
+        src.stinger("pickup")                                                 # asked for at frame 100 ...
+        b = src.render(0, 400)
+        assert np.argmax(np.abs(b[:, 0] - 0.01)) == 150                       # ... heard on the next beat, frame 250
+        src.set_state("combat")
+        c = np.vstack([src.render(0, 500) for _ in range(200)])               # 100000 frames: round the loop 25 times
+        early, late = np.abs(np.diff(c[:2000, 0])).max(), np.abs(np.diff(c[-2000:, 0])).max()
+        assert early < 0.01 < late                                            # the beat fades in, it doesn't jump in
+        assert abs(GM.rms(c[-n:]) - 10 ** (-30 / 20)) < 3e-3                  # and settles at combat's level
+
+
 def test_track_model_round_trip():
     from bountiful.daw import model as M
     with tempfile.TemporaryDirectory() as tmp:

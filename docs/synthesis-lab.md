@@ -136,7 +136,7 @@ Suggested tables (off by default) ship in:
 | Soviet Synth-pop '86 | prismatic glass-prism lead, fractal golden-clock arp, Ghost frozen-choir pad, terrain mountain-growl bass |
 | Electronium '69 | phase-garden fireflies arp, echo glass-lungs pad, gravity marimba-bar bass |
 
-## The Lab (app → **Synthesis Lab** tab)
+## The Lab (app → **Sound lab** tab)
 
 - **Top bar:** the project's name, bpm, seed and length; New, Open, Save, **▶ Render**, **Export WAV**, and **To song**, which writes the tracks as an `instruments.toml` table.
 - **Tracks:** engine, preset, gain, pan and mute per track. **Add a track** takes a name, an engine, a preset and a starter clip: arp, chords, bass, melody, drone, hits or break.

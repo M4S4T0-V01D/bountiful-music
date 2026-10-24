@@ -26,6 +26,8 @@ import paths  # noqa: E402
 import updater  # noqa: E402
 
 from bountiful.daw import audio as A  # noqa: E402
+from bountiful.daw import gamemusic as GP  # noqa: E402
+from bountiful.daw import start as SP  # noqa: E402
 from bountiful.daw import lab as L  # noqa: E402
 from bountiful.daw import model as M  # noqa: E402
 from bountiful.daw import observatory as OB  # noqa: E402
@@ -69,6 +71,42 @@ def fmt_time(s: float) -> str:
     return f"{int(s // 60)}:{s % 60:04.1f}"
 
 
+def helped(w: QWidget, text: str) -> QWidget:
+    """A page: a one-line explanation above the panel."""
+    page = QWidget()
+    lay = QVBoxLayout(page)
+    lay.setContentsMargins(6, 4, 6, 0)
+    lay.addWidget(GP.help_label(text))
+    lay.addWidget(w, 1)
+    return page
+
+
+def TABS(win) -> list[tuple[QWidget, str, str]]:
+    """(page, plain name, hover hint), in tab order."""
+    return [
+        (win.start, "Start", "the main things to do, and your recent tracks"),
+        (win.arr, "Arrange", "the open song: its parts bar by bar, and a piano roll to edit the notes"),
+        (win.mixer, "Mixer", "levels, panning, mute and solo for the open song's rendered parts"),
+        (helped(win.song, "Write a whole song from a Bounty. Make it from the rules alone, or type a brief in your "
+                          "own words (\"a restless break, a huge ending\") and see what it changes before you make it."),
+         "New song", "a whole song from a Bounty, with key, tempo and a brief in your own words"),
+        (win.game, "Game music", "loops in four intensity states, stingers, and files for Godot and Unity"),
+        (helped(win.livep, "The Electronium plays without stopping. Turn its knobs, mute channels and change the "
+                           "rhythm: each change starts on the next bar and is recorded, so the take can become a song."),
+         "Play live", "the Electronium playing live while you turn its knobs"),
+        (helped(win.day, "Try many Bounties at once. Hear each one's best idea, give a thumbs up or down (it learns "
+                         "what you like), and turn the good ones into songs."),
+         "Batch of ideas", "many Bounties at once, ranked; your thumbs teach it your taste"),
+        (helped(win.lab, "Build an instrument rack from the eleven sound engines, route them into each other, render "
+                         "a few beats and look inside the sound."),
+         "Sound lab", "the experimental synthesis engines (was: Synthesis Lab)"),
+        (helped(win.obs, "Where songs come from: the shortlist of ideas, your ratings, what the producer changed, the "
+                         "song's sections over its spectrum, and new takes on any 4 bars."),
+         "Ideas and history", "ideas, ratings, family tree and branching (was: Observatory)"),
+        (win.notes, "Notes", "the open track's notes file"),
+    ]
+
+
 class Window(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -104,15 +142,12 @@ class Window(QMainWindow):
         rl.addWidget(self.roll, 1)
         arr.addWidget(rollbox)
         arr.setSizes([480, 320])
+        self.arr = arr
+        self.game = GP.GamePanel(self)
+        self.start = SP.StartPanel(self)
         self.tabs = QTabWidget()
-        self.tabs.addTab(arr, "Arrange")
-        self.tabs.addTab(self.mixer, "Mixer")
-        self.tabs.addTab(self.song, "Song from a Bounty")
-        self.tabs.addTab(self.livep, "Electronium live")
-        self.tabs.addTab(self.day, "A day of ideas")
-        self.tabs.addTab(self.lab, "Synthesis Lab")
-        self.tabs.addTab(self.obs, "Observatory")
-        self.tabs.addTab(self.notes, "Notes")
+        for w, name, tip in TABS(self):
+            self.tabs.setTabToolTip(self.tabs.addTab(w, name), tip)
         self.setCentralWidget(self.tabs)
         self.arrange.seek.connect(self.seek_beat)
         self.arrange.laneOpened.connect(self.edit_lane)
@@ -245,7 +280,7 @@ class Window(QMainWindow):
         self._act(t, "Open in MIDI Studio", self.midi_studio)
         v = mb.addMenu("&View")
         for i in range(self.tabs.count()):
-            self._act(v, self.tabs.tabText(i), lambda i=i: self.tabs.setCurrentIndex(i), f"Ctrl+{i + 1}")
+            self._act(v, self.tabs.tabText(i), lambda i=i: self.tabs.setCurrentIndex(i), f"Ctrl+{i + 1}" if i < 9 else None)
         v.addSeparator()
         v.addAction(self.libdock.toggleViewAction())
         v.addAction(self.logdock.toggleViewAction())
@@ -278,7 +313,10 @@ class Window(QMainWindow):
             self.busy_label.setText("")
 
     def show_panel(self, w):
-        self.tabs.setCurrentWidget(w)
+        while w is not None and self.tabs.indexOf(w) < 0:       # panels sit inside a page with their help line
+            w = w.parentWidget()
+        if w is not None:
+            self.tabs.setCurrentWidget(w)
 
     # ---- library and tracks
     def fill_library(self):
@@ -326,10 +364,13 @@ class Window(QMainWindow):
         self.notes.setPlainText(tr.notes_text())
         self.title_label.setText(f"  {tr.title}  ·  {tr.bpm:g} bpm  ·  {tr.bars} bars")
         self.setWindowTitle(f"{tr.title} — Bountiful")
+        self.game.set_track(tr)
         self._track_source(keep)
         self.obs.set_track(tr)
         self.fill_library()
-        self.tabs.setCurrentIndex(0)
+        self.start.refresh()
+        if self.tabs.currentWidget() is not self.game:
+            self.tabs.setCurrentWidget(self.arr)
         self.log(f"opened {folder}")
 
     def _track_source(self, pos=0):
@@ -601,6 +642,37 @@ def smoke(win: Window, app: QApplication) -> int:
         A.wait_until(lambda: (app.processEvents(), bool(br))[1], 60)
         if not br or isinstance(br[0], Exception) or list(br[0]["passage"]) != [5, 8] or br[0]["considered"] < 1:
             problems.append(f"observatory branch: {br[:1]}")
+    # game music: the same track becomes a loop with states and stingers, and the preview switches state and fires one
+    gp = win.game
+    A.wait_until(lambda: (app.processEvents(), gp.section.count() > 0)[1], 30)
+    if not gp.section.count():
+        problems.append("game music: no sections")
+    gp.bars.setText("5-8")
+    made = []
+    gp.make(then=lambda r: made.append(r))
+    A.wait_until(lambda: (app.processEvents(), bool(made))[1], 300)
+    if not made or isinstance(made[0], Exception) or gp.man is None:
+        problems.append(f"game music make: {made[:1]}")
+    else:
+        src = GP.GameSource(win.track.folder / "game", gp.man)
+        n = gp.man["loop"]["samples"]
+        calm = src.render(0, 4096)
+        src.set_state("combat")
+        src.stinger("pickup")
+        blocks = [src.render(0, 4096) for _ in range(int(3 * n / 4096) // 2)]
+        y = np.vstack(blocks)
+        if not (np.isfinite(y).all() and np.abs(y).max() <= GP.GM.CEILING + 1e-6 and GP.GM.rms(y[-44100:]) > GP.GM.rms(calm)):
+            problems.append("game music preview: combat not louder than calm, or out of range")
+        if not all(b.isEnabled() for b in gp.state_btn.values()):
+            problems.append("game music: state buttons stay disabled")
+    # the Start page and plain tab names
+    if win.tabs.tabText(0) != "Start" or "Game music" not in [win.tabs.tabText(i) for i in range(win.tabs.count())]:
+        problems.append("tab names")
+    win.show_panel(win.song)
+    if win.tabs.tabText(win.tabs.currentIndex()) != "New song":
+        problems.append("show_panel through a help page")
+    if win.start.recent.count() < 1:
+        problems.append("start page recent list")
     tmp = Path(tempfile.mkdtemp())
     t = M.Track(tmp, "Smoke", 120.0, {"lead": [M.Note(0, 1, 60, 0.8)], "drums": [M.Note(0, 0.25, 36, 0.9)]})
     t.save_midi()
