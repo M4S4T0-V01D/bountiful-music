@@ -44,7 +44,8 @@ CHANNEL = {"lead": (0, 81), "lead_hi": (1, 81), "sidekick": (6, 80), "arp": (2, 
 SENDS = {"room": {"type": "reverb", "seconds": 0.8, "predelay": 0.01, "size": 0.5, "damp": 0.6},
          "plate": {"type": "reverb", "seconds": 2.4, "predelay": 0.025, "damp": 0.5},
          "echo": {"type": "delay", "time_beats": 0.75, "feedback": 0.36, "tone": 2800},
-         "gated": {"type": "reverb", "seconds": 0.45, "predelay": 0.004, "size": 1.0, "damp": 0.3}}
+         "gated": {"type": "reverb", "seconds": 0.45, "predelay": 0.004, "size": 1.0, "damp": 0.3},
+         "spring": {"type": "spring", "seconds": 2.0, "period": 0.031, "chirp": 1.0}}
 MASTER = {"tape": {"drive": 1.3, "bias": 0.04, "bump_db": 0.5, "hf_db": -0.5, "lp_hz": 19000, "hiss_db": -80, "wow_ms": 0.03},
           "glue": {"threshold": -14.0, "ratio": 2.0, "attack": 0.02, "release": 0.25}, "target_lufs": -11.0, "ceiling": -1.0}
 
@@ -57,6 +58,8 @@ def slug(s: str) -> str:
 
 def genres() -> dict[str, dict]:
     kits = tomllib.loads((ROOT / "genres" / "kits.toml").read_text())
+    import electronium_drums
+    kits["electronium"] = electronium_drums.kit()          # the Electronium's own synthesised percussion
     out = {}
     for f in sorted((ROOT / "genres").glob("*.toml")):
         if f.stem == "kits":
@@ -327,7 +330,8 @@ def channel_tracks(g: dict) -> dict:
         mx = ch["mix"]
         tr = {"kind": "pyvoice", "preset": {"module": str(ROOT / "bountiful" / "electronium_voice.py"), "fn": "note", **t},
               "gain_db": mx.get("gain_db", -10.0), "pan": mx.get("pan", 0.0), "glide_gap": 0.08,
-              "sends": {"plate": mx.get("reverb", 0.0), "echo": mx.get("echo", 0.0)}}
+              "sends": {"plate": mx.get("reverb", 0.0), "echo": mx.get("echo", 0.0), "spring": mx.get("spring", 0.0)},
+              "variants": mx.get("variants", 6)}
         tr.update({k: mx[k] for k in ("hp", "lp", "mono", "eq", "drive", "crush", "duck", "width", "chorus") if k in mx})
         out[ch["name"]] = tr
         if ch["name"] == "lead":                       # its octave-up double, on the same generator

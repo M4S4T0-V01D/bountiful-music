@@ -21,20 +21,24 @@ them back. "It thinks of 200 things every day. You keep the ones that are good."
                   ostinato  a stepping sequence of chord tones, `length` cells long, one cell per trigger, so it
                             phases against the bar (5 cells over 8ths come round every 5 beats); the LFSR rewrites cells
                   counter   a slow second line in contrary motion, keeping off the melody's notes
+                  chords    the chord sequencer: `voices` chord tones on its gate, voice-led (each chord moves as little
+                            as it can from the last)
                 With no [[channels]], the machine has its two classic ones: a melody (lead) and a harmony (sidekick).
   thinking      before it plays, the melody channel thinks of `think` (200) two-bar ideas from the terrain and a
                 critic scores them (shape, range, steps and leaps, a long last note, call and answer, one high point).
                 It keeps the best `keep` (3) or the idea numbers you list (`keep = [17, 42, 108]`, see --ideas).
                 Each section of the song gets its own kept idea as its theme, so a theme comes back with its section.
   phrase        the 8-bar plan the melody follows in each section: theme (the section's idea), answer (a behaviour on
-                the last bar), free (the walk), cadence (the walk, landing on the chord root)
+                the last bar), free (the walk), cadence (the walk, landing on the chord root), and the theme developed:
+                develop (its first half, then sequenced a step higher), augment (its first half at half speed),
+                mirror (upside down). `ending = "home"` lands the last bar on the tonic
   behaviours    repeat, reverse (retrograde), transpose, invert, ornament: what an answer or a free bar does
   register      a ring buffer of the last notes. Freeze & Populate captures the last 8 or 16 into a loop, transposes,
                 inverts or mutates it (a 16-bit LFSR picks which cell, Turing-machine style); Modify adds step offsets
   recorder      [[moves]]: the operator's button presses and knob turns, played back: at a bar set any knob (or a
                 channel's: gate, density, mute, transpose, register ...), or ramp it to a value by `to_bar`
   tones         each channel's tone generator (electronium_voice.py): oscillator, noise, filter, fixed envelopes,
-                accent, tremolo, drift, glide; reverb is its plate send
+                accent, tremolo, drift, glide; reverb is its plate send, spring its spring tank; electronium_drums.py is its percussion
 
     $PY bountiful/electronium.py --bounty 7 [--bars 16] [--patch electronium.toml]    the terrain, as text
     $PY bountiful/electronium.py --bounty 7 --ideas [20]                               what it thought of, best first
@@ -64,8 +68,8 @@ DEG = (0, 1, 2, 3, 4, 5, 7)                       # each interval class as scale
 SIDEKICK = ("off", "fifth_below", "third_below", "root_on_downbeat", "contrary", "canon")
 HARMONY = SIDEKICK + ("sixth_below", "octave_below", "third_above", "fourth_above")
 BEHAVIOURS = ("repeat", "reverse", "transpose", "invert", "ornament")
-ROLES = ("melody", "harmony", "bass", "ostinato", "counter")
-PHRASE_TOKENS = ("theme", "answer", "free", "cadence")
+ROLES = ("melody", "harmony", "bass", "ostinato", "counter", "chords")
+PHRASE_TOKENS = ("theme", "answer", "free", "cadence", "develop", "augment", "mirror")
 # the preset buttons: twelve rhythms, combined in gates as p1 ... p12
 RHYTHMS = {1: "c4", 2: "c8 | c8+3 | c8+6", 3: "c2", 4: "c4+2", 5: "c16 | c16+6 | c16+10", 6: "c3",
            7: "c16 | c16+3 | c16+6 | c16+10 | c16+12", 8: "c2 & ~c8+4", 9: "c6 | c4+2", 10: "c5",
@@ -81,17 +85,21 @@ TONES = {
     "bass-sequencer": {"wave": "saw", "sub": 0.5, "cutoff": 420, "env_amount": 1800, "filter_decay": 0.12, "res": 2.4, "attack": 0.002,
                        "decay": 0.25, "sustain": 0.5, "release": 0.06, "accent": 0.7, "glide": 0.03, "key_track": 0.3},
     "ostinato-bell": {"wave": "triangle", "osc2": 0.35, "detune": 1200, "env": "perc", "decay": 0.28, "cutoff": 6000, "env_amount": 2000, "level": 0.55},
+    "chord-organ": {"wave": "pulse", "pw": 0.4, "osc2": 0.25, "detune": 8, "env": "swell", "cutoff": 1900, "env_amount": 500,
+                    "tremolo": 0.12, "tremolo_rate": 5.5, "drift": 4, "level": 0.5},
     "counter-reed": {"wave": "pulse", "pw": 0.15, "env": "swell", "cutoff": 1400, "env_amount": 600, "tremolo": 0.25, "tremolo_rate": 4.5, "vibrato": 8, "drift": 3},
 }
 ROLE_DEFAULTS = {     # what a channel of each role starts from
-    "melody": {"tone": "scott-lead", "mix": {"gain_db": -8.0, "hp": 200, "reverb": 0.2, "echo": 0.2}},
+    "melody": {"tone": "scott-lead", "mix": {"gain_db": -8.0, "hp": 200, "reverb": 0.2, "echo": 0.2, "spring": 0.1}},
     "harmony": {"follow": "lead", "interval": "third_below", "tone": "pulse-sidekick", "mix": {"gain_db": -12.0, "pan": -0.25, "hp": 180, "reverb": 0.25}},
     "bass": {"gate": "p5 | (r7 & c2 & ~c4)", "register": [28, 47], "density": 0.9, "legato": 0.8, "tone": "bass-sequencer",
              "mix": {"gain_db": -6.0, "hp": 28, "mono": True}},
     "ostinato": {"gate": "c2", "length": 5, "register": [60, 84], "density": 1.0, "legato": 0.5, "tone": "ostinato-bell",
-                 "mix": {"gain_db": -16.0, "pan": 0.3, "hp": 300, "reverb": 0.3, "echo": 0.15}},
+                 "mix": {"gain_db": -16.0, "pan": 0.3, "hp": 300, "reverb": 0.3, "echo": 0.15, "spring": 0.2}},
     "counter": {"gate": "c8 | (r16 & c4)", "register": [55, 74], "density": 0.85, "legato": 0.95, "tone": "counter-reed",
                 "mix": {"gain_db": -15.0, "pan": -0.35, "hp": 180, "reverb": 0.35}},
+    "chords": {"gate": "c16 | (c16+10 & r3)", "register": [52, 74], "voices": 3, "density": 1.0, "legato": 0.9, "tone": "chord-organ",
+               "mix": {"gain_db": -17.0, "pan": 0.15, "hp": 160, "reverb": 0.3, "spring": 0.15, "width": 1.3}},
 }
 
 DEFAULT = {
@@ -113,6 +121,7 @@ DEFAULT = {
     "think": 200,                # ideas the melody thinks of before playing (0: no themes, the walk alone)
     "keep": 3,                   # how many to keep (the critic's best), or a list of idea numbers
     "phrase": ["theme", "theme", "answer", "answer", "theme", "theme", "free", "cadence"],
+    "ending": "home",            # home: the melody's last bar lands on the tonic and holds; open: it just stops
     "memory": 16,                # the ring buffer
     "modify": 0.0,               # step-quantized offsets on frozen loops (0-1)
     "freeze": [],                # [{bar = 17, notes = 8, bars = 4, transform = "transpose", amount = 2, modify = 0.3}]
@@ -655,6 +664,8 @@ class Machine:
             elif role == "counter":
                 mel = lines.get(ch.get("against", "lead")) or next((lines[c["name"]] for c in order if c["role"] == "melody" and c["name"] in lines), [])
                 lines[ch["name"]] = self._counter(timeline, ch, mel)
+            elif role == "chords":
+                lines[ch["name"]] = self._chords(timeline, ch)
         parts = {ch["name"]: self._emit(lines[ch["name"]], timeline, ch) for ch in self.chans}
         first = next((c["name"] for c in self.chans if c["role"] == "melody"), None)
         side = next((c["name"] for c in self.chans if c["role"] == "harmony"), None)
@@ -697,6 +708,7 @@ class Machine:
         plan = [t for t in p.get("phrase", []) if t in PHRASE_TOKENS] if self.kept else []
         sec_loop, sec_start, themes, passes, anchor = None, 0, {}, Counter(), {}
         was_on = False
+        last = max((c["bar"] for c in timeline if c["bar"] < self.bars and c.get("lead", True) and not c.get("kime")), default=-1)
         for ctx in timeline:
             b = ctx["bar"]
             if b >= self.bars:
@@ -745,6 +757,11 @@ class Machine:
                         q = self.steps_from(scale, q, frozen["pofs"][i])
                         q = self.fold(q, lo, hi)
                         notes.append((t - fpos * 4, d, q, float(np.clip(v + frozen["vofs"][i], 0.1, 1.0))))
+            elif token in ("develop", "augment", "mirror"):
+                if loop not in themes:
+                    themes[loop] = self.kept[len(themes) % len(self.kept)]
+                notes, cur = self._theme(self._derive(themes[loop], token), 0, b, ctx, scale, cp, cur, anchor, loop, 1)
+                tag = {"develop": "D", "augment": "A", "mirror": "M"}[token]
             elif token == "theme":
                 if loop not in themes:
                     themes[loop] = self.kept[len(themes) % len(self.kept)]
@@ -784,6 +801,14 @@ class Machine:
             tr = int(cp.get("transpose", 0))
             notes = [(t, d, self.fold(self.steps_from(scale, q, tr) if tr else q, lo - 12, hi + 12) + 12 * int(cp.get("octave", 0)), v)
                      for (t, d, q, v) in notes if 0 <= t < 4]
+            if main and b == last and not frozen and p.get("ending", "home") == "home":      # the last word: home
+                home = ((ctx["tonic"] if p["root"] == "key" else note_pc(p["root"])) + ctx["tr"]) % 12
+                ref = notes[-1][2] if notes else (cur if cur is not None else (lo + hi) // 2)
+                q = min((m for m in range(lo - 5, hi + 1) if m % 12 == home), key=lambda m: abs(m - ref), default=ref)
+                t0 = notes[-1][0] if notes and notes[-1][0] <= 2.5 else (notes[-1][0] + notes[-1][1] if notes else 0.0)
+                t0 = min(t0, 3.0)
+                notes = [n for n in notes if n[0] < t0] + [(t0, 3.95 - t0, q, 0.85)]
+                tag = "E"
             if notes:
                 cur = notes[-1][2]
             prev_bar = notes
@@ -793,6 +818,22 @@ class Machine:
             if main:
                 self.log.append(tag)
         return line
+
+    @staticmethod
+    def _derive(idea: dict, how: str) -> dict:
+        """The theme developed: develop = its first half, then the same a scale step higher (a sequence);
+        augment = its first half at half speed; mirror = its first bar upside down."""
+        cells = [c for c in idea["cells"] if c[0] < 16]
+        head = [c for c in cells if c[0] < 8] or cells[:3]
+        s0 = min((c[0] for c in head), default=0)
+        head = [(s - s0, d, deg, v) for (s, d, deg, v) in head if s - s0 < 8]
+        if how == "develop":
+            out = head + [(s + 8, d, deg + 1, v) for (s, d, deg, v) in head]
+        elif how == "augment":
+            out = [(s * 2, d * 2, deg, v) for (s, d, deg, v) in head]
+        else:
+            out = [(s, d, -deg, v) for (s, d, deg, v) in cells]
+        return {"cells": out}
 
     def _theme(self, idea, half, b, ctx, scale, cp, cur, anchor, loop, npass):
         """One bar of a kept idea, on this bar's chords: degree 0 is a chord tone near where the line is (pulled towards
@@ -1081,11 +1122,57 @@ class Machine:
                 out.append((b * 4 + i / 4, max(0.25, min(gap, 16) * 0.25 * float(cp["legato"])), cur, 0.55 + 0.2 * (i % 8 == 0), s))
         return out
 
+    # ---- chords: the chord sequencer
+    def _chords(self, timeline, ch) -> list[tuple]:
+        out, prev = [], None
+        u_d = self.terrain(ch, "density")
+        for ctx in timeline:
+            b = ctx["bar"]
+            if b >= self.bars:
+                break
+            cp = self.at(b, ch)
+            lo, hi = cp["register"]
+            n = int(np.clip(int(cp.get("voices", 3)), 1, 6))
+            trig = self.trig(cp["gate"])
+            changes = {int(round(c[0] * 4)) for c in ctx["chords"]}
+            hits = [s for s in range(b * 16, min(self.S, b * 16 + 16)) if (trig[s] and u_d[s] < float(cp["density"])) or (s - b * 16) in changes]
+            for j, s in enumerate(hits):
+                i = s - b * 16
+                pcs, root = self.chord_at(ctx, i / 4)
+                v = self.voicing(pcs, root, n, lo, hi, prev)
+                prev = v
+                gap = (hits[j + 1] if j + 1 < len(hits) else b * 16 + 16) - s
+                vel = 0.6 + float(cp["accent"]) * 0.3 * self.coinc[s] + (0.08 if i % 8 == 0 else 0.0)
+                for q in v:
+                    out.append((b * 4 + i / 4, max(0.2, gap * 0.25 * float(cp["legato"])), q, float(np.clip(vel, 0.2, 1.0)), s))
+        return out
+
+    @staticmethod
+    def voicing(pcs: set, root: int, n: int, lo: int, hi: int, prev: list | None) -> list[int]:
+        """n chord tones in [lo, hi], all different pitch classes where possible (the third and seventh before the
+        root and fifth), as close as possible to the previous voicing."""
+        from itertools import combinations
+        order = sorted(pcs, key=lambda x: (x - root) % 12)
+        pref = {pc: (0 if (pc - root) % 12 in (3, 4, 10, 11) else 1 if pc == root else 2) for pc in order}
+        cand = [m for m in range(lo, hi + 1) if m % 12 in pcs]
+        if not cand:
+            return [lo + (root - lo) % 12]
+        n = min(n, len(cand))
+        best, bk = None, None
+        for combo in combinations(cand, n):
+            k = len({m % 12 for m in combo})
+            key = (-k, sum(pref[m % 12] for m in combo) * 0.5
+                   + (sum(abs(a - b_) for a, b_ in zip(combo, sorted(prev))) if prev and len(prev) == n else abs(sum(combo) / n - (lo + hi) / 2)))
+            if bk is None or key < bk:
+                best, bk = list(combo), key
+        return best
+
     def summary(self) -> list[str]:
         p = self.p
         counts = Counter(self.log)
         names = {"G": "generate", "R": "repeat", "Rv": "reverse", "T": "transpose", "I": "invert", "O": "ornament", "F": "frozen loop",
-                 "Th": "theme", "Th~": "theme varied", "C": "cadence", "·": "rest"}
+                 "Th": "theme", "Th~": "theme varied", "C": "cadence", "·": "rest", "D": "theme developed",
+                 "A": "theme augmented", "M": "theme mirrored", "E": "ending"}
         out = [f"Electronium: bounty {p['bounty']}, scale {p['scale']}{'' if p['root'] == 'key' else ' on ' + str(p['root'])}, "
                f"density {p['density']}, mutation {p['mutation']}",
                f"  lead gate {p['gate']!r}; clock cycle {self.cycle} steps ({self.cycle / 16:g} bars)",

@@ -1,7 +1,7 @@
 name = "Electronium '69"
 description = "Raymond Scott's lab, rebuilt: the Electronium writes the tune live from interlocking clocks, a Markov walk and its own behaviours (repeat, reverse, invert, ornament, freeze), a sidekick a fifth below, drums from the same clock matrix. Pick a Bounty: same seed, same terrain. 112 bpm."
 bpm = 112
-kit = "synthetic"
+kit = "electronium"
 drums = "electronium"
 swing = 0.52
 

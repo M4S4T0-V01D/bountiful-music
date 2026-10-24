@@ -280,6 +280,32 @@ def test_friends():
         assert again == out
 
 
+def test_chords_development_and_ending():
+    chans = [{"name": "lead", "role": "melody"}, {"name": "keys", "role": "chords", "voices": 3}]
+    m, res = run({"bounty": 9, "channels": chans, "phrase": ["theme", "develop", "augment", "mirror"] * 2}, bars=16)
+    keys = res["parts"]["keys"]
+    assert keys, "the chord sequencer played nothing"
+    by = {}
+    for (t, d, q, v, o) in keys:
+        by.setdefault(t, []).append(q)
+    for t, qs in by.items():
+        b = int(t // 4)
+        pcs = set(CHORDS[b % 4][1])
+        assert all(q % 12 in pcs for q in qs), (t, qs)                # every voice a chord tone
+        assert all(52 <= q <= 74 for q in qs) and len(set(q % 12 for q in qs)) == len(qs) == 3
+    starts = sorted(by)
+    moves = [sum(abs(a - b) for a, b in zip(sorted(by[x]), sorted(by[y]))) for x, y in zip(starts, starts[1:])]
+    assert sum(moves) / len(moves) < 6, moves                        # voice-led: small moves
+    assert {"D", "A", "M"} <= set(m.log), m.log
+    assert m.log[-1] == "E"
+    last = max(res["lead"], key=lambda n: n[0])
+    assert last[2] % 12 == 0 and last[0] + last[1] > 15 * 4 + 3.5    # home: the tonic, held to the end
+    try:
+        EL.channels(EL.patch({"channels": [{"name": "x", "role": "pads"}]}))
+    except ValueError:
+        return
+    raise AssertionError("a bad role got through")
+
 if __name__ == "__main__":
     fails = 0
     for name, fn in list(globals().items()):
