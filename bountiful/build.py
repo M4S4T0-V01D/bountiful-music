@@ -60,13 +60,15 @@ def genres() -> dict[str, dict]:
     kits = tomllib.loads((ROOT / "genres" / "kits.toml").read_text())
     import electronium_drums
     kits["electronium"] = electronium_drums.kit()          # the Electronium's own synthesised percussion
+    from synthesis.engines import breakforge
+    kits["breakforge"] = breakforge.kit()                  # Breakforge's procedural drums, one stem per drum
     out = {}
     for f in sorted((ROOT / "genres").glob("*.toml")):
         if f.stem == "kits":
             continue
         g = tomllib.loads(f.read_text())
         g["id"] = f.stem
-        g["_kit"] = kits[g["kit"]]
+        g["_kit"] = breakforge.kit(g.get("breakforge")) if g["kit"] == "breakforge" else kits[g["kit"]]
         out[f.stem] = g
     return out
 
@@ -195,12 +197,12 @@ def rank(files: list[Path], g: dict, log=print) -> list[dict]:
 
 # ------------------------------------------------------------------ produce
 
-def arrange(loops: dict, g: dict, rng, machine=None, timeline: list | None = None) -> tuple[dict, list, list]:
+def arrange(loops: dict, g: dict, rng, machine=None, timeline: list | None = None, seed: int = 0) -> tuple[dict, list, list]:
     """machine: an electronium.Machine for drums = "electronium"; timeline: filled with one dict per bar (for the Electronium's lead)."""
     parts = {k: [] for k in PART_ORDER}
     drums, bar_map, bar = [], [], 0
     dcfg = {"swing": g.get("swing", 0.5), "_bpm": g["bpm"], "drum_humanize_ms": g.get("drum_humanize_ms", 0), "grid": g.get("grid", {}),
-            "electronium": machine}
+            "electronium": machine, "seed": seed, "breakforge": g.get("breakforge", {})}
     prev_loop, carried = None, 0
     passes, cur_var = {}, {}                   # melody-writer variants: each pass through a loop gets the next one
     for blk in g["arrangement"]:
@@ -308,7 +310,12 @@ def instrument_map(g: dict, title: str, name: str, seed: int) -> dict:
         sk_["gain_db"] = sk_.get("gain_db", -10) - 3
         sk_["pan"] = -0.25
         tracks["sidekick"] = sk_
-    tracks.update(channel_tracks(g))
+    for k, tr in channel_tracks(g).items():
+        if tracks.get(k, {}).get("kind") == "synthesis":   # an experimental engine track keeps the tone as its fallback
+            tracks[k] = {**tracks[k], "fallback": tr}
+        else:
+            tracks[k] = tr
+    tracks.update(engine_tracks(g, tracks))
     kit = g["_kit"]
     tracks["drums"] = {"channel": 9, "map": {str(k): v for k, v in kit["map"].items()}, "sounds": kit["sounds"], "stems": kit["stems"]}
     return {"seed": seed, "tail_s": 3.0, "fade_out_s": 1.5,
@@ -339,6 +346,39 @@ def channel_tracks(g: dict) -> dict:
     return out
 
 
+def engine_tracks(g: dict, tracks: dict) -> dict:
+    """The Electronium's channels that play a synthesis engine (channel `engine`, synthesis/), as synthesis tracks:
+    the tone generator or genre sound they replace stays as the fallback, and the recorder's synth.<param> moves
+    become the track's automation. Nothing when experimental synthesis is switched off: the old sounds play."""
+    if g.get("melody", {}).get("writer") != "electronium":
+        return {}
+    import electronium as EL
+    import synthesis as S
+    if not S.enabled():
+        return {}
+    from synthesis.genre import track
+    p = EL.patch(g.get("electronium"))
+    out = {}
+    for ch in EL.channels(p):
+        spec = EL.engine_spec(ch)
+        if spec is None or spec["engine"] not in S.ENGINES:
+            continue
+        moves = []                                     # the recorder's bars are 1-based, the automation's 0-based
+        for m in p.get("moves", []):
+            st = {k: v for k, v in m.get("set", {}).items() if k.startswith("synth.")}
+            if st and m.get("channel") in (None, ch["name"]):
+                moves.append({**{k: m[k] - 1 for k in ("bar", "to_bar") if k in m}, "set": st})
+        names = [ch["name"]] + (["lead_hi"] if ch["name"] == "lead" and "lead_hi" in tracks else [])
+        for nm in names:
+            tr = track(spec, tracks.get(nm))
+            if moves:
+                tr["moves"] = list(tr.get("moves", [])) + moves
+            if nm == "lead_hi":
+                tr["gain_db"], tr["pan"] = tracks["lead"].get("gain_db", -10) - 8, 0.2
+            out[nm] = tr
+    return out
+
+
 def produce(song: Path, g: dict, title: str | None = None, out: Path | None = None, seed: int = 1, log=print) -> Path:
     sk = SK.load(song)
     title = title or f"{g['name'].split(chr(39))[0].strip()} {sk.seed}"
@@ -350,7 +390,7 @@ def produce(song: Path, g: dict, title: str | None = None, out: Path | None = No
     loops = produce_loops(s2, g, rng)
     machine = electronium_machine(g)
     timeline: list = []
-    parts, drums, bar_map = arrange(loops, g, rng, machine, timeline)
+    parts, drums, bar_map = arrange(loops, g, rng, machine, timeline, seed=seed)
     if machine and g.get("melody", {}).get("writer") == "electronium":
         perform_electronium(machine, s2, timeline, parts)
     mid = out / f"{name}.mid"
@@ -428,9 +468,19 @@ def _raw_midi(song: Path) -> Path:
     return mid
 
 
+def render_script(track: Path) -> Path:
+    """render_midi.py, or the Synthesis Lab's wrapper of it when the song has kind = "synthesis" tracks."""
+    try:
+        inst = tomllib.loads((track / "instruments.toml").read_text())
+    except (OSError, tomllib.TOMLDecodeError):
+        return RENDER
+    from synthesis.rendering import uses_synthesis
+    return HERE / "synthesis" / "render.py" if uses_synthesis(inst) else RENDER
+
+
 def render(track: Path, bars: str | None = None, only: str | None = None, log=print) -> int:
     mid = next(track.glob("*.mid"))
-    cmd = ["nice", "-n", "10", PY, "-u", str(RENDER), str(mid), str(track / "instruments.toml"), "--out", str(track / "exports")]
+    cmd = ["nice", "-n", "10", PY, "-u", str(render_script(track)), str(mid), str(track / "instruments.toml"), "--out", str(track / "exports")]
     if bars:
         cmd += ["--bars", bars, "--no-stems", "--no-mp3", "--name", "preview"]
     else:
@@ -460,6 +510,7 @@ def main():
     p.add_argument("--electronium-drums", action="store_true", help="the Electronium's clock matrix plays the drums")
     p.add_argument("--bounty", help="the Electronium's seed: same Bounty, same terrain")
     p.add_argument("--patch", type=Path, help="an electronium.toml patch (e.g. from an earlier track)")
+    p.add_argument("--experimental", action="store_true", help="switch on the genre's [experimental_synthesis] engines")
     r = sub.add_parser("render")
     r.add_argument("track", type=Path)
     r.add_argument("--bars")
@@ -489,6 +540,9 @@ def main():
                 g.setdefault("melody", {})["writer"] = "electronium"
             if args.electronium_drums:
                 g["drums"] = "electronium"
+        if args.experimental:
+            from synthesis import genre as SG
+            g = SG.apply(g, force=True)
         out = produce(args.song, g, args.title)
         if args.render:
             render(out)

@@ -173,3 +173,28 @@ duck = { depth = 0.25, release = 0.1 }
 gain_db = -9.0
 [master]
 tape = { drive = 1.4, bias = 0.05, bump_db = 0.8, hf_db = -1.5, lp_hz = 17000, hiss_db = -78, wow_ms = 0.07 }
+
+# Experimental synthesis (off unless enabled = true or --experimental): a prismatic lead,
+# a fractal sequencer and a terrain bass under a ghost pad.
+[experimental_synthesis]
+enabled = false
+
+[experimental_synthesis.tracks.lead]
+engine = "prismatic"
+preset = "glass-prism"
+gain_db = -11.0
+
+[experimental_synthesis.tracks.arp]
+engine = "fractal"
+preset = "golden-clock"
+gain_db = -14.0
+
+[experimental_synthesis.tracks.pad]
+engine = "ghost"
+preset = "frozen-choir"
+gain_db = -17.0
+
+[experimental_synthesis.tracks.bass]
+engine = "terrain"
+preset = "mountain-growl"
+gain_db = -10.0

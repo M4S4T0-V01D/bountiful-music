@@ -1,4 +1,4 @@
-"""The DAW's music-making panels: Song from a Bounty (with the operator: rules or your Ollama), the live Electronium
+"""The DAW's music-making panels: Song from a Bounty (the operator: the rules, bent by your brief), the live Electronium
 console with its ideas (audition, rate: your taste), and A day of ideas."""
 from __future__ import annotations
 
@@ -8,8 +8,8 @@ import traceback
 
 from PySide6.QtCore import QObject, Qt, QTimer, Signal
 from PySide6.QtGui import QFont
-from PySide6.QtWidgets import (QButtonGroup, QCheckBox, QComboBox, QDoubleSpinBox, QFormLayout, QGridLayout, QGroupBox, QHBoxLayout,
-                               QHeaderView, QLabel, QLineEdit, QPlainTextEdit, QPushButton, QRadioButton, QSlider, QSpinBox,
+from PySide6.QtWidgets import (QCheckBox, QComboBox, QDoubleSpinBox, QFormLayout, QGridLayout, QGroupBox, QHBoxLayout,
+                               QHeaderView, QLabel, QLineEdit, QPlainTextEdit, QPushButton, QSlider, QSpinBox,
                                QSplitter, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
 
 import batch as BA
@@ -109,32 +109,21 @@ class SongPanel(QWidget):
         form.addRow("Title", self.title)
         og = QGroupBox("The operator (who plays the knobs)")
         ol = QVBoxLayout(og)
-        self.by_rules = QRadioButton("Rules (instant: the classic arc)")
-        self.by_llm = QRadioButton("Your Ollama")
-        grp = QButtonGroup(self)
-        grp.addButton(self.by_rules)
-        grp.addButton(self.by_llm)
-        self.by_llm.setChecked(True)
-        ol.addWidget(self.by_rules)
-        ol.addWidget(self.by_llm)
-        mr = QHBoxLayout()
-        self.model = QComboBox()
-        self.model.setEditable(True)
-        self.model.setMinimumWidth(260)
-        self.model.addItem(paths.ollama()["model"])
-        ref = QPushButton("↻")
-        ref.setToolTip("ask Ollama which models it has")
-        ref.setFixedWidth(32)
-        ref.clicked.connect(self.refresh_models)
-        mr.addWidget(self.model, 1)
-        mr.addWidget(ref)
-        ol.addLayout(mr)
+        ol.addWidget(QLabel("The rules play the classic arc. Your brief, read by code, bends it:"))
         self.brief = QPlainTextEdit()
-        self.brief.setPlaceholderText("A brief for the operator, e.g. 'slow burn, keep the bridge sparse, big last chorus'")
+        self.brief.setPlaceholderText("e.g. 'make the break more restless, keep the Rhodes intimate, "
+                                      "let the last two minutes open into something huge'")
         self.brief.setMaximumHeight(70)
+        self.brief.textChanged.connect(self._stale)
         ol.addWidget(self.brief)
-        self.remember = QCheckBox("Make this model the default")
-        ol.addWidget(self.remember)
+        self.intents = QTableWidget(0, 4)
+        self.intents.setHorizontalHeaderLabels(["Use", "Words", "Who / where", "Controls"])
+        self.intents.horizontalHeader().setSectionResizeMode(3, QHeaderView.Stretch)
+        self.intents.verticalHeader().hide()
+        self.intents.setMaximumHeight(150)
+        self.intents.setToolTip("what the brief became: untick a row to reject it, then Plan again to compare")
+        self.intents.itemChanged.connect(self._toggled)
+        ol.addWidget(self.intents)
         form.addRow(og)
         row = QHBoxLayout()
         self.b_plan = QPushButton("Plan")
@@ -161,7 +150,6 @@ class SongPanel(QWidget):
             w.currentTextChanged.connect(self._stale)
         self.bpm.valueChanged.connect(self._stale)
         self.reharm.valueChanged.connect(self._stale)
-        QTimer.singleShot(400, self.refresh_models)
 
     def _dice(self):
         import random
@@ -169,15 +157,35 @@ class SongPanel(QWidget):
 
     def _stale(self, *_):
         self.op = None
+        self._kept = None
 
-    def refresh_models(self):
-        def got(ms):
-            cur = self.model.currentText()
-            self.model.clear()
-            self.model.addItems(ms or [cur])
-            self.model.setCurrentText(cur if cur in ms or not ms else (paths.ollama()["model"] if paths.ollama()["model"] in ms else ms[0]))
-            self.by_llm.setText(f"Your Ollama ({len(ms)} models)" if ms else "Your Ollama (not running: rules will play)")
-        self.jobs.run("", lambda: OP.models(paths.ollama()["url"]), got)
+    def _toggled(self, item):
+        if item.column() == 0 and self.op is not None:
+            row = item.row()
+            its = self.op.get("intents", [])
+            if row < len(its):
+                its[row]["on"] = item.checkState() == Qt.Checked
+                self._kept = its
+                self.op = None
+
+    def _show_intents(self, its: list[dict]):
+        import intent as IN
+        self.intents.blockSignals(True)
+        self.intents.setRowCount(len(its))
+        for i, it in enumerate(its):
+            use = QTableWidgetItem()
+            use.setFlags(Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
+            use.setCheckState(Qt.Checked if it.get("on", True) else Qt.Unchecked)
+            self.intents.setItem(i, 0, use)
+            who = ", ".join(IN.ROLE_PART.get(t, t) for t in it["targets"]) or "everyone"
+            ex = IN.explain(it).split(": ", 1)[-1]
+            for c, txt in ((1, f'{it["word"]}  ({it["clause"]})'), (2, f'{who} / {it["scope"]}'), (3, ex)):
+                cell = QTableWidgetItem(txt)
+                cell.setFlags(Qt.ItemIsEnabled)
+                cell.setToolTip(IN.explain(it))
+                self.intents.setItem(i, c, cell)
+        self.intents.resizeColumnsToContents()
+        self.intents.blockSignals(False)
 
     def args(self):
         return dict(bounty=bounty_arg(self.bounty.text()), key=key_arg(self.key), bpm=self.bpm.value() or None,
@@ -185,15 +193,14 @@ class SongPanel(QWidget):
 
     def plan(self, then=None):
         a = self.args()
-        llm = self.by_llm.isChecked()
-        model, brief = self.model.currentText().strip(), self.brief.toPlainText().strip()
-        if llm and self.remember.isChecked() and model:
-            paths.save_config(ollama={"model": model})
-        self.out.setPlainText(f"Planning Bounty {a['bounty']}" + (f" — asking {model} (the first answer can take a minute while it loads) ..." if llm else " ..."))
+        brief = self.brief.toPlainText().strip()
+        kept = getattr(self, "_kept", None)
+        self._kept = None
+        self.out.setPlainText(f"Planning Bounty {a['bounty']} ...")
 
         def work():
             pl = ES.plan(**a)
-            op = OP.operate(pl["sections"], EL.patch(pl["patch"]), llm, brief, model or None, log=self.jobs.log)
+            op = OP.operate(pl["sections"], EL.patch(pl["patch"]), brief, log=self.jobs.log, bpm=pl["bpm"], intents=kept)
             return pl, op
 
         def done(r):
@@ -209,6 +216,7 @@ class SongPanel(QWidget):
             if self.op.get("problems"):
                 lines += ["", "dropped: " + "; ".join(self.op["problems"])]
             self.out.setPlainText("\n".join(lines))
+            self._show_intents(self.op.get("intents", []))
             if then:
                 then()
         self.jobs.run("planning", work, done)

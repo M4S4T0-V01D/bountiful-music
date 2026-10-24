@@ -79,7 +79,8 @@ class Live:
         with self.lock:
             bar = (at_bar if at_bar is not None else self.bar) + 1
             mv = {"bar": max(1, min(self.bars, bar)), "set": {knob: value}, **({"channel": channel} if channel else {})}
-            moves, _, bad = OP.clean({"moves": [mv]}, self.pl["sections"], list(self.chans))
+            moves, _, bad = OP.clean({"moves": [mv]}, self.pl["sections"], list(self.chans),
+                                     EL.engines(self.pl["patch"]))
             if bad:
                 raise ValueError("; ".join(bad))
             self.user_moves += moves

@@ -240,6 +240,54 @@ def test_tone_generator_and_tracks():
             pass
 
 
+def test_engine_channels_and_synth_moves():
+    import os
+    import build as B
+    import operator_ as OP
+    import synthesis as S
+    chans = [dict(CHANNELS[0], engine={"engine": "terrain", "preset": "lissajous-lead"}), CHANNELS[1],
+             dict(CHANNELS[2], engine="gravity")]
+    moves = [{"bar": 5, "to_bar": 9, "channel": "lead", "set": {"synth.radius": 1.4, "density": 0.5}},
+             {"bar": 3, "channel": "bass", "set": {"synth.tension": 0.8}}]
+    g0 = B.genres()["electronium-69"]
+    g = dict(g0, electronium={"channels": chans, "moves": moves})
+    plain = dict(g0, electronium={"channels": CHANNELS[:3], "moves": [dict(m, set={k: v for k, v in m["set"].items()
+                                                                               if not k.startswith("synth.")}) for m in moves]})
+    # the machine plays the same notes: engines change the sound, not the performance
+    ma, mb = EL.Machine(EL.patch(g["electronium"]), 16), EL.Machine(EL.patch(plain["electronium"]), 16)
+    assert [ma.at(b, c) for b in range(12) for c in ma.chans] == [mb.at(b, c) for b in range(12) for c in mb.chans]
+    assert EL.engines(EL.patch(g["electronium"])) == {"lead": "terrain", "bass": "gravity"}
+    old = os.environ.pop("BOUNTIFUL_EXPERIMENTAL", None)
+    try:
+        if S.enabled():
+            tr = B.instrument_map(g, "T", "t", 1)["tracks"]
+            lead = tr["lead"]
+            assert lead["kind"] == "synthesis" and lead["engine"] == "terrain" and lead["fallback"]["kind"] == "pyvoice"
+            assert lead["moves"] == [{"bar": 4, "to_bar": 8, "set": {"synth.radius": 1.4}}], lead["moves"]
+            assert tr["lead_hi"]["engine"] == "terrain" and tr["lead_hi"]["gain_db"] == lead["gain_db"] - 8
+            assert tr["bass"]["engine"] == "gravity" and tr["bass"]["moves"][0]["bar"] == 2
+            assert tr["sidekick"]["kind"] == "pyvoice"
+            from synthesis.rendering import automation_of
+            assert automation_of(lead)["radius"][-1] == [32.0, 1.4], "1-based bar 9 is beat 32"
+        os.environ["BOUNTIFUL_EXPERIMENTAL"] = "0"      # switched off: exactly the old tracks
+        off, ref = B.instrument_map(g, "T", "t", 1)["tracks"], B.instrument_map(plain, "T", "t", 1)["tracks"]
+        assert off == ref and off["lead"]["kind"] == "pyvoice"
+    finally:
+        os.environ.pop("BOUNTIFUL_EXPERIMENTAL", None)
+        if old is not None:
+            os.environ["BOUNTIFUL_EXPERIMENTAL"] = old
+    # the operator accepts synth moves the engine has, clamped, and refuses the rest
+    secs = [{"name": "A", "start": 1, "bars": 16}]
+    names, eng = [c["name"] for c in EL.channels(EL.patch(g["electronium"]))], EL.engines(EL.patch(g["electronium"]))
+    mv, _, bad = OP.clean({"moves": [{"bar": 2, "channel": "lead", "set": {"synth.radius": 99}}]}, secs, names, eng)
+    hi = next(p for p in S.engine_class("terrain").PARAMS if p.name == "radius").hi
+    assert not bad and mv[0]["set"]["synth.radius"] == hi
+    _, _, bad = OP.clean({"moves": [{"bar": 2, "channel": "sidekick", "set": {"synth.radius": 1}}]}, secs, names, eng)
+    assert bad, "the sidekick has no engine"
+    _, _, bad = OP.clean({"moves": [{"bar": 2, "channel": "lead", "set": {"synth.radius": 1}}]}, secs, names)
+    assert bad, "without engines synth moves are unknown knobs"
+
+
 def test_artist_is_always_m4s4t0():
     import build as B
     import credits

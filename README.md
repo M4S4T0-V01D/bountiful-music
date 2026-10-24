@@ -21,8 +21,9 @@ Other install commands: `scripts/install.sh --uninstall` removes the app, launch
 | **Arrange** | Every part shown as a lane, with the song's sections on top. Click to move the playhead; double-click a lane to open it in the **piano roll**. |
 | **Piano roll** | Double-click to add a note, drag to move it, drag its edge to change the length. Right-click or Delete removes a note. Alt+wheel sets velocity, ↑/↓ transposes (Shift: by an octave). Ctrl+S saves the MIDI, then **Render**. |
 | **Mixer** | One strip per rendered stem: fader, pan, mute, solo, meter. **Bounce** (Ctrl+B) writes the mix to `exports/<name>_mix.wav`. "Play the mastered export" switches to the mastered file. |
-| **Song from a Bounty** | Key, tempo, length and colour (reharmonisation). Pick the **operator** that plays the machine's knobs through the song: the rules, or **your Ollama model** (qwen3 by default, chosen from a list of the models you have) with a brief such as "slow burn, big last chorus". **Plan** shows the chords, sections and every move with its reason; **Make & render** builds the track. |
+| **Song from a Bounty** | Key, tempo, length and colour (reharmonisation). The **operator** plays the machine's knobs through the song: the rules' arc, bent by your **brief** in plain words ("make the break more restless, keep the Rhodes intimate, let the last two minutes open into something huge"). Code reads the brief (`intent.py`, no model) into explicit controls you can see and untick before you make the song. **Plan** shows the chords, sections and every move with its reason; **Make & render** builds the track. |
 | **Electronium live** | The machine plays the song as it goes, synthesised a bar ahead. Its knobs, channel mutes and gates take effect from the next bar, and each change is recorded as a move. **Make this take a song** turns the take into a track. The panel also lists its ideas, best first: **Audition** one, then 👍 / 👎 it. The critic learns your taste after 5 ratings. |
+| **Synthesis Lab** | Bountiful's own eleven engines (Ghost, Gravity, Weather, Breakforge, Phase Garden, Prismatic, Echo, Oracle, Material, Fractal, Terrain): tracks of engines and presets, routing with bounded feedback, a param form, snapshots, a look inside each engine. Exports WAV, or writes the tracks into a song. See [docs/synthesis-lab.md](docs/synthesis-lab.md). |
 | **A day of ideas** | Runs N Bounties at once, ranked by the critic plus your taste, each with an audition of its best idea. The best few are written as whole songs. You can rate them, open them, or take one to Song or Live. |
 
 Command line equivalents: `bountiful/electronium_song.py`, `bountiful/live.py`, `bountiful/batch.py`, `bountiful/operator_.py`, `bountiful/taste.py`, `bountiful/updater.py`.
@@ -67,7 +68,7 @@ A genre file holds:
 - the arrangement template
 - the sounds (an instrument map, rendered by `../intelligent-jungle/studio/render_midi.py`)
 
-To make a new genre, copy a file.
+To make a new genre, copy a file. A genre can also have an `[experimental_synthesis]` table (off by default; `produce --experimental` switches it on) that lets the Lab's engines play its parts: see [docs/synthesis-lab.md](docs/synthesis-lab.md).
 
 ## Why it no longer sounds like the composer
 
@@ -136,8 +137,11 @@ Tests: `$PY tests/test_electronium.py` (Electronium, credits, friends), `$PY tes
   - `credits.py`: the artist credit
   - `friends.py`: the friends registry and share captions
   - `app.py`: the GUI
+  - `synthesis/`: the Synthesis Lab: engines, routing, modulation, projects, demos ([docs/synthesis-lab.md](docs/synthesis-lab.md))
+  - the ecosystem: `features.py`, `laws.py`, `evaluators.py`, `evolve.py`, `discover.py`, `lineage.py`, `network.py`, `intent.py`, `studio.py`, `timbre.py`, `observatory.py` ([docs/ecosystem.md](docs/ecosystem.md))
+  - `daw/`: the PySide6 app (`daw/lab.py`: the Lab tab, `daw/observatory.py`: the Observatory tab)
 - `genres/`: presets and drum kits
-- `songs/`: composed skeletons. `tracks/`: produced tracks.
+- `songs/`: composed skeletons. `tracks/`: produced tracks. `synthesis/demos/`: the Lab's demos.
 - `tools/`: the first-generation scripts (am2mid, analyze, tells, arrange) that made Downtown Protocol and Kosmodrom
 - `upstream/`: the original composer, unmodified
 

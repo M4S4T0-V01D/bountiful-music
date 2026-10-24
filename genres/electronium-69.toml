@@ -189,3 +189,24 @@ lp = 3000
 mono = true
 duck = { depth = 0.2, release = 0.1 }
 gain_db = -9.0
+
+# Experimental synthesis (off unless enabled = true or --experimental). Tracks here replace the
+# genre's sounds; an Electronium channel can also pick its own engine (channel engine = "...",
+# moves set = { "synth.<param>" = v }), see docs/synthesis-lab.md.
+[experimental_synthesis]
+enabled = false
+
+[experimental_synthesis.tracks.arp]
+engine = "phase_garden"
+preset = "fireflies"
+gain_db = -15.0
+
+[experimental_synthesis.tracks.pad]
+engine = "echo"
+preset = "glass-lungs"
+gain_db = -18.0
+
+[experimental_synthesis.tracks.bass]
+engine = "gravity"
+preset = "marimba-bar"
+gain_db = -11.0

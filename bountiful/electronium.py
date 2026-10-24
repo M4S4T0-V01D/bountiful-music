@@ -40,6 +40,9 @@ them back. "It thinks of 200 things every day. You keep the ones that are good."
                 channel's: gate, density, mute, transpose, register ...), or ramp it to a value by `to_bar`
   tones         each channel's tone generator (electronium_voice.py): oscillator, noise, filter, fixed envelopes,
                 accent, tremolo, drift, glide; reverb is its plate send, spring its spring tank; electronium_drums.py is its percussion
+  engines       a channel may instead play a Synthesis Lab engine (`engine = "ghost"` or a table, see engine_spec);
+                moves set = {"synth.<param>" = v} are reproducible operator moves on that engine. With the
+                experimental engines off, the channel plays its tone as before
 
     $PY bountiful/electronium.py --bounty 7 [--bars 16] [--patch electronium.toml]    the terrain, as text
     $PY bountiful/electronium.py --bounty 7 --ideas [20]                               what it thought of, best first
@@ -196,6 +199,25 @@ def tone(ch: dict) -> dict | None:
             raise ValueError(f"channel {ch['name']}: no tone {t!r} (tones: {', '.join(TONES)})")
         return dict(TONES[t])
     return {**TONES.get(t.get("base", ""), {}), **{k: v for k, v in t.items() if k != "base"}}
+
+
+def engines(p: dict) -> dict:
+    """channel name -> synthesis engine id, for the channels that play one."""
+    return {c["name"]: engine_spec(c)["engine"] for c in channels(p) if c.get("engine")}
+
+
+def engine_spec(ch: dict) -> dict | None:
+    """A channel's Synthesis Lab engine, or None: `engine = "ghost"` or `engine = {engine = "ghost", preset = ...,
+    params = {...}, seed = n, modulation = {...}}`. The channel's tone (if any) stays as the fallback, and is what
+    plays when the experimental engines are switched off. Moves with set = {"synth.<param>" = v} on this channel
+    (or on all channels) become the engine's automation, ramps included, at the same bars as the other knobs."""
+    e = ch.get("engine")
+    if not e:
+        return None
+    spec = {"engine": e} if isinstance(e, str) else dict(e)
+    if not spec.get("engine"):
+        raise ValueError(f"channel {ch['name']}: engine table without an engine id")
+    return spec
 
 
 def note_pc(name) -> int:
@@ -535,11 +557,13 @@ class Machine:
             return self._at[key]
         v = {k: copy.deepcopy(self.p[k]) for k in KNOBS}
         v.update({"mute": False, "transpose": 0, "octave": 0})
-        v.update({k: copy.deepcopy(x) for k, x in ch.items() if k not in ("name", "role", "n", "tone", "mix")})
+        v.update({k: copy.deepcopy(x) for k, x in ch.items() if k not in ("name", "role", "n", "tone", "mix", "engine")})
         for m in self.moves:
             if m.get("channel") not in (None, ch["name"]) or b < m["bar"] - 1:
                 continue
             for k, target in m.get("set", {}).items():
+                if k.startswith("synth."):                 # the channel's engine's, not a composing knob
+                    continue
                 head, _, sub = k.partition(".")
                 cur = v.get(head) if not sub else v.get(head, {}).get(sub)
                 val = target

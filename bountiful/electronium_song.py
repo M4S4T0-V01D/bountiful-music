@@ -4,14 +4,14 @@
 From the Bounty (and an optional key, tempo and length) it decides the key and tempo, writes a chord progression
 for each section (functional harmony: tonic, subdominant, dominant; phrases that end open, then closed), lays out
 the song (intro, verses, choruses, a bridge, an outro), sets up six channels (lead, sidekick, bass, arp, keys,
-counter) with its own percussion, lets the operator (operator_.py: rules, or your Ollama model) play the knobs,
+counter) with its own percussion, lets the operator (operator_.py: the rules, and your brief read by intent.py) play the knobs,
 and performs and writes the track folder: .mid, instruments.toml, electronium.toml, notes.txt, source.json.
 
   reharm 0-1    how far the harmony strays: sevenths, secondary dominants before chord changes, borrowed and
                 relative chords (0 = plain triads)
 
     $PY bountiful/electronium_song.py --bounty 1969 [--key "D minor"] [--bpm 112] [--length short|normal|long]
-                                      [--reharm 0.3] [--ollama [--model qwen3:14b] [--brief "..."]] [--render]
+                                      [--reharm 0.3] [--brief "..."] [--render]
 """
 from __future__ import annotations
 
@@ -189,7 +189,7 @@ def timeline_for(pl: dict) -> list[dict]:
 def perform(pl: dict, operator: dict | None = None) -> dict:
     """The performance: {"parts", "drums", "machine", "timeline", "operator"}."""
     p = EL.patch(pl["patch"])
-    op = operator or OP.operate(pl["sections"], p)
+    op = operator or OP.operate(pl["sections"], p, bpm=pl["bpm"])
     p["moves"] = [{k: v for k, v in m.items() if k != "why"} for m in op["moves"]]
     p["freeze"] = op["freezes"]
     bars = sum(s["bars"] for s in pl["sections"])
@@ -201,7 +201,8 @@ def perform(pl: dict, operator: dict | None = None) -> dict:
     hi_bars = {c["bar"] for c in tl if "lead_hi" in c["parts"]}
     parts["lead_hi"] = [(t, d, q + 12, v * 0.55, o) for (t, d, q, v, o) in res["parts"].get("lead", []) if int(t // 4) in hi_bars]
     drums = []
-    for s in pl["sections"]:
+    import intent as IN
+    for s in IN.apply_drums(pl["sections"], op.get("drums", [])):         # the brief's drum layers, if any
         for i in range(s["bars"]):
             b = s["start"] - 1 + i
             layers = set(s["drums"])
@@ -226,14 +227,14 @@ def genre_for(pl: dict, p: dict) -> dict:
     return g
 
 
-def song(bounty, key=None, bpm=None, length="normal", reharm=0.25, use_ollama=False, model=None, brief="",
-         title=None, out: Path | None = None, operator: dict | None = None, log=print) -> Path:
+def song(bounty, key=None, bpm=None, length="normal", reharm=0.25, brief="", title=None, out: Path | None = None,
+         operator: dict | None = None, log=print) -> Path:
     pl = plan(bounty, key, bpm, length, reharm)
     title = title or pl["title"]
     name = B.slug(title)
     out = out or DATA / "tracks" / name
     out.mkdir(parents=True, exist_ok=True)
-    op = operator or OP.operate(pl["sections"], EL.patch(pl["patch"]), use_ollama, brief, model, log=log)
+    op = operator or OP.operate(pl["sections"], EL.patch(pl["patch"]), brief, log=log, bpm=pl["bpm"])
     perf = perform(pl, op)
     p = perf["patch"]
     g = genre_for(pl, p)
@@ -255,7 +256,8 @@ def song(bounty, key=None, bpm=None, length="normal", reharm=0.25, use_ollama=Fa
     (out / "notes.txt").write_text("\n".join(lines) + "\n")
     (out / "source.json").write_text(json.dumps({"kind": "electronium-song", "bounty": bounty, "key": pl["key"], "bpm": pl["bpm"],
                                                  "length": length, "reharm": reharm, "title": title, "operator": op["by"],
-                                                 "brief": brief}, indent=1))
+                                                 "brief": brief or op.get("brief", ""),
+                                                 "intents": [it for it in op.get("intents", [])]}, indent=1))
     log("\n".join(lines))
     return out
 
@@ -267,14 +269,12 @@ def main():
     ap.add_argument("--bpm", type=float)
     ap.add_argument("--length", default="normal", choices=list(LAYOUTS))
     ap.add_argument("--reharm", type=float, default=0.25)
-    ap.add_argument("--ollama", action="store_true", help="the operator is your Ollama model (paths.ollama())")
-    ap.add_argument("--model")
-    ap.add_argument("--brief", default="")
+    ap.add_argument("--brief", default="", help='plain words for the operator, e.g. "make the bridge more restless"')
     ap.add_argument("--title")
     ap.add_argument("--out", type=Path, help="the track folder (default: tracks/<title>)")
     ap.add_argument("--render", action="store_true")
     a = ap.parse_args()
-    out = song(a.bounty, a.key, a.bpm, a.length, a.reharm, a.ollama, a.model, a.brief, a.title, a.out)
+    out = song(a.bounty, a.key, a.bpm, a.length, a.reharm, a.brief, a.title, a.out)
     if a.render:
         B.render(out)
 

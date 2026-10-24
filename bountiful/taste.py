@@ -106,6 +106,50 @@ def report() -> str:
     return "\n".join(out)
 
 
+# ------------------------------------------------------------------ whole songs
+
+SONGS = DATA / "taste_songs.json"
+SONG_KEYS = ("energy_range", "energy_arc", "contrast", "lead_range", "lead_stepwise", "lead_leaps", "lead_offbeat",
+             "harmonic_rhythm", "in_key", "drum_density", "note_density", "bpm")
+
+
+def load_songs() -> list[dict]:
+    try:
+        return json.loads(SONGS.read_text()).get("ratings", [])
+    except (FileNotFoundError, ValueError):
+        return []
+
+
+def rate_song(feats: dict, rating: float, ref: str, note: str = "") -> int:
+    """Rate a whole song (+1 / -1, or 1-5) by its features (features.features); `ref` names it (a lineage id or
+    a Bounty), and rating it again replaces the old rating. Returns how many song ratings there are."""
+    r = float(rating)
+    if r > 1:
+        r = (r - 3) / 2
+    rows = [x for x in load_songs() if x.get("ref") != ref]
+    rows.append({"ref": ref, "rating": max(-1.0, min(1.0, r)), "time": int(time.time()),
+                 "features": {k: float(feats.get(k, 0.0)) for k in SONG_KEYS}, **({"note": note} if note else {})})
+    SONGS.parent.mkdir(parents=True, exist_ok=True)
+    SONGS.write_text(json.dumps({"ratings": rows}, indent=0))
+    return len(rows)
+
+
+def song_taste(feats: dict, k: int = 5) -> tuple[float | None, list[tuple[str, float, float]]]:
+    """-> (-1 ... +1 or None with fewer than 3 ratings, [(ref, rating, weight)]): the rated songs nearest this
+    one in feature space, weighted by closeness."""
+    rows = load_songs()
+    if len(rows) < 3:
+        return None, []
+    X = np.array([[r["features"].get(k_, 0.0) for k_ in SONG_KEYS] for r in rows])
+    mu, sd = X.mean(0), X.std(0) + 1e-6
+    x = (np.array([float(feats.get(k_, 0.0)) for k_ in SONG_KEYS]) - mu) / sd
+    d = np.linalg.norm((X - mu) / sd - x, axis=1)
+    near = np.argsort(d, kind="stable")[:k]
+    w = 1 / (1 + d[near])
+    y = np.array([rows[i]["rating"] for i in near])
+    return float(w @ y / w.sum()), [(rows[i]["ref"], rows[i]["rating"], round(float(wi), 3)) for i, wi in zip(near, w)]
+
+
 # ------------------------------------------------------------------ audition
 
 def audition(idea: dict, tonic: int = 0, mode: str = "minor", bpm: float = 112, tone: dict | None = None,

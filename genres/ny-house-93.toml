@@ -174,3 +174,23 @@ lp = 2800
 mono = true
 duck = { depth = 0.35, release = 0.11 }
 gain_db = -7.0
+
+# Experimental synthesis (off unless this says enabled = true or you build with --experimental):
+# the organ stab becomes a struck material, the pad a phase garden, the bass a slack string.
+[experimental_synthesis]
+enabled = false
+
+[experimental_synthesis.tracks.comp]
+engine = "material"
+preset = "practice-room-piano"
+gain_db = -12.0
+
+[experimental_synthesis.tracks.pad]
+engine = "phase_garden"
+preset = "drift-choir"
+gain_db = -17.0
+
+[experimental_synthesis.tracks.bass]
+engine = "gravity"
+preset = "slack-bass"
+gain_db = -9.0

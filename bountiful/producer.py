@@ -378,7 +378,7 @@ GM = {"kick": 36, "rim": 37, "snare": 38, "clap": 39, "hat": 42, "pedal": 44, "o
       "conga_lo": 64, "timbale_hi": 65, "timbale_lo": 66, "shaker": 70, "tom_lo": 45, "tom_mid": 47, "tom_hi": 50,
       "syntom_hi": 48, "syntom_mid": 47, "syntom_lo": 43, "ghost": 40, "brk_kick": 35, "brk_snare": 40, "brk_hat": 44,
       "cowbell": 56, "clave": 75, "tamb": 54, "bongo_hi": 60, "bongo_lo": 61, "timbale": 65, "cymbal": 52, "cabasa": 69, "guiro": 73,
-      "perc1": 76, "perc2": 77}
+      "perc1": 76, "perc2": 77, "swell": 55}
 
 
 def drum_bar(style: str, layers: set, fill: str | None, bar: int, rng, cfg) -> list[tuple]:
@@ -458,6 +458,10 @@ def drum_bar(style: str, layers: set, fill: str | None, bar: int, rng, cfg) -> l
             ev += [(s16(14), "open", rnd(0.6, 0.03))]
         if "ride" in layers:
             ev = [e for e in ev if e[1] != "hat"] + [(s / 2, "ride", rnd(0.62 if s % 2 == 0 else 0.45)) for s in range(8)]
+    if style == "breakforge":                    # Breakforge's seeded, mutating break (synthesis/engines/breakforge.py)
+        from synthesis.engines import breakforge
+        ev += [(s16(int(s)) if float(s).is_integer() else s / 4, snd, v)
+               for s, snd, v in breakforge.bar_steps(bar, cfg.get("seed", 0), cfg.get("breakforge"), layers)]
     if style == "electronium":                   # the Electronium's clock matrix plays the kit (electronium.py)
         ev += [(s16(s), snd, rnd(v, 0.03)) for s, snd, v in cfg["electronium"].drum_steps(layers, bar)]
     if style == "grid":                          # the song writes its own beat: {layer: [[step, vel, sound?], ...] or {"A": [...], "B": [...]}}

@@ -17,7 +17,7 @@ sys.path.insert(0, str(HERE.parent.parent))
 
 from PySide6.QtCore import QSize, Qt, QTimer, QUrl  # noqa: E402
 from PySide6.QtGui import QAction, QColor, QDesktopServices, QIcon, QKeySequence, QPalette  # noqa: E402
-from PySide6.QtWidgets import (QApplication, QCheckBox, QDockWidget, QFileDialog, QInputDialog, QLabel,  # noqa: E402
+from PySide6.QtWidgets import (QApplication, QCheckBox, QDockWidget, QFileDialog, QLabel,  # noqa: E402
                                QLineEdit, QMainWindow, QMessageBox, QPlainTextEdit, QProgressBar, QPushButton, QSizePolicy, QSlider,
                                QSplitter, QStyle, QTabWidget, QToolBar, QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget)
 
@@ -26,7 +26,9 @@ import paths  # noqa: E402
 import updater  # noqa: E402
 
 from bountiful.daw import audio as A  # noqa: E402
+from bountiful.daw import lab as L  # noqa: E402
 from bountiful.daw import model as M  # noqa: E402
+from bountiful.daw import observatory as OB  # noqa: E402
 from bountiful.daw import panels as P  # noqa: E402
 from bountiful.daw import views as V  # noqa: E402
 
@@ -86,6 +88,8 @@ class Window(QMainWindow):
         self.song = P.SongPanel(self)
         self.livep = P.LivePanel(self)
         self.day = P.DayPanel(self)
+        self.lab = L.LabPanel(self)
+        self.obs = OB.ObservatoryPanel(self)
         self.notes = QPlainTextEdit()
         self.notes.setReadOnly(True)
         self.notes.setFont(P.MONO)
@@ -106,6 +110,8 @@ class Window(QMainWindow):
         self.tabs.addTab(self.song, "Song from a Bounty")
         self.tabs.addTab(self.livep, "Electronium live")
         self.tabs.addTab(self.day, "A day of ideas")
+        self.tabs.addTab(self.lab, "Synthesis Lab")
+        self.tabs.addTab(self.obs, "Observatory")
         self.tabs.addTab(self.notes, "Notes")
         self.setCentralWidget(self.tabs)
         self.arrange.seek.connect(self.seek_beat)
@@ -245,7 +251,6 @@ class Window(QMainWindow):
         v.addAction(self.logdock.toggleViewAction())
         s = mb.addMenu("&Settings")
         self._act(s, "Music folder …", self.set_data)
-        self._act(s, "Ollama address …", self.set_ollama)
         h = mb.addMenu("&Help")
         self._act(h, "Check for updates …", lambda: self.check_updates(quiet=False))
         self._act(h, "About Bountiful", self.about)
@@ -322,6 +327,7 @@ class Window(QMainWindow):
         self.title_label.setText(f"  {tr.title}  ·  {tr.bpm:g} bpm  ·  {tr.bars} bars")
         self.setWindowTitle(f"{tr.title} — Bountiful")
         self._track_source(keep)
+        self.obs.set_track(tr)
         self.fill_library()
         self.tabs.setCurrentIndex(0)
         self.log(f"opened {folder}")
@@ -466,12 +472,6 @@ class Window(QMainWindow):
             paths.save_config(data=d)
             QMessageBox.information(self, "Bountiful", f"Music folder set to {d}. Restart Bountiful to use it.")
 
-    def set_ollama(self):
-        url, ok = QInputDialog.getText(self, "Ollama", "Ollama address:", text=paths.ollama()["url"])
-        if ok and url.strip():
-            paths.save_config(ollama={"url": url.strip()})
-            self.song.refresh_models()
-
     def check_updates(self, quiet=True):
         def done(st):
             if st["ok"] and st["behind"]:
@@ -537,6 +537,7 @@ def theme(app: QApplication):
 def smoke(win: Window, app: QApplication) -> int:
     """Exercise the window without a person: open a track, switch views, edit a note (not saved), plan a song by rules."""
     import tempfile
+    import numpy as np
     problems = []
     lib = M.library().get("Tracks", [])
     if lib:
@@ -556,13 +557,50 @@ def smoke(win: Window, app: QApplication) -> int:
     for i in range(win.tabs.count()):
         win.tabs.setCurrentIndex(i)
         app.processEvents()
-    win.song.by_rules.setChecked(True)
     win.song.bounty.setText("4242")
+    win.song.brief.setPlainText("make the break more restless")
     done = []
     win.song.plan(then=lambda: done.append(1))
     A.wait_until(lambda: (app.processEvents(), bool(done))[1], 20)
-    if "operator (rules)" not in win.song.out.toPlainText():
+    if "operator (rules + brief)" not in win.song.out.toPlainText() or win.song.intents.rowCount() < 1:
         problems.append("song plan: " + win.song.out.toPlainText()[:200])
+    # the Synthesis Lab: two engines, one routed into an echo with feedback, rendered and looked inside
+    lab = win.lab
+    lab.new()
+    lab.beats.setValue(4)
+    a = lab.add("lead", "terrain", "lissajous-lead", "arp")
+    lab.add("bells", "material", "cracked-bell", "hits")
+    lab.table.selectRow(1)
+    lab.r_fb.setValue(0.3)
+    lab.route()
+    got = []
+    lab._rendered = lambda r: got.append(r)
+    lab.render()
+    A.wait_until(lambda: (app.processEvents(), bool(got))[1], 60)
+    if not got or not np.isfinite(got[0][0]).all() or set(got[0][1]) != {"lead", "bells"}:
+        problems.append("lab render")
+    lab.table.selectRow(0)
+    looked = []
+    lab._looked = lambda r: looked.append(r)
+    lab.look()
+    A.wait_until(lambda: (app.processEvents(), bool(looked))[1], 60)
+    if a != "lead" or not looked or looked[0][1] is None:
+        problems.append("lab look inside (terrain height map)")
+    # the Observatory: a track grown from DNA shows its clocks, and a 4-bar passage branches
+    import lineage as G
+    folder = G.export(G.origin(4242, length="short"), out=Path(tempfile.mkdtemp()) / "obs")
+    win.open_track(folder)
+    A.wait_until(lambda: (app.processEvents(), bool(win.obs.clock.clocks))[1], 60)
+    if not win.obs.clock.clocks or not win.obs.dna:
+        problems.append("observatory clocks / dna")
+    else:
+        win.obs.bar.setValue(5)
+        win.obs.count.setValue(4)
+        br = []
+        win.obs.branch(then=lambda r: br.append(r))
+        A.wait_until(lambda: (app.processEvents(), bool(br))[1], 60)
+        if not br or isinstance(br[0], Exception) or list(br[0]["passage"]) != [5, 8] or br[0]["considered"] < 1:
+            problems.append(f"observatory branch: {br[:1]}")
     tmp = Path(tempfile.mkdtemp())
     t = M.Track(tmp, "Smoke", 120.0, {"lead": [M.Note(0, 1, 60, 0.8)], "drums": [M.Note(0, 0.25, 36, 0.9)]})
     t.save_midi()

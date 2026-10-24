@@ -134,3 +134,25 @@ hp = 25
 lp = 400
 mono = true
 gain_db = -5.0
+
+# The Synthesis Lab's engines for this genre (bountiful/synthesis). Off by default: songs render as they always have
+# unless enabled = true here or `build.py produce --experimental` (docs/synthesis-lab.md).
+[experimental_synthesis]
+enabled = false
+drums = "breakforge"
+breakforge = { preset = "afterimage-rollers" }
+
+[experimental_synthesis.tracks.pad]
+engine = "ghost"
+preset = "afterimage-pad"
+gain_db = -15.0
+
+[experimental_synthesis.tracks.lead]
+engine = "material"
+preset = "cracked-bell"
+gain_db = -13.0
+
+[experimental_synthesis.tracks.comp]
+engine = "weather"
+preset = "drizzle"
+gain_db = -18.0

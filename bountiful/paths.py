@@ -5,9 +5,6 @@ touches them.
   ~/.config/bountiful/config.toml
     data   = "~/Documents/Projects/bountiful-music"     # the music (default: the repo itself when run from source)
     engine = "~/Documents/Projects/intelligent-jungle"  # the renderer (studio/render_midi.py and its .venv)
-    [ollama]
-    url = "http://localhost:11434"
-    model = "qwen3:30b-a3b-instruct-2507-q4_K_M"
 Environment variables BOUNTIFUL_DATA and BOUNTIFUL_ENGINE override the file.
 """
 from __future__ import annotations
@@ -19,7 +16,6 @@ from pathlib import Path
 CODE = Path(__file__).resolve().parent.parent
 CONFIG_DIR = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config") / "bountiful"
 CONFIG_FILE = CONFIG_DIR / "config.toml"
-DEFAULT_MODEL = "qwen3:30b-a3b-instruct-2507-q4_K_M"
 
 
 def config() -> dict:
@@ -58,11 +54,6 @@ ENGINE = _engine()
 TRACKS, SONGS, SESSIONS = DATA / "tracks", DATA / "songs", DATA / "sessions"
 
 
-def ollama() -> dict:
-    o = config().get("ollama", {})
-    return {"url": o.get("url", "http://localhost:11434").rstrip("/"), "model": o.get("model", DEFAULT_MODEL)}
-
-
 def _toml_val(v) -> str:
     if isinstance(v, bool):
         return "true" if v else "false"
@@ -72,7 +63,7 @@ def _toml_val(v) -> str:
 
 
 def save_config(**changes):
-    """Merge changes into the config file (one level of tables, e.g. ollama={"model": ...})."""
+    """Merge changes into the config file (one level of tables, e.g. lab={"last": ...})."""
     c = config()
     for k, v in changes.items():
         c[k] = {**c.get(k, {}), **v} if isinstance(v, dict) else v
