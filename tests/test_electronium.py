@@ -11,6 +11,8 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "bountiful"))
 import electronium as EL  # noqa: E402
 
+EL.DEFAULT["taste"] = 0.0          # the checks don't depend on anyone's ratings
+
 CM = [0, 2, 3, 5, 7, 8, 10]
 CHORDS = [(0, [0, 3, 7], 0), (8, [8, 0, 3], 8), (10, [10, 2, 5], 10), (7, [7, 11, 2], 7)]   # Cm Ab Bb G, a bar each
 
@@ -305,6 +307,36 @@ def test_chords_development_and_ending():
     except ValueError:
         return
     raise AssertionError("a bad role got through")
+
+def test_taste_learns():
+    import importlib
+    import taste
+    with tempfile.TemporaryDirectory() as tmp:
+        old = taste.FILE
+        taste.FILE = Path(tmp) / "taste.json"
+        taste._cache.clear()
+        try:
+            p = EL.patch({"bounty": 5, "think": 60})
+            ideas = EL.think(p)
+            assert taste.model() is None and taste.bonus(ideas[0]["cells"]) == 0.0
+            # someone who loves busy, syncopated ideas and dislikes sparse ones
+            busy = sorted(ideas, key=lambda d: -len(d["cells"]))
+            for d in busy[:8]:
+                taste.rate(d, 1, bounty=5)
+            for d in busy[-8:]:
+                taste.rate(d, -1, bounty=5)
+            m = taste.model()
+            assert m is not None and m["n"] == 16
+            assert taste.bonus(busy[0]["cells"]) > taste.bonus(busy[-1]["cells"])
+            pt = EL.patch({"bounty": 5, "think": 60, "taste": 1.0})
+            mean_n = lambda ks: sum(len(k["cells"]) for k in ks) / len(ks)
+            assert mean_n(EL.kept(pt)) >= mean_n(EL.kept(p))
+            y = taste.audition(ideas[0], 0, "minor", 120)
+            assert y.ndim == 1 and len(y) > 44100 and EL.np.isfinite(y).all() and EL.np.abs(y).max() <= 0.81
+            assert taste.write_wav(Path(tmp) / "a.wav", y).stat().st_size > 1000
+        finally:
+            taste.FILE = old
+            taste._cache.clear()
 
 if __name__ == "__main__":
     fails = 0

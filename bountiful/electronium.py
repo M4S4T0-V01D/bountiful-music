@@ -27,6 +27,7 @@ them back. "It thinks of 200 things every day. You keep the ones that are good."
   thinking      before it plays, the melody channel thinks of `think` (200) two-bar ideas from the terrain and a
                 critic scores them (shape, range, steps and leaps, a long last note, call and answer, one high point).
                 It keeps the best `keep` (3) or the idea numbers you list (`keep = [17, 42, 108]`, see --ideas).
+                Rate ideas (taste.py) and the critic learns what you like (`taste` 0-1 sets how much it listens).
                 Each section of the song gets its own kept idea as its theme, so a theme comes back with its section.
   phrase        the 8-bar plan the melody follows in each section: theme (the section's idea), answer (a behaviour on
                 the last bar), free (the walk), cadence (the walk, landing on the chord root), and the theme developed:
@@ -95,11 +96,11 @@ ROLE_DEFAULTS = {     # what a channel of each role starts from
     "bass": {"gate": "p5 | (r7 & c2 & ~c4)", "register": [28, 47], "density": 0.9, "legato": 0.8, "tone": "bass-sequencer",
              "mix": {"gain_db": -6.0, "hp": 28, "mono": True}},
     "ostinato": {"gate": "c2", "length": 5, "register": [60, 84], "density": 1.0, "legato": 0.5, "tone": "ostinato-bell",
-                 "mix": {"gain_db": -16.0, "pan": 0.3, "hp": 300, "reverb": 0.3, "echo": 0.15, "spring": 0.2}},
+                 "mix": {"gain_db": -13.0, "pan": 0.3, "hp": 300, "reverb": 0.3, "echo": 0.15, "spring": 0.2}},
     "counter": {"gate": "c8 | (r16 & c4)", "register": [55, 74], "density": 0.85, "legato": 0.95, "tone": "counter-reed",
                 "mix": {"gain_db": -15.0, "pan": -0.35, "hp": 180, "reverb": 0.35}},
     "chords": {"gate": "c16 | (c16+10 & r3)", "register": [52, 74], "voices": 3, "density": 1.0, "legato": 0.9, "tone": "chord-organ",
-               "mix": {"gain_db": -17.0, "pan": 0.15, "hp": 160, "reverb": 0.3, "spring": 0.15, "width": 1.3}},
+               "mix": {"gain_db": -21.0, "pan": 0.15, "hp": 160, "reverb": 0.3, "spring": 0.15, "width": 1.3}},
 }
 
 DEFAULT = {
@@ -120,6 +121,7 @@ DEFAULT = {
     "behaviours": {"repeat": 0.16, "reverse": 0.07, "transpose": 0.1, "invert": 0.06, "ornament": 0.1},
     "think": 200,                # ideas the melody thinks of before playing (0: no themes, the walk alone)
     "keep": 3,                   # how many to keep (the critic's best), or a list of idea numbers
+    "taste": 1.0,                # how much your ratings (taste.py) move the critic (0: the critic alone)
     "phrase": ["theme", "theme", "answer", "answer", "theme", "theme", "free", "cadence"],
     "ending": "home",            # home: the melody's last bar lands on the tonic and holds; open: it just stops
     "memory": 16,                # the ring buffer
@@ -373,6 +375,11 @@ def think(p: dict) -> list[dict]:
     """The ideas the melody thinks of: `think` two-bar phrases in scale degrees, from the Bounty, scored by the critic.
     The knobs shape them (interval weights, up/down bias, legato), the terrain picks."""
     bounty = bounty_int(p["bounty"])
+    tw = float(p.get("taste", 0) or 0)
+    if tw:
+        import taste
+        if taste.model() is None:
+            tw = 0.0
     w = np.array([max(1e-3, float(p["intervals"].get(k, 0))) for k in INTERVALS])
     w = w / w.sum()
     ideas = []
@@ -413,6 +420,9 @@ def think(p: dict) -> list[dict]:
             v = 0.7 + 0.15 * (s % 4 == 0) + 0.1 * (s % 8 == 0)
             cells.append((s, round(dur, 3), degs[j], round(v, 3)))
         score, parts = critic(cells)
+        if tw:
+            parts["your taste"] = round(taste.bonus(cells, tw), 3)
+            score += parts["your taste"]
         ideas.append({"n": i, "cells": cells, "score": round(score + r.random() * 0.01, 3), "parts": parts, "rhythm": " | ".join(RHYTHM_NAMES[x] for x in ps)})
     return ideas
 

@@ -126,7 +126,7 @@ def kit() -> dict:
     return {"map": dict(MAP),
             "sounds": {k: {"py": {"module": __file__, "fn": fn, "args": a}, "stem": st} for k, (fn, a, st) in KIT.items()},
             "stems": {"kick": {"hp": 28, "mono": True, "gain_db": -3.0},
-                      "snare": {"hp": 140, "sends": {"spring": 0.25, "room": 0.15}, "gain_db": -7.0},
+                      "snare": {"hp": 140, "sends": {"spring": 0.25, "room": 0.15}, "gain_db": -4.0},
                       "hats": {"pan": 0.18, "gain_db": -9.0},
                       "perc": {"pan": -0.3, "sends": {"spring": 0.3}, "gain_db": -12.0},
                       "crash": {"pan": -0.2, "gain_db": -17.0},
