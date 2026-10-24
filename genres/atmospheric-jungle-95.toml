@@ -1,0 +1,136 @@
+name = "Atmospheric Jungle '95"
+description = "Mid-90s atmospheric / intelligent jungle (Bukem, Peshay): chopped breaks at 170 with ride, the harmony and melody at half speed, warm Rhodes chords, deep sub bass, long pads. Minor, patient."
+bpm = 170
+kit = "breaks"
+drums = "breakbeat"
+swing = 0.5
+stretch = 2              # the composition plays at half speed against the breaks
+
+[composer]
+tempoRange = [85, 85]
+useNaturalTempoChanges = false
+adaptTempoToRenderAmount = false
+endSongTempoChangeProbability = 0
+timeSignature2Likelihood = 0
+timeSignature3Likelihood = 0
+minorScaleLikelihood = 6
+modulateLikelihoodMultiplier = 0.1
+electricLikelihood = 2
+songIntroProbability = 1
+melodyMotifRythmCountIncreasePerIndex = 0.2
+
+[harmony]
+rhythm = 1
+dominant = "modal"
+colors = { m = "m9", "" = "maj9", m7 = "m9", "7" = "7sus4" }
+
+[melody]
+modal = true
+register = [64, 84]
+max_leap = 5
+max_notes_per_bar = 3
+articulation = "legato"
+humanize_ms = 8
+velocity = [0.55, 0.85]
+
+[bass]
+style = "sub"
+register = [28, 45]
+
+[pad]
+low = 53
+high = 76
+top = 72
+notes = 4
+vel = 0.5
+
+[comp]           # Rhodes chords, laid back
+steps = [0, 10]
+low = 55
+high = 74
+top = 71
+notes = 4
+gate = 1.6
+strum_ms = 14
+humanize_ms = 10
+
+[[arrangement]]
+name = "Intro: pads"
+loop = "A"
+bars = 8
+parts = ["pad"]
+[[arrangement]]
+name = "Intro: Rhodes + ride"
+loop = "A"
+bars = 8
+parts = ["pad", "comp"]
+drums = ["ride"]
+[[arrangement]]
+name = "Drop: breaks + sub"
+loop = "A"
+bars = 16
+parts = ["pad", "comp", "bass"]
+drums = ["break", "ride"]
+crash = true
+[[arrangement]]
+name = "Melody"
+loop = "V"
+bars = 16
+parts = ["pad", "comp", "bass", "lead"]
+drums = ["break", "ride"]
+[[arrangement]]
+name = "Main"
+loop = "A"
+bars = 32
+parts = ["pad", "comp", "bass", "lead"]
+drums = ["break", "hat", "ride"]
+crash = true
+[[arrangement]]
+name = "Breakdown"
+loop = "B"
+bars = 16
+parts = ["pad", "lead"]
+drums = ["ride"]
+[[arrangement]]
+name = "Second drop"
+loop = "A"
+bars = 48
+parts = ["pad", "comp", "bass", "lead"]
+drums = ["break", "hat", "ride"]
+crash = true
+[[arrangement]]
+name = "Outro"
+loop = "A"
+bars = 32
+parts = ["pad", "comp"]
+drums = ["break", "ride"]
+
+[sounds.lead]
+layers = [{ kind = "rhodes", preset = "rhodes-haze.json", gain_db = 0.0 }, { kind = "vibes", preset = "vibes-motor.json", gain_db = -8.0 }]
+hp = 200
+sends = { echo = 0.3, plate = 0.35 }
+gain_db = -11.0
+[sounds.comp]
+kind = "rhodes"
+preset = "rhodes-dusty.json"
+hp = 150
+chorus = { depth_ms = 2.5, rate = 0.5, base_ms = 9, mix = 0.35 }
+width = 1.4
+sends = { plate = 0.3 }
+gain_db = -13.0
+[sounds.pad]
+kind = "pad"
+preset = "pad-tide.json"
+hp = 200
+lp = 5000
+chorus = { depth_ms = 4.0, rate = 0.3, base_ms = 12, mix = 0.45 }
+width = 1.7
+sends = { plate = 0.45 }
+gain_db = -18.0
+[sounds.bass]
+kind = "bass"
+preset = "bass-deep.json"
+hp = 25
+lp = 400
+mono = true
+gain_db = -5.0

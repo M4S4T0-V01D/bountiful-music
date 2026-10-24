@@ -1,0 +1,215 @@
+name = "Japan Fusion '84"
+description = "80s Japanese jazz fusion (Casiopea, T-Square school): bright major harmony with 9ths and two chords a bar, a soaring overdriven guitar theme doubled by synth, DX7 electric-piano comping, brass-synth hits, slap bass with pops and ghost notes, busy precise drums with ghost notes and tom runs, band unison 'kime' breaks, a key change up a whole step for the last chorus. 136 bpm."
+bpm = 136
+kit = "fusion"
+drums = "fusion"
+swing = 0.51
+
+[composer]
+tempoRange = [136, 136]
+useNaturalTempoChanges = false
+adaptTempoToRenderAmount = false
+endSongTempoChangeProbability = 0
+timeSignature2Likelihood = 0
+timeSignature3Likelihood = 0
+majorScaleLikelihood = 4
+minorScaleLikelihood = 1
+modulateLikelihoodMultiplier = 0.2
+electronicLikelihood = 1
+electricLikelihood = 2
+acousticLikelihood = 0
+songIntroProbability = 1
+verseChorusSongStructureLikelihoodMultiplier = 4
+verseChorusBridgeSongStructureLikelihoodMultiplier = 3
+
+[harmony]
+rhythm = 2                          # fusion moves: two chords a bar where the composer wrote them
+dominant = "keep"
+colors = { "" = "maj9", m = "m9", "7" = "9", m7 = "m9", maj7 = "maj9", sus4 = "7sus4", "6" = "6/9" }
+
+[melody]
+register = [64, 86]
+max_leap = 9
+max_notes_per_bar = 8
+articulation = "legato"
+humanize_ms = 4
+velocity = [0.7, 0.96]
+
+[bass]                              # slap: thumb on the root, popped octaves, dead ghost notes, a 7th pickup
+style = "pattern"
+register = [28, 50]
+pattern = [[0, "R", 0.22, 0.95], [2, "R", 0.06, 0.35], [3, "O", 0.12, 1.0], [6, "R", 0.18, 0.85], [7, "R", 0.06, 0.35],
+           [8, "5", 0.18, 0.82], [10, "O", 0.12, 1.0], [11, "R", 0.06, 0.35], [12, "R", 0.18, 0.85], [14, "O", 0.12, 0.95], [15, "7", 0.1, 0.7]]
+
+[comp]                              # DX7 electric piano: 16th funk comping
+steps = [0, 3, 7, 10, 14]
+low = 55
+high = 77
+top = 74
+notes = 4
+gate = 0.2
+humanize_ms = 3
+
+[vox]                               # brass-synth hits on the off-beat accents
+steps = [6, 14]
+low = 60
+high = 82
+top = 79
+notes = 3
+gate = 0.18
+vel = 0.82
+accent = 0.9
+
+[pad]
+low = 55
+high = 79
+top = 76
+notes = 4
+vel = 0.45
+
+[[arrangement]]
+name = "Intro: band kime"
+loop = "A"
+bars = 4
+parts = ["bass", "comp", "vox", "lead"]
+kime = [0, 3, 6, 10, 12]
+[[arrangement]]
+name = "Intro: groove"
+loop = "A"
+bars = 4
+parts = ["bass", "comp"]
+drums = ["kick", "snare", "hat", "open"]
+fill = "fusion_fill"
+[[arrangement]]
+name = "Theme A"
+loop = "V"
+bars = 16
+parts = ["bass", "comp", "lead"]
+drums = ["kick", "snare", "hat", "open"]
+fill = "fusion_fill"
+[[arrangement]]
+name = "Theme B"
+loop = "B"
+bars = 8
+parts = ["bass", "comp", "lead", "pad"]
+drums = ["kick", "snare", "hat"]
+fill = "fusion_fill"
+[[arrangement]]
+name = "Chorus (sabi)"
+loop = "A"
+bars = 16
+parts = ["bass", "comp", "vox", "lead", "pad"]
+drums = ["kick", "snare", "hat", "open"]
+crash = true
+fill = "fusion_fill"
+[[arrangement]]
+name = "Kime"
+loop = "A"
+bars = 2
+parts = ["bass", "comp", "vox", "lead"]
+kime = [0, 3, 6, 8, 11, 14]
+[[arrangement]]
+name = "Theme A 2"
+loop = "V"
+bars = 16
+parts = ["bass", "comp", "lead"]
+drums = ["kick", "snare", "hat", "open"]
+fill = "fusion_fill"
+[[arrangement]]
+name = "Theme B 2"
+loop = "B"
+bars = 8
+parts = ["bass", "comp", "lead", "pad"]
+drums = ["kick", "snare", "hat"]
+fill = "fusion_fill"
+[[arrangement]]
+name = "Chorus 2"
+loop = "A"
+bars = 16
+parts = ["bass", "comp", "vox", "lead", "pad"]
+drums = ["kick", "snare", "hat", "open"]
+crash = true
+fill = "fusion_fill"
+[[arrangement]]
+name = "Solo section"
+loop = "B"
+bars = 16
+parts = ["bass", "comp", "vox", "lead_hi"]
+drums = ["kick", "snare", "ride"]
+crash = true
+fill = "fusion_fill"
+[[arrangement]]
+name = "Bass break"
+loop = "A"
+bars = 8
+parts = ["bass"]
+drums = ["kick", "snare", "hat"]
+fill = "fusion_fill"
+[[arrangement]]
+name = "Kime into the key change"
+loop = "A"
+bars = 2
+parts = ["bass", "comp", "vox", "lead"]
+kime = [0, 2, 4, 6, 8, 10, 12, 14]
+[[arrangement]]
+name = "Last chorus, up a whole step"
+loop = "A"
+bars = 16
+parts = ["bass", "comp", "vox", "lead", "lead_hi", "pad"]
+drums = ["kick", "snare", "hat", "open"]
+crash = true
+transpose = 2
+fill = "fusion_fill"
+[[arrangement]]
+name = "Outro"
+loop = "A"
+bars = 8
+parts = ["bass", "comp", "pad"]
+drums = ["kick", "snare", "hat"]
+transpose = 2
+[[arrangement]]
+name = "Ending hits"
+loop = "A"
+bars = 2
+parts = ["bass", "comp", "vox", "lead"]
+kime = [0, 3, 6]
+transpose = 2
+
+[sounds.lead]
+kind = "polylead"
+preset = "lead-poly.json"
+hp = 150
+chorus = { depth_ms = 2.5, rate = 0.6, base_ms = 10, mix = 0.3 }
+sends = { echo = 0.15, plate = 0.25 }
+gain_db = -8.0
+[sounds.comp]
+kind = "rhodes"
+preset = "rhodes-haze.json"
+hp = 150
+chorus = { depth_ms = 2.0, rate = 0.8, base_ms = 8, mix = 0.35 }
+width = 1.4
+sends = { plate = 0.15 }
+gain_db = -10.0
+[sounds.vox]
+kind = "horn"
+preset = "horn-harmon.json"
+hp = 200
+width = 1.3
+sends = { plate = 0.2 }
+gain_db = -12.0
+[sounds.pad]
+kind = "pad"
+preset = "pad-keys.json"
+hp = 250
+width = 1.6
+sends = { plate = 0.3 }
+gain_db = -20.0
+[sounds.bass]
+kind = "analogbass"
+preset = "bass-round.json"
+hp = 35
+mono = true
+gain_db = -7.0
+[master]
+tape = { drive = 1.2, bias = 0.04, bump_db = 0.6, hf_db = 0.0, lp_hz = 19500, hiss_db = -82, wow_ms = 0.02 }
+target_lufs = -11.0

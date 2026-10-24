@@ -1,0 +1,191 @@
+name = "Electronium '69"
+description = "Raymond Scott's lab, rebuilt: the Electronium writes the tune live from interlocking clocks, a Markov walk and its own behaviours (repeat, reverse, invert, ornament, freeze), a sidekick a fifth below, drums from the same clock matrix. Pick a Bounty: same seed, same terrain. 112 bpm."
+bpm = 112
+kit = "synthetic"
+drums = "electronium"
+swing = 0.52
+
+[composer]
+tempoRange = [112, 112]
+useNaturalTempoChanges = false
+adaptTempoToRenderAmount = false
+endSongTempoChangeProbability = 0
+timeSignature2Likelihood = 0
+timeSignature3Likelihood = 0
+minorScaleLikelihood = 6
+modulateLikelihoodMultiplier = 0.05
+electronicLikelihood = 1
+electricLikelihood = 0
+acousticLikelihood = 0
+songIntroProbability = 1
+verseChorusSongStructureLikelihoodMultiplier = 4
+
+[harmony]
+rhythm = 1
+dominant = "keep"
+colors = { m = "m7", "" = "maj7" }
+
+[melody]
+writer = "electronium"
+register = [62, 86]
+max_leap = 9
+max_notes_per_bar = 8
+humanize_ms = 3
+velocity = [0.6, 0.95]
+
+[electronium]
+bounty = 1969
+scale = "key"
+density = 0.72
+mutation = 0.2
+gate = "(c2 & ~r3) | (r7 ^ c4) | c8"
+sidekick = "fifth_below"
+register = [62, 84]
+sidekick_register = [48, 69]
+modify = 0.25
+intervals = { repeat = 0.25, step = 1.0, third = 0.85, fourth = 0.45, fifth = 0.6, sixth = 0.2, octave = 0.1 }
+behaviours = { repeat = 0.16, reverse = 0.08, transpose = 0.1, invert = 0.07, ornament = 0.12 }
+[[electronium.freeze]]        # Freeze & Populate: the last 8 notes before the second chorus loop, climbing a scale step each pass
+bar = 49
+notes = 8
+bars = 8
+transform = "transpose"
+amount = 1
+[[electronium.freeze]]        # and in the bridge, a 16-note loop the LFSR slowly mutates
+bar = 73
+notes = 16
+bars = 8
+transform = "mutate"
+amount = 0.35
+
+[bass]
+style = "pattern"
+register = [33, 50]
+pattern = [[0, "R", 0.5], [3, "5-", 0.2], [6, "R", 0.25], [8, "O", 0.2], [11, "5", 0.25], [14, "R", 0.2]]
+
+[pad]
+low = 55
+high = 74
+top = 70
+notes = 3
+vel = 0.45
+
+[arp]
+pattern = [0, 2, 1, 3]
+low = 60
+high = 79
+gate = 0.14
+rate = 0.25
+
+[[arrangement]]
+name = "Power-up: clocks"
+loop = "V"
+bars = 8
+parts = ["arp"]
+drums = ["hat", "rim"]
+[[arrangement]]
+name = "Intro: the machine starts"
+loop = "V"
+bars = 8
+parts = ["bass", "lead", "pad"]
+drums = ["kick", "hat", "rim"]
+activity = 0.7
+[[arrangement]]
+name = "Verse 1"
+loop = "V"
+bars = 16
+parts = ["bass", "lead", "sidekick", "pad"]
+drums = ["kick", "snare", "hat", "rim"]
+fill = "syntoms"
+[[arrangement]]
+name = "Chorus 1"
+loop = "A"
+bars = 16
+parts = ["bass", "lead", "sidekick", "arp", "pad"]
+drums = ["kick", "snare", "clap", "hat", "open", "syntom_hi", "syntom_lo"]
+crash = true
+fill = "syntoms"
+[[arrangement]]
+name = "Chorus 2: frozen loop"
+loop = "A"
+bars = 8
+parts = ["bass", "lead", "sidekick", "arp", "pad"]
+drums = ["kick", "snare", "clap", "hat", "open"]
+fill = "syntoms"
+[[arrangement]]
+name = "Verse 2"
+loop = "V"
+bars = 16
+parts = ["bass", "lead", "sidekick", "pad"]
+drums = ["kick", "snare", "hat", "rim", "syntom_lo"]
+fill = "syntoms"
+[[arrangement]]
+name = "Bridge: mutating register"
+loop = "B"
+bars = 8
+parts = ["bass", "lead", "pad"]
+drums = ["kick", "hat", "rim", "syntom_hi"]
+fill = "snare_roll"
+[[arrangement]]
+name = "Breakdown"
+loop = "A"
+bars = 8
+parts = ["arp", "pad", "sidekick"]
+drums = ["hat"]
+[[arrangement]]
+name = "Last chorus"
+loop = "A"
+bars = 16
+parts = ["bass", "lead", "lead_hi", "sidekick", "arp", "pad"]
+drums = ["kick", "snare", "clap", "hat", "open", "syntom_hi", "syntom_lo"]
+crash = true
+activity = 1.15
+fill = "syntoms"
+[[arrangement]]
+name = "Outro: power-down"
+loop = "V"
+bars = 8
+parts = ["arp", "pad", "lead"]
+drums = ["hat", "rim"]
+activity = 0.5
+
+[sounds.lead]
+kind = "polylead"
+preset = "seq-pluck.json"
+hp = 220
+chorus = { depth_ms = 2.0, rate = 0.4, base_ms = 9, mix = 0.25 }
+sends = { echo = 0.25, plate = 0.25 }
+width = 1.2
+gain_db = -9.0
+[sounds.sidekick]
+kind = "vibes"
+preset = "vibes-motor.json"
+hp = 150
+sends = { plate = 0.3 }
+pan = -0.3
+gain_db = -15.0
+[sounds.arp]
+kind = "polylead"
+preset = "seq-pluck-dark.json"
+hp = 250
+width = 1.6
+sends = { echo = 0.2 }
+pan = 0.3
+gain_db = -14.0
+[sounds.pad]
+kind = "pad"
+preset = "formanta-dark.json"
+hp = 200
+lp = 5500
+chorus = { depth_ms = 5.0, rate = 0.5, base_ms = 12, mix = 0.5 }
+width = 1.7
+sends = { plate = 0.35 }
+gain_db = -20.0
+[sounds.bass]
+kind = "analogbass"
+preset = "analog-bass.json"
+hp = 35
+lp = 3000
+mono = true
+duck = { depth = 0.2, release = 0.1 }
+gain_db = -9.0

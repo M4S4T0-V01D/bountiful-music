@@ -1,0 +1,187 @@
+name = "Soviet Darkwave '87"
+description = "The darker side of late-80s Soviet synth-pop: always minor (no bright major dominants), slower, a relentless 16th-note Polivoks pulse bass layered with a gritty Reese and bit-crushed, hollow vibrato lead in a low register, a cold sequencer, dark Formanta strings with a choir, heavy gated drum machine. 108 bpm."
+bpm = 108
+kit = "synthetic"
+drums = "synthpop"
+swing = 0.5
+
+[composer]
+tempoRange = [108, 108]
+useNaturalTempoChanges = false
+adaptTempoToRenderAmount = false
+endSongTempoChangeProbability = 0
+timeSignature2Likelihood = 0
+timeSignature3Likelihood = 0
+minorScaleLikelihood = 20
+majorScaleLikelihood = 0
+raiseLeadingInMinorProbabilities = [0]
+modulateLikelihoodMultiplier = 0.02
+electronicLikelihood = 1
+electricLikelihood = 0
+acousticLikelihood = 0
+songIntroProbability = 1
+verseChorusSongStructureLikelihoodMultiplier = 4
+verseChorusBridgeSongStructureLikelihoodMultiplier = 3
+
+[harmony]
+rhythm = 1
+dominant = "modal"                       # v minor, never V major: no light gets in
+colors = { m7 = "m", "7" = "m", maj7 = "", m9 = "m" }
+
+[melody]
+modal = true
+register = [55, 74]
+max_leap = 7
+max_notes_per_bar = 5
+articulation = "legato"
+humanize_ms = 5
+velocity = [0.62, 0.9]
+
+[bass]                                   # 16th pulse: root, octave and low-fifth accents
+style = "pattern"
+register = [28, 45]
+pattern = [[0, "R", 0.2], [1, "R", 0.18], [2, "O", 0.18], [3, "R", 0.18], [4, "R", 0.2], [5, "R", 0.18], [6, "5", 0.18], [7, "R", 0.18],
+           [8, "R", 0.2], [9, "R", 0.18], [10, "O", 0.18], [11, "R", 0.18], [12, "R", 0.2], [13, "5", 0.18], [14, "R", 0.18], [15, "O", 0.18]]
+
+[pad]
+low = 50
+high = 70
+top = 67
+notes = 3
+vel = 0.5
+
+[arp]
+pattern = [0, 2, 1, 2, 0, 3, 1, 2]
+low = 57
+high = 74
+gate = 0.14
+rate = 0.25
+
+[[arrangement]]
+name = "Intro: the pulse alone"
+loop = "V"
+bars = 8
+parts = ["bass"]
+drums = ["hat"]
+[[arrangement]]
+name = "Intro: machine + sequencer"
+loop = "V"
+bars = 8
+parts = ["bass", "arp"]
+drums = ["kick", "snare", "hat"]
+fill = "syntoms"
+[[arrangement]]
+name = "Verse 1"
+loop = "V"
+bars = 16
+parts = ["bass", "lead", "pad"]
+drums = ["kick", "snare", "hat"]
+fill = "syntoms"
+[[arrangement]]
+name = "Chorus 1"
+loop = "A"
+bars = 16
+parts = ["bass", "lead", "arp", "pad"]
+drums = ["kick", "snare", "clap", "hat", "open"]
+crash = true
+fill = "syntoms"
+[[arrangement]]
+name = "Interlude: pulse and toms"
+loop = "V"
+bars = 8
+parts = ["bass", "arp"]
+drums = ["kick", "snare", "hat"]
+fill = "syntoms"
+[[arrangement]]
+name = "Verse 2"
+loop = "V"
+bars = 16
+parts = ["bass", "lead", "arp", "pad"]
+drums = ["kick", "snare", "hat"]
+fill = "syntoms"
+[[arrangement]]
+name = "Chorus 2"
+loop = "A"
+bars = 16
+parts = ["bass", "lead", "arp", "pad"]
+drums = ["kick", "snare", "clap", "hat", "open"]
+crash = true
+fill = "snare_roll"
+[[arrangement]]
+name = "Bridge"
+loop = "B"
+bars = 16
+parts = ["bass", "lead", "pad"]
+drums = ["kick", "snare", "hat"]
+fill = "syntoms"
+[[arrangement]]
+name = "Breakdown: bass and strings"
+loop = "A"
+bars = 8
+parts = ["bass", "pad"]
+vel = { bass = 0.85 }
+[[arrangement]]
+name = "Last chorus"
+loop = "A"
+bars = 16
+parts = ["bass", "lead", "lead_hi", "arp", "pad"]
+drums = ["kick", "snare", "clap", "hat", "open"]
+crash = true
+fill = "syntoms"
+[[arrangement]]
+name = "Outro"
+loop = "V"
+bars = 8
+parts = ["bass", "arp", "pad"]
+drums = ["kick", "snare", "hat"]
+[[arrangement]]
+name = "Outro: the pulse alone"
+loop = "V"
+bars = 4
+parts = ["bass"]
+
+[sounds.lead]
+kind = "polylead"
+preset = "polivoks-dark-lead.json"
+hp = 180
+chorus = { depth_ms = 2.0, rate = 0.4, base_ms = 9, mix = 0.25 }
+sends = { echo = 0.22, plate = 0.32 }
+width = 1.2
+gain_db = -8.0
+[sounds.lead_hi]
+kind = "polylead"
+preset = "polivoks-dark-lead.json"
+hp = 400
+pan = -0.2
+sends = { echo = 0.3, plate = 0.4 }
+gain_db = -18.0
+[sounds.arp]
+kind = "polylead"
+preset = "seq-pluck-dark.json"
+hp = 220
+chorus = { depth_ms = 2.5, rate = 0.25, base_ms = 10, mix = 0.35 }
+width = 1.6
+sends = { echo = 0.25, plate = 0.15 }
+duck = { depth = 0.15, release = 0.12 }
+gain_db = -12.0
+[sounds.pad]
+layers = [{ kind = "pad", preset = "formanta-dark.json", gain_db = 0.0 }, { kind = "vox", preset = "vox-soul.json", gain_db = -12.0 }]
+hp = 200
+lp = 4500
+chorus = { depth_ms = 5.0, rate = 0.5, base_ms = 12, mix = 0.55 }
+width = 1.7
+sends = { plate = 0.4 }
+gain_db = -17.0
+[sounds.bass]                            # the dingy bass: Polivoks pulse + gritty Reese, driven, parallel bit-crush
+layers = [{ kind = "analogbass", preset = "polivoks-grit.json", gain_db = 0.0 }, { kind = "reese", preset = "reese-dingy.json", gain_db = -4.0 }]
+hp = 30
+lp = 4200
+eq = [["peak", 120, 1.5, 0.9], ["peak", 700, 2.0, 1.0], ["peak", 250, -2.0, 1.0]]
+drive = 1.6
+crush = { bits = 9, rate = 16000, mix = 0.35 }
+mono = true
+duck = { depth = 0.25, release = 0.09 }
+gain_db = -9.0
+
+[master]
+tape = { drive = 1.5, bias = 0.06, bump_db = 1.0, hf_db = -2.5, lp_hz = 15000, hiss_db = -76, wow_ms = 0.08 }

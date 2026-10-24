@@ -1,0 +1,128 @@
+# Drum kits shared by the genre presets (MIDI Studio / render_midi.py drum-track format).
+# A genre picks one with `kit = "name"`. Samples are LMMS's one-shots (read as files, LMMS is not run).
+
+[house]
+map = { 35 = "brk_kick", 40 = "brk_snare", 44 = "brk_hat", 36 = "kick", 37 = "rim", 38 = "snare", 39 = "clap", 42 = "hat", 45 = "tom_lo", 46 = "open", 47 = "tom_mid", 49 = "crash", 50 = "tom_hi", 62 = "conga_hi", 64 = "conga_lo", 65 = "timbale_hi", 66 = "timbale_lo", 70 = "shaker" }
+[house.sounds]
+kick = { samples = ["drums/bassdrum01.ogg"], synth = "kick", args = { start = 125, end = 50, decay = 0.3, click = 0.3, body = 0.3, sweep = 0.03 }, synth_db = -5, detune_cents = 0, stem = "kick" }
+clap = { samples = ["drums/clap01.ogg", "drums/clap04.ogg"], synth = "clap", args = { tail = 0.14 }, synth_db = -8, stem = "clap" }
+snare = { samples = ["drums/snare01.ogg"], stem = "snare" }
+hat = { samples = ["drums/hihat_closed01.ogg", "drums/hihat_closed03.ogg"], hp = 400, stem = "hats" }
+open = { samples = ["drums/hihat_opened01.ogg", "drums/hihat_opened02.ogg"], hp = 400, stem = "hats" }
+crash = { samples = ["drums/crash02.ogg"], lp = 12000, stem = "crash" }
+shaker = { samples = ["drums/shaker02.ogg", "drums/shaker03.ogg"], stem = "perc" }
+rim = { samples = ["drums/sidestick01.ogg"], stem = "perc" }
+conga_hi = { synth = "bongo", args = { pitch = 310 }, stem = "perc" }
+conga_lo = { synth = "bongo", args = { pitch = 205 }, stem = "perc" }
+timbale_hi = { synth = "bongo", args = { pitch = 620 }, samples = ["drums/rim01.ogg"], sample_db = -8, stem = "perc" }
+timbale_lo = { synth = "bongo", args = { pitch = 470 }, samples = ["drums/rim01.ogg"], sample_db = -10, stem = "perc" }
+tom_hi = { samples = ["drums/tom_hi01.ogg"], stem = "toms" }
+tom_mid = { samples = ["drums/tom_mid01.ogg"], stem = "toms" }
+tom_lo = { samples = ["drums/tom_low01.ogg"], stem = "toms" }
+brk_kick = { samples = ["drums/bassdrum02.ogg"], stem = "break" }
+brk_snare = { samples = ["drums/snare05.ogg", "drums/snare03.ogg"], stem = "break" }
+brk_hat = { samples = ["drums/hihat_closed04.ogg"], stem = "break" }
+[house.stems]
+kick = { hp = 28, mono = true, gain_db = -2.5 }
+clap = { hp = 200, sends = { room = 0.2 }, gain_db = -5.0 }
+snare = { hp = 150, sends = { room = 0.25 }, gain_db = -9.0 }
+hats = { pan = 0.2, gain_db = -5.0 }
+crash = { pan = -0.2, gain_db = -15.0 }
+perc = { pan = 0.3, sends = { room = 0.2 }, width = 1.3, gain_db = -8.0 }
+toms = { sends = { room = 0.25 }, gain_db = -8.0 }
+break = { hp = 300, lp = 8500, drive = 1.4, crush = { bits = 12, rate = 26040, mix = 0.4 }, sends = { room = 0.15 }, width = 1.2, gain_db = -11.0 }
+
+[synthetic]   # a crude 80s drum machine, every sound synthesised
+map = { 36 = "kick", 37 = "rim", 38 = "snare", 39 = "clap", 42 = "hat", 46 = "open", 49 = "crash", 48 = "syntom_hi", 47 = "syntom_mid", 43 = "syntom_lo", 45 = "syntom_lo", 50 = "syntom_hi" }
+[synthetic.sounds]
+kick = { synth = "kick", args = { start = 140, end = 48, decay = 0.26, click = 0.35, body = 0.3, sweep = 0.03 }, stem = "kick" }
+snare = { synth = "snare", args = { tone = 200, decay = 0.17, crack = 1.2 }, stem = "snare" }
+clap = { synth = "clap", args = { tail = 0.1 }, stem = "snare" }
+hat = { synth = "hat", args = { base = 430 }, stem = "hats" }
+open = { synth = "hat", args = { open_ = true, base = 430 }, stem = "hats" }
+rim = { synth = "rim", stem = "perc" }
+crash = { samples = ["drums/crash02.ogg"], lp = 11000, stem = "crash" }
+syntom_hi = { synth = "kick", args = { start = 560, end = 210, decay = 0.22, click = 0.05, body = 0.4, sweep = 0.16 }, stem = "toms" }
+syntom_mid = { synth = "kick", args = { start = 430, end = 160, decay = 0.24, click = 0.05, body = 0.4, sweep = 0.17 }, stem = "toms" }
+syntom_lo = { synth = "kick", args = { start = 320, end = 115, decay = 0.27, click = 0.05, body = 0.4, sweep = 0.18 }, stem = "toms" }
+[synthetic.stems]
+kick = { hp = 30, mono = true, gain_db = -3.0 }
+snare = { hp = 150, sends = { gated = 0.55, plate = 0.08 }, gain_db = -5.0 }
+hats = { hp = 3000, pan = 0.2, gain_db = -6.0 }
+perc = { pan = -0.3, sends = { gated = 0.3 }, gain_db = -14.0 }
+crash = { pan = -0.2, gain_db = -17.0 }
+toms = { sends = { plate = 0.25, echo = 0.1 }, width = 1.3, gain_db = -9.0 }
+
+[linn]       # early-80s sampled drum machine: punchy kick, bright clap + snare, crisp hats
+map = { 36 = "kick", 38 = "snare", 39 = "clap", 42 = "hat", 46 = "open", 49 = "crash", 48 = "syntom_hi", 47 = "syntom_mid", 43 = "syntom_lo", 45 = "syntom_lo", 50 = "syntom_hi", 37 = "rim", 70 = "shaker" }
+[linn.sounds]
+kick = { samples = ["drums/kick03.ogg"], synth = "kick", args = { start = 130, end = 55, decay = 0.22, click = 0.3 }, synth_db = -6, detune_cents = 0, stem = "kick" }
+snare = { samples = ["drums/snare02.ogg"], synth = "snare", args = { tone = 190, decay = 0.14 }, synth_db = -8, stem = "snare" }
+clap = { samples = ["drums/clap02.ogg", "drums/clap03.ogg"], stem = "snare" }
+hat = { samples = ["drums/hihat_closed02.ogg"], hp = 500, stem = "hats" }
+open = { samples = ["drums/hihat_opened02.ogg"], hp = 500, stem = "hats" }
+crash = { samples = ["drums/crash01.ogg"], lp = 12000, stem = "crash" }
+rim = { samples = ["drums/rim01.ogg"], stem = "perc" }
+shaker = { samples = ["drums/shaker02.ogg"], stem = "perc" }
+syntom_hi = { synth = "kick", args = { start = 600, end = 220, decay = 0.2, click = 0.05, body = 0.4, sweep = 0.14 }, stem = "toms" }
+syntom_mid = { synth = "kick", args = { start = 450, end = 170, decay = 0.22, click = 0.05, body = 0.4, sweep = 0.15 }, stem = "toms" }
+syntom_lo = { synth = "kick", args = { start = 330, end = 120, decay = 0.25, click = 0.05, body = 0.4, sweep = 0.16 }, stem = "toms" }
+[linn.stems]
+kick = { hp = 30, mono = true, gain_db = -3.0 }
+snare = { hp = 160, sends = { gated = 0.45, plate = 0.1 }, gain_db = -6.0 }
+hats = { pan = 0.2, gain_db = -7.0 }
+perc = { pan = -0.3, gain_db = -12.0 }
+crash = { pan = -0.2, gain_db = -16.0 }
+toms = { sends = { plate = 0.25 }, width = 1.3, gain_db = -9.0 }
+
+[breaks]     # jungle: an acoustic-sounding kit, ghost notes, ride
+map = { 36 = "kick", 38 = "snare", 40 = "ghost", 42 = "hat", 46 = "open", 49 = "crash", 51 = "ride", 45 = "tom_lo", 47 = "tom_mid", 50 = "tom_hi" }
+[breaks.sounds]
+kick = { samples = ["drums/bassdrum02.ogg"], stem = "break" }
+snare = { samples = ["drums/snare03.ogg", "drums/snare05.ogg"], stem = "break" }
+ghost = { samples = ["drums/snare05.ogg"], gain_db = -8, lp = 6000, stem = "break" }
+hat = { samples = ["drums/hihat_closed02.ogg"], stem = "hats" }
+open = { samples = ["drums/hihat_opened03.ogg"], stem = "hats" }
+ride = { samples = ["drums/ride01.ogg"], stem = "hats" }
+crash = { samples = ["drums/crash01.ogg"], lp = 12000, stem = "hats" }
+tom_hi = { samples = ["drums/tom_hi01.ogg"], stem = "break" }
+tom_mid = { samples = ["drums/tom_mid01.ogg"], stem = "break" }
+tom_lo = { samples = ["drums/tom_low01.ogg"], stem = "break" }
+[breaks.stems]
+break = { hp = 35, drive = 1.6, sends = { room = 0.15 }, gain_db = -3.0 }
+hats = { hp = 400, pan = 0.15, gain_db = -11.0 }
+
+[dusty]      # lo-fi boom-bap: soft kick, muffled snare, quiet hats
+map = { 36 = "kick", 37 = "rim", 38 = "snare", 42 = "hat", 46 = "open", 49 = "crash" }
+[dusty.sounds]
+kick = { samples = ["drums/kick_hiphop01.ogg"], lp = 4000, detune_cents = 0, stem = "kick" }
+snare = { samples = ["drums/snare_hiphop01.ogg", "drums/snare_muffled01.ogg"], lp = 7000, stem = "snare" }
+hat = { samples = ["drums/hihat_closed02.ogg", "drums/hihat_closed03.ogg"], lp = 9000, stem = "hats" }
+open = { samples = ["drums/hihat_opened03.ogg"], lp = 9000, stem = "hats" }
+rim = { samples = ["drums/sidestick01.ogg"], lp = 8000, stem = "snare" }
+crash = { samples = ["drums/crash01.ogg"], lp = 8000, stem = "hats" }
+[dusty.stems]
+kick = { hp = 30, mono = true, drive = 1.3, gain_db = -2.0 }
+snare = { hp = 120, drive = 1.3, sends = { room = 0.2 }, gain_db = -5.0 }
+hats = { pan = 0.15, gain_db = -10.0 }
+
+[fusion]     # 80s session kit: acoustic kick and snare, ghost notes, gated room on the snare, toms, hats, ride, crash
+map = { 36 = "kick", 38 = "snare", 40 = "ghost", 42 = "hat", 46 = "open", 49 = "crash", 51 = "ride", 45 = "tom_lo", 47 = "tom_mid", 50 = "tom_hi", 37 = "rim" }
+[fusion.sounds]
+kick = { samples = ["drums/bassdrum_acoustic01.ogg"], synth = "kick", args = { start = 110, end = 55, decay = 0.18, click = 0.25 }, synth_db = -10, detune_cents = 0, stem = "kick" }
+snare = { samples = ["drums/snare_acoustic01.ogg", "drums/snare03.ogg"], stem = "snare" }
+ghost = { samples = ["drums/snare_acoustic01.ogg"], gain_db = -10, lp = 7000, stem = "snare" }
+rim = { samples = ["drums/sidestick01.ogg"], stem = "snare" }
+hat = { samples = ["drums/hihat_closed02.ogg", "drums/hihat_closed03.ogg"], hp = 400, stem = "hats" }
+open = { samples = ["drums/hihat_opened02.ogg"], hp = 400, stem = "hats" }
+ride = { samples = ["drums/ride02.ogg"], stem = "cymbals" }
+crash = { samples = ["drums/crash01.ogg"], lp = 13000, stem = "cymbals" }
+tom_hi = { samples = ["drums/tom_hi01.ogg"], stem = "toms" }
+tom_mid = { samples = ["drums/tom_mid01.ogg"], stem = "toms" }
+tom_lo = { samples = ["drums/tom_low01.ogg"], stem = "toms" }
+[fusion.stems]
+kick = { hp = 30, mono = true, drive = 1.1, gain_db = -4.0 }
+snare = { hp = 120, sends = { gated = 0.35, plate = 0.1 }, gain_db = -6.0 }
+toms = { sends = { room = 0.25 }, width = 1.4, gain_db = -7.0 }
+hats = { pan = 0.25, hp = 300, gain_db = -9.0 }
+cymbals = { pan = -0.2, gain_db = -13.0 }

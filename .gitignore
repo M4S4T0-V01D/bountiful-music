@@ -1,0 +1,14 @@
+# the music lives here but isn't code: tracks, albums, songs, sessions, samples, personal registries
+/tracks/
+/albums/
+/songs/
+/sessions/
+/samples/
+/upstream/
+/friends.toml
+/taste.json
+__pycache__/
+*.pyc
+.venv/
+/build/
+/dist/

@@ -1,0 +1,34 @@
+{
+  "_about": "Original mid-80s Soviet synth-pop in the Biokonstruktor school (not a copy of any record). Composition: Abundant Music seed 1985084020 (style soviet-synthpop-86), C minor; arranged by tools/arrange.py.",
+  "title": "Kosmodrom",
+  "genre": "synthpop",
+  "source": "../songs/synthpop/soviet-synthpop-86-1985084020.mid",
+  "source_seed": 1985084020,
+  "out": "../tracks/kosmodrom/kosmodrom.mid",
+  "bpm": 118,
+  "seed": 1986,
+  "bass_transpose": 0,
+  "arp_pattern": [0, 2, 1, 3, 2, 4, 3, 1],
+  "arp_low": 60,
+  "arp_high": 79,
+  "arp_gate": 0.16,
+  "loops": {
+    "V": {"start_bar": 2, "bars": 8, "lead_transpose": 0, "_chords": "Cm9 F7 Fm9 Cm9 | Cm9 F7 G7 Cm9 (verse)"},
+    "C": {"start_bar": 10, "bars": 8, "lead_transpose": -12, "_chords": "Cm9 Fm G7 Cm7 (chorus)"},
+    "B": {"start_bar": 46, "bars": 8, "lead_transpose": -12, "_chords": "Csus2 Eb6 Fm9 Gm | ... Cm9 (bridge)"}
+  },
+  "arrangement": [
+    {"name": "Intro: sequencer", "loop": "V", "bars": 8, "parts": ["bass", "arp"], "drums": ["kick", "hat"]},
+    {"name": "Intro: strings", "loop": "V", "bars": 8, "parts": ["bass", "arp", "pad"], "drums": ["kick", "snare", "hat"], "fill": "syntoms"},
+    {"name": "Verse 1", "loop": "V", "bars": 16, "parts": ["bass", "lead", "pad"], "drums": ["kick", "snare", "hat"], "fill": "syntoms16"},
+    {"name": "Chorus 1", "loop": "C", "bars": 16, "parts": ["bass", "lead", "arp", "pad"], "drums": ["kick", "snare", "clap", "hat", "open"], "crash": true, "fill": "syntoms"},
+    {"name": "Interlude", "loop": "V", "bars": 8, "parts": ["bass", "arp", "pad"], "drums": ["kick", "snare", "hat", "rim"], "fill": "syntoms16"},
+    {"name": "Verse 2", "loop": "V", "bars": 16, "parts": ["bass", "lead", "arp", "pad"], "drums": ["kick", "snare", "hat", "rim"], "fill": "syntoms"},
+    {"name": "Chorus 2", "loop": "C", "bars": 16, "parts": ["bass", "lead", "arp", "pad"], "drums": ["kick", "snare", "clap", "hat", "open"], "crash": true, "fill": "syntoms16"},
+    {"name": "Bridge", "loop": "B", "bars": 16, "parts": ["bass", "lead", "pad"], "drums": ["kick", "snare", "hat16"], "fill": "snare_roll"},
+    {"name": "Breakdown", "loop": "C", "bars": 8, "parts": ["arp", "pad"], "drums": [], "vel": {"arp": 1.0}},
+    {"name": "Last chorus", "loop": "C", "bars": 16, "parts": ["bass", "lead", "lead_hi", "arp", "pad"], "drums": ["kick", "snare", "clap", "hat", "open"], "crash": true, "fill": "syntoms"},
+    {"name": "Outro", "loop": "V", "bars": 8, "parts": ["bass", "arp", "pad"], "drums": ["kick", "snare", "hat"]},
+    {"name": "Outro: sequencer alone", "loop": "V", "bars": 4, "parts": ["arp"], "drums": []}
+  ]
+}

@@ -1,0 +1,155 @@
+name = "Finnish Deep House '92"
+description = "Nordic underground house: cool, wistful and hypnotic. Glassy organ chords with a slow Leslie, deep rounded bass, a mellow poly-synth melody that breathes, lots of space. 122 bpm, minor."
+bpm = 122
+kit = "house"
+drums = "house"
+swing = 0.54
+
+[composer]
+tempoRange = [122, 122]
+useNaturalTempoChanges = false
+adaptTempoToRenderAmount = false
+endSongTempoChangeProbability = 0
+timeSignature2Likelihood = 0
+timeSignature3Likelihood = 0
+minorScaleLikelihood = 6
+modulateLikelihoodMultiplier = 0.05
+electronicLikelihood = 2
+electricLikelihood = 1
+acousticLikelihood = 0
+songIntroProbability = 1
+melodyMotifRythmCountIncreasePerIndex = 0.2
+
+[harmony]
+rhythm = 1
+dominant = "modal"
+colors = { m = "m9", "" = "maj7", m7 = "m9", "7" = "7sus4" }
+
+[melody]
+modal = true
+register = [64, 81]
+max_leap = 5
+max_notes_per_bar = 4
+articulation = "legato"
+humanize_ms = 7
+push_ms = 0
+velocity = [0.58, 0.86]
+
+[bass]
+style = "pattern"
+register = [33, 52]
+pattern = [[0, "R", 1.2], [6, "R", 0.3], [10, "O", 0.3], [14, "5-", 0.4]]
+
+[pad]
+low = 55
+high = 74
+top = 70
+notes = 4
+vel = 0.48
+
+[comp]          # glassy organ chords: short, on the written-feel off-beats
+steps = [0, 6, 12]
+low = 57
+high = 74
+top = 71
+notes = 4
+gate = 0.42
+humanize_ms = 5
+
+[[arrangement]]
+name = "Intro: kick, hats, atmosphere"
+loop = "A"
+bars = 8
+parts = ["pad"]
+drums = ["kick", "hat"]
+vel = { pad = 0.6 }
+[[arrangement]]
+name = "Bass enters"
+loop = "A"
+bars = 8
+parts = ["pad", "bass"]
+drums = ["kick", "hat"]
+[[arrangement]]
+name = "Organ + groove"
+loop = "A"
+bars = 16
+parts = ["bass", "comp"]
+drums = ["kick", "clap", "hat", "open"]
+[[arrangement]]
+name = "Melody enters"
+loop = "V"
+bars = 16
+parts = ["bass", "comp", "lead"]
+drums = ["kick", "clap", "hat", "open"]
+[[arrangement]]
+name = "Keys + percussion"
+loop = "A"
+bars = 16
+parts = ["bass", "comp", "pad", "lead"]
+drums = ["kick", "clap", "hat", "open", "shaker"]
+[[arrangement]]
+name = "Breakdown"
+loop = "B"
+bars = 16
+parts = ["comp", "pad", "lead"]
+[[arrangement]]
+name = "Rebuild"
+loop = "A"
+bars = 8
+parts = ["comp", "pad", "bass"]
+drums = ["hat", "shaker", "congas"]
+[[arrangement]]
+name = "Full groove"
+loop = "A"
+bars = 32
+parts = ["bass", "comp", "pad", "lead"]
+drums = ["kick", "clap", "hat", "open", "shaker"]
+crash = true
+[[arrangement]]
+name = "Strongest passage"
+loop = "B"
+bars = 16
+parts = ["bass", "comp", "pad", "lead", "lead_hi"]
+drums = ["kick", "clap", "hat", "open", "shaker", "congas"]
+[[arrangement]]
+name = "Outro"
+loop = "A"
+bars = 8
+parts = ["bass", "comp", "pad"]
+drums = ["kick", "clap", "hat", "open"]
+[[arrangement]]
+name = "Outro: drums"
+loop = "A"
+bars = 8
+drums = ["kick", "clap", "hat", "open"]
+
+[sounds.lead]
+layers = [{ kind = "polylead", preset = "lead-mellow.json", gain_db = 0.0 }, { kind = "rhodes", preset = "rhodes-haze.json", gain_db = -10.0 }]
+hp = 220
+chorus = { depth_ms = 2.5, rate = 0.45, base_ms = 10, mix = 0.35 }
+sends = { echo = 0.2, plate = 0.28 }
+gain_db = -8.0
+[sounds.comp]
+layers = [{ kind = "organ", preset = "organ-glass.json", gain_db = 0.0 }, { kind = "rhodes", preset = "rhodes-haze.json", gain_db = -11.0 }]
+hp = 160
+eq = [["peak", 350, -3.0, 1.0], ["peak", 2600, 1.5, 0.8]]
+sends = { plate = 0.2, echo = 0.05 }
+duck = { depth = 0.12, release = 0.14 }
+leslie = { speed = [[1, 0]], crossover = 800, mix = 0.75 }
+gain_db = -10.0
+[sounds.pad]
+layers = [{ kind = "pad", preset = "pad-keys.json", gain_db = 0.0 }, { kind = "rhodes", preset = "rhodes-dusty.json", gain_db = -6.0 }]
+hp = 170
+lp = 4500
+chorus = { depth_ms = 2.0, rate = 0.4, base_ms = 9, mix = 0.3 }
+sends = { plate = 0.3 }
+duck = { depth = 0.2, release = 0.15 }
+gain_db = -19.0
+[sounds.bass]
+kind = "analogbass"
+preset = "analogbass-deep.json"
+hp = 32
+lp = 2500
+mono = true
+duck = { depth = 0.35, release = 0.11 }
+gain_db = -6.5

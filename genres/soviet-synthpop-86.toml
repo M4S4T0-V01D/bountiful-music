@@ -1,0 +1,175 @@
+name = "Soviet Synth-pop '86"
+description = "Mid-80s Soviet synth-pop, the darkish Biokonstruktor school: cold minor melodies with vibrato, Polivoks bass in driving octaves, a 16th sequencer arpeggio, Formanta strings, a crude drum machine with 'pew' syn-toms. 118 bpm."
+bpm = 118
+kit = "synthetic"
+drums = "synthpop"
+swing = 0.5
+
+[composer]
+tempoRange = [118, 118]
+useNaturalTempoChanges = false
+adaptTempoToRenderAmount = false
+endSongTempoChangeProbability = 0
+timeSignature2Likelihood = 0
+timeSignature3Likelihood = 0
+minorScaleLikelihood = 8
+modulateLikelihoodMultiplier = 0.05
+electronicLikelihood = 1
+electricLikelihood = 0
+acousticLikelihood = 0
+songIntroProbability = 1
+verseChorusSongStructureLikelihoodMultiplier = 4
+verseChorusBridgeSongStructureLikelihoodMultiplier = 3
+
+[harmony]
+rhythm = 1
+dominant = "keep"
+colors = { m7 = "m", "7" = "7", maj7 = "", m9 = "m" }
+
+[melody]
+register = [60, 79]
+max_leap = 7
+max_notes_per_bar = 6
+grid = 0.25
+articulation = "legato"
+humanize_ms = 4
+velocity = [0.66, 0.92]
+
+[bass]
+style = "octave8"
+register = [33, 50]
+gate = 0.36
+
+[pad]
+low = 55
+high = 76
+top = 72
+notes = 3
+vel = 0.5
+
+[arp]
+pattern = [0, 2, 1, 3, 2, 4, 3, 1]
+low = 60
+high = 79
+gate = 0.16
+rate = 0.25
+
+[[arrangement]]
+name = "Intro: sequencer"
+loop = "V"
+bars = 8
+parts = ["bass", "arp"]
+drums = ["kick", "hat"]
+[[arrangement]]
+name = "Intro: strings"
+loop = "V"
+bars = 8
+parts = ["bass", "arp", "pad"]
+drums = ["kick", "snare", "hat"]
+fill = "syntoms"
+[[arrangement]]
+name = "Verse 1"
+loop = "V"
+bars = 16
+parts = ["bass", "lead", "pad"]
+drums = ["kick", "snare", "hat"]
+fill = "syntoms"
+[[arrangement]]
+name = "Chorus 1"
+loop = "A"
+bars = 16
+parts = ["bass", "lead", "arp", "pad"]
+drums = ["kick", "snare", "clap", "hat", "open"]
+crash = true
+fill = "syntoms"
+[[arrangement]]
+name = "Interlude"
+loop = "V"
+bars = 8
+parts = ["bass", "arp", "pad"]
+drums = ["kick", "snare", "hat"]
+fill = "syntoms"
+[[arrangement]]
+name = "Verse 2"
+loop = "V"
+bars = 16
+parts = ["bass", "lead", "arp", "pad"]
+drums = ["kick", "snare", "hat"]
+fill = "syntoms"
+[[arrangement]]
+name = "Chorus 2"
+loop = "A"
+bars = 16
+parts = ["bass", "lead", "arp", "pad"]
+drums = ["kick", "snare", "clap", "hat", "open"]
+crash = true
+fill = "syntoms"
+[[arrangement]]
+name = "Bridge"
+loop = "B"
+bars = 16
+parts = ["bass", "lead", "pad"]
+drums = ["kick", "snare", "hat"]
+fill = "snare_roll"
+[[arrangement]]
+name = "Breakdown"
+loop = "A"
+bars = 8
+parts = ["arp", "pad"]
+[[arrangement]]
+name = "Last chorus"
+loop = "A"
+bars = 16
+parts = ["bass", "lead", "lead_hi", "arp", "pad"]
+drums = ["kick", "snare", "clap", "hat", "open"]
+crash = true
+fill = "syntoms"
+[[arrangement]]
+name = "Outro"
+loop = "V"
+bars = 8
+parts = ["bass", "arp", "pad"]
+drums = ["kick", "snare", "hat"]
+[[arrangement]]
+name = "Outro: sequencer alone"
+loop = "V"
+bars = 4
+parts = ["arp"]
+
+[sounds.lead]
+kind = "polylead"
+preset = "polivoks-lead.json"
+hp = 200
+chorus = { depth_ms = 2.0, rate = 0.5, base_ms = 9, mix = 0.25 }
+sends = { echo = 0.2, plate = 0.3 }
+width = 1.2
+gain_db = -9.0
+[sounds.arp]
+kind = "polylead"
+preset = "seq-pluck.json"
+hp = 250
+chorus = { depth_ms = 2.5, rate = 0.3, base_ms = 10, mix = 0.35 }
+width = 1.6
+sends = { echo = 0.22, plate = 0.15 }
+duck = { depth = 0.15, release = 0.12 }
+gain_db = -10.0
+[sounds.pad]
+kind = "pad"
+preset = "formanta-strings.json"
+hp = 220
+lp = 6000
+chorus = { depth_ms = 5.0, rate = 0.6, base_ms = 12, mix = 0.55 }
+width = 1.7
+sends = { plate = 0.35 }
+gain_db = -19.0
+[sounds.bass]
+kind = "analogbass"
+preset = "polivoks-bass.json"
+hp = 35
+lp = 3500
+eq = [["peak", 900, 1.5, 1.0]]
+mono = true
+duck = { depth = 0.25, release = 0.1 }
+gain_db = -9.0
+[master]
+tape = { drive = 1.4, bias = 0.05, bump_db = 0.8, hf_db = -1.5, lp_hz = 17000, hiss_db = -78, wow_ms = 0.07 }

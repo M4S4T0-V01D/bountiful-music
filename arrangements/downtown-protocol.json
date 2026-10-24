@@ -1,0 +1,36 @@
+{
+  "_about": "An original early-90s New York house track in the tradition of David Morales' productions (not a copy of any record). Composition by Abundant Music seed 17492782 (style ny-house-93), arranged by tools/house_arrange.py.",
+  "title": "Downtown Protocol",
+  "source": "../songs/batch/ny-house-93-17492782.mid",
+  "source_seed": 17492782,
+  "out": "../tracks/downtown-protocol/downtown-protocol.mid",
+  "bpm": 124,
+  "swing": 0.54,
+  "seed": 93,
+  "bass_transpose": -12,
+  "stab_steps": [0, 3, 6, 10, 13],
+  "stab_low": 56,
+  "stab_high": 70,
+  "stab_gate": 0.22,
+  "loops": {
+    "A": {"start_bar": 18, "bars": 8, "_chords": "C#m F#m | A G# | G#7 | C#m (chorus)"},
+    "B": {"start_bar": 36, "bars": 8, "_chords": "F#m9 Amaj7 B6 C#m (lift)"},
+    "V": {"start_bar": 10, "bars": 8, "_chords": "verse"}
+  },
+  "arrangement": [
+    {"name": "Intro: kick and hats", "loop": "A", "bars": 8, "parts": [], "drums": ["kick", "hat"]},
+    {"name": "Intro: full kit", "loop": "A", "bars": 8, "parts": [], "drums": ["kick", "hat", "open", "shaker", "clap"], "fill": "toms"},
+    {"name": "Bass in", "loop": "A", "bars": 16, "parts": ["bass"], "drums": ["kick", "clap", "hat", "open", "shaker", "congas"], "fill": "toms"},
+    {"name": "Verse: piano + melody", "loop": "V", "bars": 16, "parts": ["bass", "stabs", "lead"], "drums": ["kick", "clap", "hat", "open", "shaker", "congas"], "fill": "toms"},
+    {"name": "Chorus", "loop": "A", "bars": 16, "parts": ["bass", "stabs", "pad", "lead"], "drums": ["kick", "clap", "hat", "open", "shaker", "congas"], "crash": true, "fill": "snare_roll"},
+    {"name": "Lift", "loop": "B", "bars": 16, "parts": ["bass", "stabs", "pad", "lead"], "drums": ["kick", "clap", "hat", "open", "shaker", "congas", "rim"], "crash": true, "fill": "toms"},
+    {"name": "Breakdown", "loop": "A", "bars": 8, "parts": ["pad", "lead"], "drums": []},
+    {"name": "Build", "loop": "A", "bars": 8, "parts": ["pad", "stabs"], "drums": ["hat", "shaker", "congas"], "fill": "roll16"},
+    {"name": "Peak: chorus", "loop": "A", "bars": 32, "parts": ["bass", "stabs", "pad", "lead"], "drums": ["kick", "clap", "hat", "open", "shaker", "congas", "timbales"], "crash": true, "fill": "toms"},
+    {"name": "Lift 2", "loop": "B", "bars": 16, "parts": ["bass", "stabs", "pad", "lead"], "drums": ["kick", "clap", "hat", "open", "shaker", "congas", "timbales", "rim"], "crash": true, "fill": "snare_roll"},
+    {"name": "Last chorus", "loop": "A", "bars": 16, "parts": ["bass", "stabs", "pad", "lead"], "drums": ["kick", "clap", "hat", "open", "shaker", "congas"], "crash": true, "fill": "toms"},
+    {"name": "Outro: melody out", "loop": "A", "bars": 16, "parts": ["bass", "stabs", "pad"], "drums": ["kick", "clap", "hat", "open", "shaker", "congas"]},
+    {"name": "Outro: bass + drums", "loop": "A", "bars": 8, "parts": ["bass"], "drums": ["kick", "clap", "hat", "open", "shaker"]},
+    {"name": "Outro: drums", "loop": "A", "bars": 8, "parts": [], "drums": ["kick", "clap", "hat", "open"]}
+  ]
+}

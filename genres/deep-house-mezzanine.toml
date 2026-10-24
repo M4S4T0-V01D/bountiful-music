@@ -1,0 +1,184 @@
+name = "Deep House Mezzanine"
+description = "Mezzanine Light's deep house: four-to-the-floor with a filtered breakbeat riding on top, a Rhodes on the off-beats, M1-style organ stabs, a jazzy flute melody, wordless vocal chops in the lift, gospel-tinged ninth chords, a round bass. 122 bpm."
+bpm = 122
+kit = "house"
+drums = "house"
+swing = 0.55
+
+[composer]
+tempoRange = [122, 122]
+useNaturalTempoChanges = false
+adaptTempoToRenderAmount = false
+endSongTempoChangeProbability = 0
+timeSignature2Likelihood = 0
+timeSignature3Likelihood = 0
+minorScaleLikelihood = 3
+majorScaleLikelihood = 1
+modulateLikelihoodMultiplier = 0.05
+electronicLikelihood = 1
+electricLikelihood = 2
+acousticLikelihood = 0
+songIntroProbability = 1
+buildSongStructureLikelihoodMultiplier = 2
+melodyMotifRythmCountIncreasePerIndex = 0.25
+
+[harmony]
+rhythm = 1
+dominant = "keep"
+colors = { m = "m9", "" = "maj9", m7 = "m9", "7" = "7sus4", maj7 = "maj9", "6" = "6/9" }
+
+[melody]                     # the flute: airy, unhurried, breathing at phrase ends
+register = [67, 88]
+max_leap = 7
+max_notes_per_bar = 5
+articulation = "legato"
+humanize_ms = 8
+push_ms = 2
+velocity = [0.58, 0.88]
+
+[bass]
+style = "pattern"
+register = [33, 52]
+pattern = [[0, "R", 0.9], [6, "R", 0.25], [7, "O", 0.2], [10, "R", 0.5], [14, "5", 0.3]]
+
+[comp]                       # Rhodes on the off-beats
+steps = [2, 6, 10, 14]
+low = 55
+high = 76
+top = 72
+notes = 4
+gate = 0.4
+humanize_ms = 6
+
+[stab]                       # M1-style organ stabs
+steps = [3, 10]
+low = 57
+high = 77
+top = 74
+notes = 4
+gate = 0.28
+vel = 0.75
+accent = 0.82
+humanize_ms = 4
+
+[vox]                        # wordless chops (the lift)
+steps = [7, 15]
+low = 64
+high = 81
+top = 76
+notes = 2
+gate = 0.3
+vel = 0.7
+accent = 0.78
+humanize_ms = 6
+
+[pad]
+low = 53
+high = 77
+top = 72
+notes = 4
+vel = 0.45
+
+[[arrangement]]
+name = "Intro: kick, hats, break"
+loop = "A"
+bars = 16
+parts = ["pad"]
+drums = ["kick", "hat", "break"]
+vel = { pad = 0.6 }
+[[arrangement]]
+name = "Intro b: bass and Rhodes"
+loop = "A"
+bars = 16
+parts = ["bass", "comp", "pad"]
+drums = ["kick", "clap", "hat", "open", "break"]
+fill = "toms"
+[[arrangement]]
+name = "Groove: organ stabs"
+loop = "A"
+bars = 16
+parts = ["bass", "comp", "stab"]
+drums = ["kick", "clap", "hat", "open", "break", "shaker"]
+fill = "toms"
+[[arrangement]]
+name = "Theme: flute"
+loop = "V"
+bars = 16
+parts = ["bass", "comp", "stab", "lead"]
+drums = ["kick", "clap", "hat", "open", "break", "shaker"]
+crash = true
+fill = "snare_roll"
+[[arrangement]]
+name = "Lift: vocal chops"
+loop = "B"
+bars = 16
+parts = ["bass", "comp", "vox", "pad", "lead"]
+drums = ["kick", "clap", "hat", "open", "shaker", "congas"]
+crash = true
+fill = "toms"
+[[arrangement]]
+name = "Breakdown"
+loop = "A"
+bars = 16
+parts = ["comp", "pad", "lead", "vox"]
+drums = ["break"]
+[[arrangement]]
+name = "Peak"
+loop = "A"
+bars = 32
+parts = ["bass", "comp", "stab", "lead", "pad", "vox"]
+drums = ["kick", "clap", "hat", "open", "break", "shaker", "congas"]
+crash = true
+fill = "toms"
+[[arrangement]]
+name = "Outro"
+loop = "A"
+bars = 16
+parts = ["bass", "comp", "stab"]
+drums = ["kick", "clap", "hat", "open", "break"]
+[[arrangement]]
+name = "Outro b: drums and break"
+loop = "A"
+bars = 16
+drums = ["kick", "hat", "break"]
+
+[sounds.lead]
+kind = "horn"
+preset = "flute-dusk.json"
+hp = 250
+sends = { plate = 0.3, echo = 0.15 }
+gain_db = -10.0
+[sounds.comp]
+kind = "rhodes"
+preset = "rhodes-haze.json"
+hp = 150
+chorus = { depth_ms = 2.0, rate = 0.6, base_ms = 9, mix = 0.3 }
+width = 1.4
+sends = { plate = 0.15 }
+gain_db = -10.0
+[sounds.stab]
+kind = "organ"
+preset = "organ-house.json"
+hp = 160
+sends = { room = 0.2 }
+gain_db = -12.0
+[sounds.vox]
+kind = "vox"
+preset = "vox-chop.json"
+hp = 300
+sends = { plate = 0.3, echo = 0.2 }
+gain_db = -12.0
+[sounds.pad]
+kind = "pad"
+preset = "pad-keys.json"
+hp = 250
+width = 1.6
+sends = { plate = 0.3 }
+gain_db = -20.0
+[sounds.bass]
+kind = "analogbass"
+preset = "bass-round.json"
+hp = 32
+mono = true
+duck = { depth = 0.3, release = 0.11 }
+gain_db = -7.0

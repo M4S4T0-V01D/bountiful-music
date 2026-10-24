@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Bountiful Music launcher
+HERE="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
+exec "$HERE/../intelligent-jungle/.venv/bin/python" "$HERE/bountiful/app.py" "$@"
