@@ -338,6 +338,38 @@ def test_taste_learns():
             taste.FILE = old
             taste._cache.clear()
 
+def test_live_plays_and_records_moves():
+    import numpy as np
+    import live as LV
+    lv = LV.Live("77", lookahead_bars=2)
+    b0, y = lv.next_block()
+    assert b0 == 0 and y.shape == (2 * lv.bar_n, 2) and np.isfinite(y).all() and np.abs(y).max() > 0.01
+    lv.turn("density", 0.95)
+    lv.turn("mute", True, "arp")
+    assert lv.user_moves[0]["bar"] == 3 and lv.user_moves[1]["channel"] == "arp"
+    b1, y = lv.next_block()
+    assert b1 == 2 and lv.patch()["moves"]
+    try:
+        lv.turn("gate", "nonsense((", "lead")
+        raise AssertionError("a bad gate went through")
+    except ValueError:
+        ...
+    lv.seek(lv.bars - 1)
+    lv.next_block()
+    b, _ = lv.next_block()                 # past the end: the next Bounty
+    assert b == 0 and str(lv.pl["bounty"]) == "78"
+
+def test_batch_day_of_ideas():
+    import batch
+    with tempfile.TemporaryDirectory() as tmp:
+        d = batch.day(4, start=300, songs=1, out=Path(tmp) / "s", log=lambda *_: None)
+        idx = json.loads((d / "index.json").read_text())
+        rows = idx["rows"]
+        assert [r["rank"] for r in rows] == [1, 2, 3, 4]
+        assert all(a["score"] >= b["score"] for a, b in zip(rows, rows[1:]))
+        assert (d / rows[0]["audition"]).exists() and (d / rows[0]["track"] / "notes.txt").exists()
+        assert "| 1 |" in (d / "index.md").read_text()
+
 if __name__ == "__main__":
     fails = 0
     for name, fn in list(globals().items()):
