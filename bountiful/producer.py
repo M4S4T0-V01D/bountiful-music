@@ -304,8 +304,9 @@ def bass(sk: Skeleton, start_bar: int, bars: int, chords: list[PChord], cfg: dic
                 t += 0.5
                 k += 1
         elif style == "pattern":                   # a 16th-step pattern of degrees, repeated per bar
+            cycle = cfg.get("patterns") or [pattern]   # or several, one per bar in turn (counted from the song's bar 1)
             for bar_t in np.arange(c.start, c.start + c.beats - 1e-6, 4):
-                for entry in pattern:
+                for entry in cycle[(start_bar + int(round(bar_t / 4))) % len(cycle)]:
                     step, d, dur = entry[:3]
                     t = bar_t + step / 4
                     if t >= c.start + c.beats - 1e-6:

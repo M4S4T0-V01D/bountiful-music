@@ -233,7 +233,7 @@ def make(spec: dict, log=print) -> Path:
     notes_txt = (track / "notes.txt").read_text()
     rows = "\n".join(f"| {k} | {v['voice']['label']} | {', '.join((e.get('lv2') or e.get('ladspa') or e.get('builtin')) + (' ' + e['preset'] if e.get('preset') else '') for e in v.get('lmms_fx', [])) or '-'} |"
                      for k, v in T.items() if v.get("kind") == "lmms")
-    rows += "".join(f"\n| {k} | Electronium tone generator ({v['preset'].get('wave', 'square')}, electronium_voice.py)"
+    rows += "".join(f"\n| {k} | {v['preset'].get('label') or 'Electronium tone generator (' + v['preset'].get('wave', 'square') + ', electronium_voice.py)'}"
                     f"{'; in the .mmp: ' + v['mmp_voice']['label'] if v.get('mmp_voice') else ''} | - |"
                     for k, v in T.items() if v.get("kind") == "pyvoice")
     (track / "README.md").write_text(f"""# {title} — {B.ARTIST}

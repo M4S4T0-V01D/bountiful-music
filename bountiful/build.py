@@ -41,6 +41,9 @@ from credits import ARTIST, COMPOSER as COMPOSER_CREDIT, PRODUCED_COMPOSER as CO
 PART_ORDER = ["lead", "lead_hi", "sidekick", "arp", "comp", "stab", "vox", "pad", "bass", "bass2"]
 EXTRA_CH = (12, 13, 14, 15, 7)
 CHANNEL = {"lead": (0, 81), "lead_hi": (1, 81), "sidekick": (6, 80), "arp": (2, 87), "comp": (3, 4), "pad": (4, 89), "bass": (5, 38), "vox": (8, 54), "stab": (10, 16), "bass2": (11, 38), "drums": (9, 0)}
+# a kit of more than 108 sounds (notes 20-127) goes on past 127: drum note n > 127 is written as note n - 128 on this
+# channel of the drums track, and a kit map keys those sounds "15:<note>" (render_midi looks that key up first)
+DRUM_HI_CH = 15
 SENDS = {"room": {"type": "reverb", "seconds": 0.8, "predelay": 0.01, "size": 0.5, "damp": 0.6},
          "plate": {"type": "reverb", "seconds": 2.4, "predelay": 0.025, "damp": 0.5},
          "echo": {"type": "delay", "time_beats": 0.75, "feedback": 0.36, "tone": 2800},
@@ -287,8 +290,9 @@ def write_midi(path: Path, title: str, bpm: float, parts: dict, drums: list):
         for (t, d, p, v, o) in evs:
             on = max(0, round((t + o) * ppq))
             off = max(on + 1, round((t + o + d) * ppq))
-            msgs += [(on, 1, mido.Message("note_on", channel=ch, note=int(np.clip(p, 0, 127)), velocity=int(np.clip(round(v * 127), 1, 127)))),
-                     (off, 0, mido.Message("note_off", channel=ch, note=int(np.clip(p, 0, 127)), velocity=0))]
+            c, p = (DRUM_HI_CH, p - 128) if name == "drums" and 127 < p < 256 else (ch, p)
+            msgs += [(on, 1, mido.Message("note_on", channel=c, note=int(np.clip(p, 0, 127)), velocity=int(np.clip(round(v * 127), 1, 127)))),
+                     (off, 0, mido.Message("note_off", channel=c, note=int(np.clip(p, 0, 127)), velocity=0))]
         msgs.sort(key=lambda m: (m[0], m[1]))
         now = 0
         for tk, _, m in msgs:

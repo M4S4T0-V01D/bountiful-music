@@ -115,16 +115,18 @@ kind = "rhodes"
 preset = "rhodes-dusty.json"
 hp = 150
 chorus = { depth_ms = 2.5, rate = 0.5, base_ms = 9, mix = 0.35 }
-width = 1.4
+width = 1.1
 sends = { plate = 0.3 }
 gain_db = -13.0
 [sounds.pad]
 kind = "pad"
 preset = "pad-tide.json"
 hp = 200
-lp = 5000
-chorus = { depth_ms = 4.0, rate = 0.3, base_ms = 12, mix = 0.45 }
-width = 1.7
+lp = 11000
+eq = [["highshelf", 5000, 2.0]]
+crush = { bits = 12, rate = 32000, mix = 0.45 }   # an S1000-style sampled pad: 12-bit grain, highs kept to ~14 kHz
+chorus = { depth_ms = 3.0, rate = 0.3, base_ms = 12, mix = 0.3 }
+width = 1.1
 sends = { plate = 0.45 }
 gain_db = -18.0
 [sounds.bass]
