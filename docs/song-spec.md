@@ -2,7 +2,7 @@
 
 A record written as data instead of a Python script, so the app can open it, change it and build it.
 
-- Loader: `bountiful/songspec.py`
+- Loader: `bountiful/songspec.py`; records written in beats: `bountiful/songspec_beats.py`
 - Records: `records/*.toml`
 - Test: `tests/test_songspec.py`
 
@@ -24,7 +24,7 @@ Ports:
 |---|---|
 | Moss Radio | `records/moss-radio.toml`: same notes, chord chart and LT spec as the script (unit test) |
 | Orange Mound Fog | `records/orange-mound-fog.toml`: same notes, chord chart and LT spec as the script (unit test) |
-| Window Frost | last in Phase 1; it needs `bend`, `cc` and `pedal` events first |
+| Window Frost | `records/window-frost.toml` (beats engine): same notes, controller events, sub and solo as the script, and the random stream left in the same place (unit test) |
 
 ## One file, top to bottom
 
@@ -92,6 +92,24 @@ next, then the line players (each followed by its followers). With `humanize = "
 random stream in that order, which is what the scripts did. The three ports use it. New records use one stream per track,
 so adding a part doesn't move the others.
 
+## The beats engine
+
+A record with `[perform] engine = "beats"` is written in beats instead of 16th steps. Window Frost needs it: bars of 3 and
+4 beats in one record, swing that bends the whole beat (the off-beat eighth lands at `meta.swing`), and controller
+events next to the notes (sustain pedal, CC11 breath swells, pitch-bend scoops, slides and falls).
+
+- **Chords** carry their notes: `{ bass, voicing, move, scale, minor }` (`move` is the second voicing in the bar).
+- **Sections** take `beats` (default 4) and `lift`, the energy that scales the played velocities.
+- **Parts** are `[bar, beat, beats, pitch]`, in the key they were printed in, with `transpose`. `like` + `last` copies a
+  part with its last note held longer.
+- **Players**, in file order: `jazz_piano` (named hit patterns, cycled per bar, with pedal), `jazz_bass` (styles
+  `waltz`, `two_feel`, `walk`, `riff`, with slides), `jazz_drums` (`boom`, `half`, `swirl`, `pickup`), `lines` (steps:
+  `mallet`, `phrase` with breath, `solo` which writes a part), `jazz_keys`, `pad` and `sub`. A player's `sections` table
+  gives each section an entry or a list of them; `from` starts an entry at a bar of the section.
+- **Rendering** goes to `[render] backend`, which must be on `RENDERERS` in `songspec_beats.py`. The only one so far is
+  `window-frost`: fluidsynth with the Iowa flute and vibes, then the script's mixer and its checks
+  (`window_frost.mix(out, title)`). The checks run as it builds, so `--validate` doesn't apply.
+
 ## The gotchas, as rules the loader applies
 
 These cost a build each time. The loader checks them in seconds, before it renders:
@@ -134,7 +152,9 @@ A port counts as done when the Song Spec build of the record matches the script 
 2. The audio: LUFS within 0.1 dB of the script build and the same `validation.md` result. LMMS may not render the same
    sample for sample, so a null test is only informative.
 
-Results: Moss Radio -14.0 / -14.0 LUFS, 12/12 checks. Orange Mound Fog -10.09 / -10.11 LUFS, 13/13 checks.
+Results: Moss Radio -14.0 / -14.0 LUFS, 12/12 checks. Orange Mound Fog -10.09 / -10.11 LUFS, 13/13 checks. Window Frost -14.0 / -14.0 LUFS,
+16/16 checks, and the null test is exact: the port's wav and the script's are the same sample for sample (its
+renderer is deterministic, unlike LMMS).
 
 **Grid drums were not reproducible until 2026-11-18.** `producer.drum_bar` walked the section's drum layers as a `set`,
 whose order follows Python's per-process hash seed (and `-I` ignores `PYTHONHASHSEED`), so each build drew its velocity
@@ -145,6 +165,7 @@ released grid-drum records can't be rebuilt bar for bar; a rebuild gives a new t
 ## Decisions (2026-11-18)
 
 1. The three ports use `humanize = "legacy"`. New records get one random stream per track.
-2. Window Frost stays a script for now and is the last port of Phase 1. There is one render backend (LMMS). The `bend`,
-   `cc` and `pedal` events get added when it is ported.
+2. Window Frost is the last port of Phase 1. Revised when it was ported: LMMS can't play its 3/4 bars or its controller
+   events, and only its own fluidsynth + Iowa renderer plays the flute's breath. So it has a second engine (beats) and a
+   second, allow-listed render backend, and the mixer stays the script's. Phase 3 makes that backend general.
 3. The ports store note numbers, copied from the scripts. Hand-written templates will use note names.

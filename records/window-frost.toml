@@ -1,0 +1,250 @@
+# Window Frost - M4S4T0. The winter one: a jazz waltz at both ends, flute and vibes in unison, celesta snowflakes,
+# a fire indoors and the wind at the window. Ported from bountiful/window_frost.py (docs/song-spec.md).
+#
+# Unlike Moss Radio and Orange Mound Fog, this record is written in beats, not 16th steps: bars of 3 and 4 beats,
+# swing that bends the whole beat, and controller events (pedal, breath swells, scoops, falls) for its renderer.
+
+[meta]
+title = "Window Frost"
+artist = "M4S4T0"
+genre = "Jazz-hop"
+key = "Bb major"
+bpm = 76
+swing = 0.58                  # where the off-beat eighth lands; positions between bend with it
+seed = 76
+tracks = ["drums", "bass", "piano", "flute", "vibes", "celesta", "pad"]
+blurb = "A jazz waltz at both ends, a breathy flute and vibes in unison, celesta snowflakes, a fire going indoors while the wind works at the window. O Tannenbaum (folk tune) and In the Bleak Midwinter (Holst, Cranham, 1906), both public domain, from printed scores."
+
+[perform]
+engine = "beats"              # bountiful/songspec_beats.py
+humanize = "legacy"           # one random stream, the players in file order, as the script drew it
+
+[render]
+backend = "window-frost"      # fluidsynth + the Iowa flute and vibes, then the script's mixer (wind, fire, vinyl)
+
+# bass = the bass root, voicing = the rootless left hand, move = the second voicing in the bar,
+# scale = the pitch classes the solo and the line check use
+[chords]
+Bbmaj9 = { bass = 46, voicing = [50, 53, 57, 60], move = [50, 52, 57, 60], scale = [10, 0, 2, 3, 5, 7, 9] }
+Gm9 = { bass = 43, voicing = [53, 57, 58, 62], move = [52, 57, 58, 62], scale = [7, 9, 10, 0, 2, 3, 5], minor = true }
+Cm9 = { bass = 36, voicing = [51, 55, 58, 62], move = [51, 55, 57, 62], scale = [0, 2, 3, 5, 7, 9, 10], minor = true }
+F13sus = { bass = 41, voicing = [51, 55, 58, 60], move = [50, 55, 58, 63], scale = [5, 7, 9, 10, 0, 2, 3] }
+Ebmaj9 = { bass = 39, voicing = [50, 53, 55, 58], move = [50, 53, 57, 60], scale = [3, 5, 7, 9, 10, 0, 2] }
+Ebm6 = { bass = 39, voicing = [54, 58, 60, 65], move = [54, 58, 61, 65], scale = [3, 5, 6, 8, 10, 0, 1], minor = true }
+Dm11 = { bass = 38, voicing = [53, 55, 57, 60], move = [53, 55, 60, 62], scale = [2, 3, 5, 7, 9, 10, 0], minor = true }
+C9 = { bass = 36, voicing = [52, 55, 58, 62], move = [52, 57, 58, 62], scale = [0, 2, 4, 5, 7, 9, 10] }
+Fm9 = { bass = 41, voicing = [51, 55, 56, 60], move = [51, 55, 56, 62], scale = [5, 7, 8, 10, 0, 2, 3], minor = true }
+Bb13 = { bass = 46, voicing = [50, 55, 56, 60], move = [50, 54, 56, 61], scale = [10, 0, 2, 3, 5, 7, 8] }
+Ab13 = { bass = 44, voicing = [48, 53, 54, 62], move = [48, 53, 54, 63], scale = [8, 10, 0, 2, 3, 5, 6] }
+F13 = { bass = 41, voicing = [51, 55, 57, 62], move = [51, 54, 57, 62], scale = [5, 7, 9, 10, 0, 2, 3] }
+
+# one chord a bar
+[loops]
+intro = ["F13sus", "Bbmaj9", "Gm9", "Cm9", "Bbmaj9", "Ebmaj9", "Gm9", "F13", "Ebm6", "F13sus"]
+A = ["Bbmaj9", "Gm9", "Cm9", "F13sus", "Ebmaj9", "Ebm6", "Cm9", "Bbmaj9"]
+A2 = ["Ebmaj9", "Gm9", "Dm11", "F13sus", "Gm9", "Ebm6", "F13sus", "Bbmaj9"]
+B = ["Gm9", "C9", "Fm9", "Bb13", "Ebmaj9", "Ab13", "Cm9", "F13"]
+solo = ["Bbmaj9", "Gm9", "Cm9", "F13sus", "Ebmaj9", "Ebm6", "Cm9", "Bbmaj9",
+        "Ebmaj9", "Gm9", "Dm11", "F13sus", "Gm9", "Ebm6", "F13sus", "Bbmaj9"]
+outro = ["F13sus", "Bbmaj9", "Gm9", "Cm9", "Bbmaj9", "Ebmaj9", "Gm9", "F13", "Ebm6", "Bbmaj9"]
+
+# beats = beats per bar, lift = the section's energy (scales the played velocities)
+[[sections]]
+name = "intro"
+bars = 10
+beats = 3
+loop = "intro"
+lift = 0.76
+
+[[sections]]
+name = "A1"
+bars = 8
+loop = "A"
+lift = 0.88
+
+[[sections]]
+name = "A2"
+bars = 8
+loop = "A2"
+lift = 0.93
+
+[[sections]]
+name = "B1"
+bars = 8
+loop = "B"
+lift = 0.9
+
+[[sections]]
+name = "solo"
+bars = 16
+loop = "solo"
+lift = 1.0
+
+[[sections]]
+name = "B2"
+bars = 8
+loop = "B"
+lift = 0.98
+
+[[sections]]
+name = "A3"
+bars = 8
+loop = "A"
+lift = 1.03
+
+[[sections]]
+name = "outro"
+bars = 10
+beats = 3
+loop = "outro"
+lift = 0.78
+
+# Written lines: [bar in the section, beat, beats long, pitch], in the key they were printed in; transpose moves them.
+[parts.tannen]                # "O Tannenbaum", first strain as written in G, 3/4; bar 0 is the pickup, bars 5-8 the repeat
+transpose = 3                 # a minor third up, into B-flat
+notes = [
+  [0, 2, 1, 62], [1, 0, 0.75, 67], [1, 0.75, 0.25, 67], [1, 1, 1, 67], [1, 2, 1, 69], [2, 0, 0.75, 71],
+  [2, 0.75, 0.25, 71], [2, 1, 1.5, 71], [2, 2.5, 0.5, 71], [3, 0, 0.5, 69], [3, 0.5, 0.5, 71], [3, 1, 1, 72],
+  [3, 2, 1, 66], [4, 0, 1, 69], [4, 1, 1, 67], [4, 2, 1, 62], [5, 0, 0.75, 67], [5, 0.75, 0.25, 67],
+  [5, 1, 1, 67], [5, 2, 1, 69], [6, 0, 0.75, 71], [6, 0.75, 0.25, 71], [6, 1, 1.5, 71], [6, 2.5, 0.5, 71],
+  [7, 0, 0.5, 69], [7, 0.5, 0.5, 71], [7, 1, 1, 72], [7, 2, 1, 66], [8, 0, 1, 69], [8, 1, 1, 67]]
+
+[parts.tannen_outro]          # the same, the last B-flat ringing on
+like = "tannen"
+last = [8, 1, 4.5]
+
+[parts.midwinter1]            # "In the Bleak Midwinter" (Holst, Cranham), first strain as written in F, 4/4
+transpose = 5                 # a fourth up, into B-flat
+notes = [
+  [0, 0, 1.5, 69], [0, 1.5, 0.5, 70], [0, 2, 1, 72], [0, 3, 1, 69], [1, 0, 2, 67], [1, 2, 2, 65],
+  [2, 0, 1.5, 67], [2, 1.5, 0.5, 69], [2, 2, 1, 67], [2, 3, 1, 62], [3, 0, 3, 67], [4, 0, 1.5, 69],
+  [4, 1.5, 0.5, 70], [4, 2, 1, 72], [4, 3, 1, 69], [5, 0, 2, 67], [5, 2, 2, 65], [6, 0, 1, 67], [6, 1, 1, 69],
+  [6, 2, 1.5, 67], [6, 3.5, 0.5, 65], [7, 0, 3, 65]]
+
+[parts.midwinter2]            # the second strain ("Snow had fallen"), then the first strain's last four bars
+transpose = 5
+notes = [
+  [0, 0, 1, 70], [0, 1, 1, 69], [0, 2, 1, 70], [0, 3, 1, 72], [1, 0, 2, 74], [1, 2, 2, 69], [2, 0, 1, 72],
+  [2, 1, 1, 69], [2, 2, 1, 67], [2, 3, 1, 65], [3, 0, 3, 67], [4, 0, 1.5, 69], [4, 1.5, 0.5, 70],
+  [4, 2, 1, 72], [4, 3, 1, 69], [5, 0, 2, 67], [5, 2, 2, 65], [6, 0, 1, 67], [6, 1, 1, 69], [6, 2, 1.5, 67],
+  [6, 3.5, 0.5, 65], [7, 0, 3, 65]]
+
+[parts.bridge]                # original: Gm9 | C9 | Fm9 | Bb13 | Ebmaj9 | Ab13 | Cm9 | F13
+notes = [
+  [0, 0, 1, 74], [0, 1, 0.5, 77], [0, 1.5, 2.5, 81], [1, 0, 0.5, 79], [1, 0.5, 0.5, 76], [1, 1, 1, 74],
+  [1, 2, 2, 70], [2, 0, 1, 72], [2, 1, 0.5, 75], [2, 1.5, 2.5, 79], [3, 0, 0.5, 77], [3, 0.5, 0.5, 74],
+  [3, 1, 1, 72], [3, 2, 2, 68], [4, 0, 1.5, 67], [4, 1.5, 0.5, 70], [4, 2, 2, 74], [5, 0, 0.5, 75],
+  [5, 0.5, 0.5, 72], [5, 1, 1, 70], [5, 2, 2, 66], [6, 0, 1, 67], [6, 1, 0.5, 70], [6, 1.5, 0.5, 74],
+  [6, 2, 2, 75], [7, 0, 0.5, 74], [7, 0.5, 0.5, 72], [7, 1, 1, 69], [7, 2, 0.5, 70], [7, 2.5, 1.5, 65]]
+
+# ---------------------------------------------------------------- players, in the order they draw from the random stream
+# In a player's [sections], a section takes one entry or a list of them; "from" starts an entry at a bar of the section.
+
+[players.piano]
+type = "jazz_piano"
+# the last chord rings: root, fifth, the voicing and a third over its top, under the pedal
+last = { pedal = 7.5, dur = 7, vel = 58, spread = 0.09 }
+
+# hits are [beat, beats, voicing, vel, roll spread]; voicing "v" = the chord, "alt" = its moved voicing,
+# "rv" = the chord with the root an octave up under it. pedal = [[beat, beats]] (beats left out: to the bar line)
+[players.piano.patterns]
+waltz_even = { pedal = [[0]], hits = [[0, 1.0, "v", 58, 0.05], [1, 0.9, "alt", 44, 0.02], [2, 0.9, "alt", 40, 0.02]] }
+waltz_odd = { pedal = [[0]], hits = [[0, 1.0, "rv", 58, 0.05], [1, 0.9, "alt", 44, 0.02]] }
+half = { pedal = [[0]], hits = [[0, 2.0, "v", 58, 0.04], [2, 2.0, "alt", 52, 0.04]] }
+chop = { hits = [[0, 1.25, "v", 68, 0.025], [1.5, 0.4, "v", 48, 0.012], [2.5, 1.0, "alt", 62, 0.025]] }
+breathe = { hits = [[0, 2.0, "v", 64, 0.035], [2.75, 1.2, "alt", 54, 0.025]] }
+push = { hits = [[0, 0.9, "v", 66, 0.025], [1.5, 1.0, "alt", 52, 0.025], [3.5, 0.5, "alt", 46, 0.012]] }
+ring = { pedal = [[2, 2]], hits = [[0, 0.75, "v", 66, 0.025], [1, 0.5, "v", 48, 0.025], [2, 2, "alt", 60, 0.045]] }
+
+# bars = the patterns bar by bar, cycled; vel scales them on top of the section's lift
+[players.piano.sections]
+intro = { bars = ["waltz_even", "waltz_odd"] }
+A1 = { bars = ["chop", "chop", "breathe", "ring", "push", "push", "chop", "ring"] }
+A2 = { bars = ["breathe", "breathe", "push", "ring", "chop", "chop", "breathe", "ring"] }
+B1 = { bars = ["half"] }
+solo = { vel = 0.82, bars = ["chop", "breathe", "push", "ring", "breathe", "push", "chop", "ring",
+                             "push", "chop", "breathe", "ring", "chop", "breathe", "push", "ring"] }
+B2 = { bars = ["half"] }
+A3 = { bars = ["breathe", "breathe", "push", "ring", "chop", "chop", "breathe", "ring"] }
+outro = { bars = ["waltz_even", "waltz_odd"] }
+
+[players.bass]
+type = "jazz_bass"            # styles: waltz (root, the fifth on 3 every other bar), two_feel, walk, riff
+last = { dur = 6, vel = 78 }
+
+[players.bass.sections]
+intro = { from = 5, style = "waltz", slide = [-2, 0.15] }   # slide: on the entry's first note, [semitones, beats]
+A1 = { style = "riff" }
+A2 = { style = "riff" }
+B1 = { style = "two_feel" }
+solo = [{ style = "two_feel" }, { from = 8, style = "walk" }]
+B2 = { style = "two_feel" }
+A3 = { style = "riff" }
+outro = { style = "waltz" }
+
+[players.drums]
+type = "jazz_drums"           # General MIDI brushes; the renderer triggers the sampled boom-bap kit from them
+[players.drums.sections]
+intro = { from = 9, style = "pickup" }      # four snare taps on beat 3 into the head
+A1 = { style = "boom" }
+A2 = { style = "boom", busy = true }
+B1 = { style = "half" }
+solo = { style = "boom", busy = true }
+B2 = { style = "half" }
+A3 = { style = "boom", busy = true }
+outro = { style = "swirl", bars = 8 }       # the brushes stir under the waltz, then stop
+
+# the written lines and the solo, step by step. mallet = vibes and celesta, ringing a little past the written length;
+# phrase = a breathed line (swells, scoops after rests, falls before long gaps); solo = writes a part to play
+[players.lines]
+type = "lines"
+natural_vibrato = ["flute"]   # the flute takes carry their own vibrato
+steps = [
+  { play = "mallet", track = "vibes", section = "intro", part = "tannen", vel = 62, shift = 12 },
+  { play = "mallet", track = "celesta", section = "intro", part = "tannen", vel = 56, shift = 12 },
+  { play = "phrase", track = "flute", section = "A1", part = "midwinter1", vel = 74, falls = false, depth = 0.0, rate = 5.0 },
+  { play = "phrase", track = "flute", section = "A2", part = "midwinter2", vel = 76, grace = true, falls = false, depth = 0.0, rate = 5.0 },
+  { play = "mallet", track = "vibes", section = "B1", part = "bridge", vel = 80 },
+  { play = "solo", section = "solo", part = "solo", lo = 65, hi = 86, start = 74, run_at = 6, run = [10, 0, 2, 5, 7] },
+  { play = "phrase", track = "flute", section = "solo", part = "solo", vel = 78, depth = 0.0, rate = 5.0 },
+  { play = "phrase", track = "flute", section = "B2", part = "bridge", vel = 78, falls = false, depth = 0.0, rate = 5.0 },
+  { play = "phrase", track = "flute", section = "A3", part = "midwinter1", vel = 80, grace = true, falls = false, depth = 0.0, rate = 5.0 },
+  { play = "mallet", track = "vibes", section = "A3", part = "midwinter1", vel = 72 },
+  { play = "phrase", track = "flute", section = "outro", part = "tannen_outro", vel = 66, falls = false, depth = 0.0, rate = 5.0 },
+  { play = "mallet", track = "vibes", section = "outro", part = "tannen_outro", vel = 60, shift = 12 },
+]
+
+[players.keys]
+type = "jazz_keys"            # vibes = "pedal" (hold the bar) or "comp" (two upper voicings, the & of 2 and 4)
+[players.keys.sections]       # flakes = celesta on 4 and the & of 4 every other bar, high chord tones
+intro = { vibes = "pedal" }
+A1 = { flakes = true }
+A2 = { vibes = "comp" }
+solo = { from = 8, vibes = "comp" }
+A3 = { flakes = true }
+outro = { vibes = "pedal" }
+
+[players.pad]
+type = "pad"                  # strings: the upper voicing an octave up, the bar long (the last chord: last_beats)
+last_beats = 8
+[players.pad.sections]
+intro = { from = 5, vel = 34 }
+B1 = { vel = 42 }
+solo = { from = 8, vel = 42 }
+B2 = { vel = 42 }
+A3 = { vel = 42 }
+outro = { vel = 34 }
+
+[players.sub]
+type = "sub"                  # the sine sub under the beat, folded into G1-F#2; no humanize
+fold = [31, 42]
+push = { F13 = -6 }           # the second hit of the bar moves by this under the named chords (B into B-flat)
+last_beats = 7.0
+[players.sub.sections]
+intro = { from = 9, style = "pickup", pitch = 41 }
+A1 = { style = "two" }
+A2 = { style = "two" }
+B1 = { style = "hold_even" }  # held on the even bars, two hits on the odd ones
+solo = { style = "two" }
+B2 = { style = "hold" }
+A3 = { style = "two" }

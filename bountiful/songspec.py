@@ -51,8 +51,7 @@ PC = {"C": 0, "C#": 1, "Db": 1, "D": 2, "D#": 3, "Eb": 3, "E": 4, "F": 5, "F#": 
       "A": 9, "A#": 10, "Bb": 10, "B": 11}
 
 
-class SpecError(ValueError):
-    pass
+from songspec_beats import SpecError  # noqa: E402,F401  (one error class for both engines)
 
 
 # ------------------------------------------------------------------ loading
@@ -660,6 +659,17 @@ def main(argv):
     S = load(args[0])
     log = lambda m: print(m, flush=True)  # noqa: E731
     try:
+        if S.get("perform", {}).get("engine") == "beats":          # written in beats: songspec_beats.py
+            import songspec_beats as SB
+            title = title or S["meta"]["title"]
+            if "--dry" in argv:
+                SB.backend(S)
+                G = SB.compose(S)
+                log(f"{title}: {len(G.form)} bars, " + ", ".join(f"{k} {len(v)}" for k, v in G.notes.items()))
+                return 0
+            if "--validate" in argv:
+                raise SpecError(f"the {S['render']['backend']} backend checks the render as it builds; build it again")
+            return SB.build(S, LT.B.DATA / "tracks" / LT.B.slug(title), title, log)
         if "--dry" in argv:
             parts, _ = compose(S)
             to_lt(S, title, log)

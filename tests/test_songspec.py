@@ -1,4 +1,4 @@
-"""Song Spec: the Moss Radio port composes the same notes and builds the same LT spec as bountiful/moss_radio.py.
+"""Song Spec: the ports (Moss Radio, Orange Mound Fog, Window Frost) compose the same notes as their scripts.
 
     $PY -I tests/test_songspec.py
 """
@@ -115,6 +115,34 @@ cfg = {"grid": O.GRID, "drum_humanize_ms": 4, "_bpm": 70}
 layers = ["vinyl", "kick", "snare", "clap", "hat", "open", "perc"]
 takes = [PR.drum_bar("grid", order, None, 5, np.random.default_rng(7), cfg) for order in (layers, layers[::-1])]
 check("grid drums independent of layer order", [] if takes[0] == takes[1] else ["the take changes with the order"])
+
+# Window Frost: the beats engine writes the script's notes, controller events and sub, and leaves the random stream
+# where the script's writers left it (the mixer goes on drawing from it)
+import window_frost as WF  # noqa: E402
+import songspec_beats as SB  # noqa: E402
+WF.write_all()
+G = SB.compose(SS.load(ROOT / "records" / "window-frost.toml"))
+check("Window Frost: notes", (f"{t}: {len(WF.NOTES[t])} in the script, {len(G.notes[t])} in the port"
+                              for t in WF.NOTES if WF.NOTES[t] != G.notes[t]))
+check("Window Frost: controller events", (f"{t}: {len(WF.CTRL[t])} in the script, {len(G.ctrl[t])} in the port"
+                                          for t in WF.CTRL if WF.CTRL[t] != G.ctrl[t]))
+check("Window Frost: sub and solo", [x for x, ok in [("sub", WF.SUB_NOTES == G.sub),
+                                                     ("solo", WF.SOLO_LINE == G.parts["solo"])] if not ok])
+tup = {n: (c["bass"], c["v"]) for n, c in G.chords.items()}
+check("Window Frost: form", [] if WF.FORM == [(s, m, tup[c], i) for s, m, c, i in G.form] else ["forms differ"])
+check("Window Frost: random stream", [] if WF.rng.random() == G.rng.random() else ["left in another place"])
+check("Window Frost: parts", [p for p, a, b in [("tannen", WF.TANNEN, G.parts["tannen"]),
+                                                ("tannen_outro", WF.OUTRO_TUNE, G.parts["tannen_outro"]),
+                                                ("midwinter1", WF.MW1, G.parts["midwinter1"]),
+                                                ("midwinter2", WF.MW2, G.parts["midwinter2"]),
+                                                ("bridge", WF.BRIDGE, G.parts["bridge"])] if a != b])
+s4 = SS.load(ROOT / "records" / "window-frost.toml")
+s4["render"]["backend"] = "os"
+try:
+    SB.backend(s4)
+    check("render backend allow-list", ["an unknown backend was imported"])
+except SS.SpecError:
+    check("render backend allow-list", [])
 
 print("all pass" if not fails else f"{fails} failed")
 sys.exit(1 if fails else 0)

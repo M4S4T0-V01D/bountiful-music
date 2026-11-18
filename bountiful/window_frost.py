@@ -822,13 +822,17 @@ def fits(notes, chords) -> bool:
     return all(p % 12 in SCALE[chords[off]] for off, _pos, _dur, p in notes)
 
 
-def main() -> int:
+def write_all() -> None:
     write_piano(); write_bass(); write_drums(); write_melody(); write_keys(); write_pad(); write_sub()
+
+
+def mix(out: Path = OUT, title: str = TITLE) -> int:
+    """render and mix NOTES, CTRL and SUB_NOTES (Song Spec fills them from records/window-frost.toml), then the checks"""
     tail = 7.0
     length = int((TOTAL_BEATS * SPB + tail) * SR)
-    (OUT / "stems").mkdir(parents=True, exist_ok=True)
-    (OUT / "exports").mkdir(exist_ok=True)
-    (OUT / "window_frost.mid").write_bytes(smf([tempo_track()] + [stem_track(n) for n in STEMS]))
+    (out / "stems").mkdir(parents=True, exist_ok=True)
+    (out / "exports").mkdir(exist_ok=True)
+    (out / "window_frost.mid").write_bytes(smf([tempo_track()] + [stem_track(n) for n in STEMS]))
 
     with tempfile.TemporaryDirectory() as td:
         st = {n: render(n, length, Path(td)) for n in STEMS}
@@ -854,9 +858,9 @@ def main() -> int:
         st[n] = st[n] * duck(kicks, length, 2.0, 0.25)
     st["bass"] = st["bass"] * duck(kicks, length, 2.5, 0.15)
     for n in st:
-        sf.write(OUT / "stems" / f"{n}.wav", st[n], SR, subtype="PCM_24")
-    sf.write(OUT / "stems" / "beat.wav", beat, SR, subtype="PCM_24")
-    sf.write(OUT / "stems" / "sub.wav", sub, SR, subtype="PCM_24")
+        sf.write(out / "stems" / f"{n}.wav", st[n], SR, subtype="PCM_24")
+    sf.write(out / "stems" / "beat.wav", beat, SR, subtype="PCM_24")
+    sf.write(out / "stems" / "sub.wav", sub, SR, subtype="PCM_24")
 
     mix = sum(st[n] * db(STEMS[n][4]) for n in STEMS) + beat * db(BEAT_GAIN) + sub * db(SUB_GAIN)
     # the fire stays across the room; the wind comes up at both ends, when the band is quiet
@@ -865,7 +869,7 @@ def main() -> int:
     fire_env = env([(0, db(-20)), (a_start, db(-30)), (o_start, db(-30)),
                     (end_t, db(-20)), (end_t + tail, db(-20))], length)
     amb = wind(length) * wind_env + fire(length) * fire_env + vinyl(length) * db(-25)
-    sf.write(OUT / "stems" / "ambience.wav", amb, SR, subtype="PCM_24")
+    sf.write(out / "stems" / "ambience.wav", amb, SR, subtype="PCM_24")
     mix = mix + amb
     mix = filt(filt(mix, "highpass", 30), "lowpass", 13000)
     mix = wow(mix)
@@ -881,10 +885,10 @@ def main() -> int:
         mix *= db(-1.0 - tp)
     mix = mix.astype(np.float32)
 
-    wav = OUT / "exports" / f"{TITLE} - {ARTIST}.wav"
+    wav = out / "exports" / f"{title} - {ARTIST}.wav"
     sf.write(wav, mix, SR, subtype="PCM_24")
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(wav), "-c:a", "libmp3lame",
-                    "-b:a", "320k", "-metadata", f"title={TITLE}", "-metadata", f"artist={ARTIST}",
+                    "-b:a", "320k", "-metadata", f"title={title}", "-metadata", f"artist={ARTIST}",
                     "-metadata", "genre=Jazz-hop", "-metadata", "date=2026",
                     str(wav.with_suffix(".mp3"))], check=True)
 
@@ -908,7 +912,7 @@ def main() -> int:
             and [m - 5 for *_x, m in MW2] == MIDWINTER_ABC[1],
         "every line fits its changes": fits(TANNEN, INTRO) and fits(OUTRO_TUNE, OUTRO) and fits(MW1, A_CH)
             and fits(MW2, A2_CH) and fits(BRIDGE, B_CH) and fits(SOLO_LINE, A_CH + A2_CH),
-        "ends on Bbmaj9": FORM[-1][2] is BBM9,
+        "ends on Bbmaj9": FORM[-1][2] == BBM9,
         "no beat or sub before A1": max(np.abs(beat[:intro_end]).max(), np.abs(sub[:intro_end]).max()) < 1e-4,
         "no beat in the outro": np.abs(beat[o0:o1]).max() < 1e-4,
         "sub is mono": np.allclose(sub[:, 0], sub[:, 1]),
@@ -923,6 +927,11 @@ def main() -> int:
           f"{int(dur // 60)}:{int(dur % 60):02d}, {len(FORM)} bars, {len(SOLO_LINE)} solo notes")
     return 0 if all(checks.values()) else 1
 
+
+
+def main() -> int:
+    write_all()
+    return mix()
 
 if __name__ == "__main__":
     sys.exit(main())
