@@ -42,7 +42,11 @@ LIBRARIES = {
     "pixel": "samples/pixel",
     "own": "our own generated sounds (OWN below)",
 }
-OWN = {"vinyl-crackle-80": SAMPLES / "lofi" / "vinyl_crackle_4bar_80.wav"}
+OWN = {"vinyl-crackle-70": SAMPLES / "lofi" / "vinyl_crackle_4bar_70.wav",
+       "vinyl-crackle-80": SAMPLES / "lofi" / "vinyl_crackle_4bar_80.wav",
+       "cowbell-808-tuned": SAMPLES / "phonk" / "cowbell808_tuned.wav"}
+# engine voices written in Python: a record names one of these, never a file, so a .toml can't run code of its choosing
+PYVOICES = {"tr808": HERE / "tr808_voice.py"}
 PC = {"C": 0, "C#": 1, "Db": 1, "D": 2, "D#": 3, "Eb": 3, "E": 4, "F": 5, "F#": 6, "Gb": 6, "G": 7, "G#": 8, "Ab": 8,
       "A": 9, "A#": 10, "Bb": 10, "B": 11}
 
@@ -156,8 +160,9 @@ def voice_lead(ch, name, prev, V):
 
 
 def voice_near(ch, name, V):
-    """each chord tone in [lo, hi] (Orange Mound's chord_voicing())"""
+    """each chord tone in [lo, hi], the first `tones` intervals only if given (Orange Mound's chord_voicing())"""
     root, iv = ch[name]
+    iv = iv[:V["tones"]] if "tones" in V else iv
     lo, hi = V.get("lo", 55), V.get("hi", 72)
     out = []
     for i in iv:
@@ -292,6 +297,9 @@ def compose(S):
                             put(f.get("track", fn), b, s, q + f.get("shift", 0), n_, vv, f.get("jitter_ms", 0),
                                 f.get("gap", 0.04))
             b += 1
+    for n, p in players.items():
+        if p.get("sort"):
+            out[p.get("track", n)].sort()
     return out, chart
 
 
@@ -344,8 +352,11 @@ def sound_path(sid: str, allow) -> str:
 
 def lmms_voice(v: dict, allow) -> tuple:
     lib, _, name = v["sound"].partition(":")
+    if lib == "own" and "root" in v:                   # a pitched sample, played by LMMS's AudioFileProcessor
+        return ({"sample": sound_path(v["sound"], allow), "root": v["root"], "vol": v.get("vol", 100)},
+                f"{v['label']} (LMMS AudioFileProcessor)", copy.deepcopy(v.get("fx", {})))
     if lib != "gs" or lib not in allow:
-        raise SpecError(f"voice sound {v['sound']!r}: only gs:<bank>:<patch> is supported for instruments so far")
+        raise SpecError(f"voice sound {v['sound']!r}: an instrument is gs:<bank>:<patch> or an own:<sample> with a root")
     bank, patch = (int(x) for x in name.split(":"))
     voice = {"plugin": "sf2player", "attrs": {"src": str(SF2), "bank": bank, "patch": patch, "gain": v.get("gain", 3.0),
                                               "reverbOn": 0, "chorusOn": 0}}
@@ -388,6 +399,11 @@ def to_lt(S, title: str | None = None, log=print) -> dict:
     for n, v in S.get("voices", {}).items():
         if v["sound"].startswith("engine:"):
             e = copy.deepcopy(v["engine"])
+            if e.get("kind") == "pyvoice":
+                mod = e.get("preset", {}).get("module")
+                if mod not in PYVOICES:
+                    raise SpecError(f"voices.{n}: pyvoice module {mod!r} isn't one of {', '.join(PYVOICES)}")
+                e["preset"]["module"] = str(PYVOICES[mod])
             fix_glide(e, f"voices.{n}", log)
             extra[n] = e
         else:
@@ -602,7 +618,7 @@ def validate(S, title=None, log=print) -> bool:
             for sec in c["in"]:
                 p = span(sec)[1] - 1
                 bad += [n for n in in_bars(drums, p, p + 1) if n["pitch"] not in {PR.GM[s] for s in c.get("except", [])}
-                        and (n["start"] - (p - 1) * bar_s) > c["after_beat"] * beat + 0.02]
+                        and c["after_beat"] * beat + 0.02 < n["start"] - (p - 1) * bar_s < bar_s - 0.03]   # not the next downbeat, humanized early
             check(c.get("name", f"the beat stops after beat {c['after_beat']}"), not bad, f"{len(bad)} hits after it")
         elif t == "louder":                    # section a is at least db louder than section b (RMS)
             d = rms(*span(c["a"])) - rms(*span(c["b"]))
@@ -613,6 +629,8 @@ def validate(S, title=None, log=print) -> bool:
             check(c.get("name", f"{c['in']}: {c['a']} Hz >= {c['db']} dB over {c['b']} Hz"), d >= c["db"], f"{d:+.1f} dB")
         elif t == "band_drop":                 # a band is at least db quieter per bar in section b than in a
             (a0, a1), (b0, b1) = span(c["a"]), span(c["b"])
+            if "bars" in c:                    # only the first n bars of each, e.g. to leave out a pocket bar
+                a1, b1 = a0 + c["bars"][0], b0 + c["bars"][1]
             lo_, hi_ = c["band"]
             d = (band(a0, a1, lo_, hi_) - 10 * np.log10(a1 - a0)) - (band(b0, b1, lo_, hi_) - 10 * np.log10(b1 - b0))
             check(c.get("name", f"{c['b']} {lo_}-{hi_} Hz >= {c['db']} dB under {c['a']}"), d >= c["db"], f"{d:.1f} dB")

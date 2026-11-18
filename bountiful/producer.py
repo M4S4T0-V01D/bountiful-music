@@ -470,7 +470,7 @@ def drum_bar(style: str, layers: set, fill: str | None, bar: int, rng, cfg) -> l
         if cfg.get("electronium"):               # layers the grid doesn't write, the Electronium's clocks play
             el = {x for x in layers if x not in grid}
             ev += [(s16(s), snd, rnd(v, 0.03)) for s, snd, v in cfg["electronium"].drum_steps(el, bar)]
-        for layer in layers:
+        for layer in [x for x in grid if x in layers]:   # the grid's order: a set's order changes with the hash seed, and with it every rnd() draw
             pat = grid.get(layer)
             if pat is None:
                 continue

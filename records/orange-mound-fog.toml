@@ -1,0 +1,366 @@
+# Orange Mound Fog: Memphis rap / phonk instrumental, 70 bpm, G minor, 64 bars (~3:39), made to rap over. The Song Spec
+# port of bountiful/orange_mound.py: it rebuilds the same MIDI note for note (humanize = "legacy").
+#   $PY -I bountiful/songspec.py records/orange-mound-fog.toml
+
+[meta]
+title = "Orange Mound Fog"
+genre = "lofi-downtempo"
+skeleton = "songs/lofi-downtempo/lofi-downtempo-1346770832.am.json"   # only for the drum grid's bar count
+key = "G minor"
+scale = ["G", "Ab", "A", "Bb", "C", "D", "Eb", "F", "F#"]   # G minor with the Phrygian b2 and the raised 7th
+bpm = 70
+swing = 0.5
+seed = 7
+humanize_seed = 70
+album = ""
+track = 0
+year = 2026
+tracks = ["riff", "box", "bell", "choir", "tubular", "boom"]
+blurb = """Memphis rap / phonk instrumental at 70 bpm in G minor, made to rap over: an eerie tresillo piano riff over \
+Gm - Ab - Eb - D7b9, a pitched 808 cowbell hook, a choir, and a tuned, sliding 808 bass under a crunchy TR-808 kit \
+with rolling hats. Verses leave room for the vocal and drop the beat into every hook."""
+
+[perform]
+humanize = "legacy"
+swing = false
+loop_from = "song"     # the 4-bar loop runs from bar 1, whatever the section
+
+[sounds]
+allow = ["gs", "dm", "own"]
+
+# ------------------------------------------------------------------ harmony
+[chords]
+Gm = { root = "G", intervals = [0, 3, 7] }
+Ab = { root = "Ab", intervals = [0, 4, 7] }
+Eb = { root = "Eb", intervals = [0, 4, 7] }
+D7b9 = { root = "D", intervals = [0, 4, 7, 10, 13] }
+
+[loops]
+A = [["Gm"], ["Gm", "Ab"], ["Eb"], ["D7b9"]]
+
+[voicing]   # each chord tone in 55-72, up to four of them (the choir)
+mode = "near"
+lo = 55
+hi = 72
+tones = 4
+
+# ------------------------------------------------------------------ written parts: per bar [step16, pitch, length16, vel]
+[parts]
+riff = [   # the tresillo (3-3-2) piano riff
+  [[0, 67, 3, 0.8], [3, 74, 3, 0.7], [6, 70, 2, 0.65], [8, 67, 3, 0.75], [11, 74, 3, 0.65], [14, 75, 2, 0.6]],
+  [[0, 74, 3, 0.75], [3, 70, 3, 0.65], [6, 67, 2, 0.6], [8, 68, 3, 0.8], [11, 72, 3, 0.65], [14, 75, 2, 0.6]],
+  [[0, 70, 3, 0.75], [3, 75, 3, 0.7], [6, 67, 2, 0.6], [8, 70, 3, 0.7], [11, 79, 3, 0.7], [14, 75, 2, 0.6]],
+  [[0, 66, 3, 0.8], [3, 72, 3, 0.7], [6, 75, 2, 0.65], [8, 74, 3, 0.75], [11, 66, 3, 0.65], [14, 69, 2, 0.6]],
+]
+bell = [   # the cowbell hook
+  [[0, 79, 2, 0.9], [3, 79, 1, 0.6], [4, 82, 2, 0.8], [6, 79, 2, 0.7], [8, 86, 3, 0.9], [11, 84, 2, 0.7], [13, 82, 1, 0.6], [14, 79, 2, 0.7]],
+  [[0, 77, 2, 0.8], [3, 79, 1, 0.6], [4, 80, 4, 0.85], [8, 84, 2, 0.8], [10, 80, 2, 0.7], [12, 79, 4, 0.75]],
+  [[0, 82, 2, 0.9], [3, 82, 1, 0.6], [4, 87, 2, 0.8], [6, 82, 2, 0.7], [8, 86, 3, 0.85], [11, 84, 2, 0.7], [13, 82, 1, 0.6], [14, 79, 2, 0.7]],
+  [[0, 78, 3, 0.9], [3, 81, 3, 0.75], [6, 84, 2, 0.8], [8, 87, 4, 0.85], [12, 86, 4, 0.8]],
+]
+b808 = [   # a fifth field "s" slides into the next note
+  [[0, 31, 7, 1.0], [7, 31, 3, 0.85], [10, 31, 4, 0.9, "s"], [14, 43, 2, 0.75]],
+  [[0, 31, 6, 1.0], [6, 31, 2, 0.8], [8, 32, 6, 0.95, "s"], [14, 34, 2, 0.8]],
+  [[0, 39, 7, 1.0], [7, 39, 3, 0.8], [10, 34, 4, 0.85], [14, 39, 2, 0.75]],
+  [[0, 38, 6, 1.0], [6, 38, 2, 0.8], [8, 38, 4, 0.9, "s"], [12, 42, 2, 0.8, "s"], [14, 38, 2, 0.7]],
+]
+pocket808 = [   # the last verse bar: one long D under the drop
+  [[0, 38, 12, 1.0]],
+]
+
+# ------------------------------------------------------------------ players
+[players.choir]
+type = "chords"
+hold_vel = 0.5
+jitter_ms = 0
+gap = 0.0
+
+[players.riff]
+type = "line"
+part = "riff"
+jitter_ms = 6
+
+[players.box]         # the music box doubles the riff an octave up
+type = "line"
+part = "riff"
+shift = 12
+vel = 0.8
+jitter_ms = 3
+
+[players.bell]
+type = "line"
+part = "bell"
+jitter_ms = 3
+
+[players.tubular]     # one far-off bell every 8 bars
+type = "every"
+bars = 8
+offset = 4
+note = [0, 74, 16, 0.5]
+jitter_ms = 0
+
+[players.boom]        # the tuned 808
+type = "line"
+part = "b808"
+jitter_ms = 0
+gap = 0.08
+tie_gap = 0.0
+sort = true
+
+# ------------------------------------------------------------------ arrangement
+[producer]
+loop = "A"
+parts = ["comp"]
+
+[[sections]]
+name = "Intro"
+bars = 4
+loop = "A"
+drums = ["vinyl"]
+crash = false
+play = { riff = 0.8, choir = { mode = "hold", hold_vel = 0.42 } }
+
+[[sections]]
+name = "Hook 1"
+bars = 8
+loop = "A"
+drums = ["vinyl", "kick", "snare", "clap", "hat", "open", "perc"]
+crash = true
+play = { riff = 1.0, box = true, bell = true, choir = "hold", boom = true }
+
+[[sections]]
+name = "Verse 1"
+bars = 16
+loop = "A"
+drums = ["vinyl", "kick", "snare_v", "clap_v", "hat"]
+crash = false
+fill = "drop"
+play = { riff = 0.7, tubular = true, boom = { part = "b808", last = "pocket808" } }
+
+[[sections]]
+name = "Hook 2"
+bars = 8
+loop = "A"
+drums = ["vinyl", "kick", "snare", "clap", "hat", "open", "perc"]
+crash = true
+play = { riff = 1.0, box = true, bell = true, choir = "hold", boom = true }
+
+[[sections]]
+name = "Verse 2 open"   # 808 and hats only
+bars = 2
+loop = "A"
+drums = ["vinyl", "hat3"]
+crash = false
+play = { riff = 0.7, boom = true }
+
+[[sections]]
+name = "Verse 2"
+bars = 14
+loop = "A"
+drums = ["vinyl", "kick", "snare_v", "clap_v", "hat3"]
+crash = false
+fill = "drop"
+play = { riff = 0.7, tubular = true, boom = { part = "b808", last = "pocket808" } }
+
+[[sections]]
+name = "Hook 3"
+bars = 8
+loop = "A"
+drums = ["vinyl", "kick", "snare", "clap", "hat", "open", "perc"]
+crash = true
+play = { riff = 1.0, box = true, bell = true, choir = "hold", boom = true }
+
+[[sections]]
+name = "Outro"
+bars = 4
+loop = "A"
+drums = ["vinyl"]
+crash = false
+play = { riff = 0.75, choir = "hold", boom = { part = "b808", for = 2 } }
+
+# ------------------------------------------------------------------ drums: a crunchy TR-808, kick on the 808's hits
+[drums]
+humanize_ms = 4
+
+[drums.kit]
+kick = { sound = "dm:tr808/kick", bus = "kick" }
+snare = { sound = "dm:tr808/snare", bus = "snare" }
+clap = { sound = "dm:tr808/handclap", bus = "snare", gain_db = -2 }
+hat = { sound = "dm:tr808/hat_c", bus = "hats" }
+open = { sound = "dm:tr808/hat_o", bus = "hats", gain_db = -6, lp = 9000 }
+clave = { sound = "dm:tr808/clave", bus = "perc" }
+crash = { sound = "dm:tr808/ride", bus = "hats", gain_db = -6, lp = 8000 }
+swell = { sound = "own:vinyl-crackle-70", bus = "vinyl", detune_cents = 0 }
+
+[drums.buses]
+kick = { hp = 45, mono = true, drive = 1.6, eq = [["peak", 3500, 2.0, 1.0]], gain_db = -4.0 }
+snare = { hp = 160, lp = 9000, drive = 1.5, crush = { bits = 10, rate = 22050, mix = 0.45 }, sends = { room = 0.2 }, gain_db = 4.0 }
+hats = { pan = 0.12, hp = 400, lp = 10000, crush = { bits = 12, rate = 26040, mix = 0.35 }, gain_db = 14.0 }
+perc = { pan = -0.35, crush = { bits = 10, rate = 22050, mix = 0.45 }, sends = { echo = 0.25 }, gain_db = 10.0 }
+vinyl = { hp = 500, lp = 8000, gain_db = 0.0 }
+
+# per layer, variants a-d: [step16, vel, sound?, late_ms?]. hat d rolls 32nds and a triplet stutter; hat3 is triplets
+[drums.grid]
+kick.a = [[0, 1.0], [7, 0.8], [10, 0.9]]
+kick.b = [[0, 1.0], [6, 0.8], [8, 0.9]]
+kick.c = [[0, 1.0], [7, 0.8], [10, 0.85]]
+kick.d = [[0, 1.0], [6, 0.8], [8, 0.9]]
+snare.a = [[4, 0.95, "snare"], [12, 0.95, "snare"]]
+snare.b = [[4, 0.95, "snare"], [12, 0.95, "snare"]]
+snare.c = [[4, 0.95, "snare"], [12, 0.95, "snare"]]
+snare.d = [[4, 0.95, "snare"], [12, 0.95, "snare"], [15, 0.35, "snare"]]
+clap = [[4, 0.85, "clap", 4], [12, 0.88, "clap", 6]]
+hat.a = [[0, 0.62, "hat"], [1, 0.34, "hat"], [2, 0.48, "hat"], [3, 0.34, "hat"], [4, 0.62, "hat"], [5, 0.34, "hat"], [6, 0.48, "hat"], [7, 0.34, "hat"], [8, 0.62, "hat"], [9, 0.34, "hat"], [10, 0.48, "hat"], [11, 0.34, "hat"], [12, 0.62, "hat"], [13, 0.34, "hat"], [14, 0.48, "hat"], [15, 0.34, "hat"]]
+hat.b = [[0, 0.62, "hat"], [1, 0.34, "hat"], [2, 0.48, "hat"], [3, 0.34, "hat"], [4, 0.62, "hat"], [5, 0.34, "hat"], [6, 0.48, "hat"], [7, 0.34, "hat"], [8, 0.62, "hat"], [9, 0.34, "hat"], [10, 0.48, "hat"], [11, 0.34, "hat"], [12, 0.62, "hat"], [13, 0.34, "hat"], [14, 0.48, "hat"], [15, 0.34, "hat"]]
+hat.c = [[0, 0.62, "hat"], [1, 0.34, "hat"], [2, 0.48, "hat"], [3, 0.34, "hat"], [4, 0.62, "hat"], [5, 0.34, "hat"], [6, 0.48, "hat"], [7, 0.34, "hat"], [8, 0.62, "hat"], [9, 0.34, "hat"], [10, 0.48, "hat"], [11, 0.34, "hat"], [12, 0.62, "hat"], [13, 0.34, "hat"], [14, 0.48, "hat"], [15, 0.34, "hat"]]
+hat.d = [[0, 0.62, "hat"], [1, 0.34, "hat"], [2, 0.48, "hat"], [3, 0.34, "hat"], [4, 0.62, "hat"], [5, 0.34, "hat"], [6, 0.48, "hat"], [7, 0.34, "hat"], [8, 0.62, "hat"], [9, 0.34, "hat"], [10, 0.48, "hat"], [11, 0.34, "hat"], [12.0, 0.32, "hat"], [12.5, 0.35, "hat"], [13.0, 0.38, "hat"], [13.5, 0.41000000000000003, "hat"], [14.0, 0.36, "hat"], [14.333333333333334, 0.39999999999999997, "hat"], [14.666666666666666, 0.44, "hat"], [15.0, 0.48, "hat"], [15.333333333333334, 0.52, "hat"], [15.666666666666666, 0.56, "hat"]]
+hat3.a = [[0.0, 0.5, "hat"], [1.3333333333333333, 0.34, "hat"], [2.6666666666666665, 0.34, "hat"], [4.0, 0.5, "hat"], [5.333333333333333, 0.34, "hat"], [6.666666666666667, 0.34, "hat"], [8.0, 0.5, "hat"], [9.333333333333334, 0.34, "hat"], [10.666666666666666, 0.34, "hat"], [12.0, 0.5, "hat"], [13.333333333333334, 0.34, "hat"], [14.666666666666666, 0.34, "hat"]]
+hat3.b = [[0, 0.62, "hat"], [1, 0.34, "hat"], [2, 0.48, "hat"], [3, 0.34, "hat"], [4, 0.62, "hat"], [5, 0.34, "hat"], [6, 0.48, "hat"], [7, 0.34, "hat"], [8, 0.62, "hat"], [9, 0.34, "hat"], [10, 0.48, "hat"], [11, 0.34, "hat"], [12, 0.62, "hat"], [13, 0.34, "hat"], [14, 0.48, "hat"], [15, 0.34, "hat"]]
+hat3.c = [[0.0, 0.5, "hat"], [1.3333333333333333, 0.34, "hat"], [2.6666666666666665, 0.34, "hat"], [4.0, 0.5, "hat"], [5.333333333333333, 0.34, "hat"], [6.666666666666667, 0.34, "hat"], [8.0, 0.5, "hat"], [9.333333333333334, 0.34, "hat"], [10.666666666666666, 0.34, "hat"], [12.0, 0.5, "hat"], [13.333333333333334, 0.34, "hat"], [14.666666666666666, 0.34, "hat"]]
+hat3.d = [[0, 0.62, "hat"], [1, 0.34, "hat"], [2, 0.48, "hat"], [3, 0.34, "hat"], [4, 0.62, "hat"], [5, 0.34, "hat"], [6, 0.48, "hat"], [7, 0.34, "hat"], [8, 0.62, "hat"], [9, 0.34, "hat"], [10, 0.48, "hat"], [11, 0.34, "hat"], [12.0, 0.32, "hat"], [12.5, 0.35, "hat"], [13.0, 0.38, "hat"], [13.5, 0.41000000000000003, "hat"], [14.0, 0.36, "hat"], [14.333333333333334, 0.39999999999999997, "hat"], [14.666666666666666, 0.44, "hat"], [15.0, 0.48, "hat"], [15.333333333333334, 0.52, "hat"], [15.666666666666666, 0.56, "hat"]]
+open = [[2, 0.5, "open"], [10, 0.45, "open"]]
+snare_v.a = [[4, 0.82, "snare"], [12, 0.82, "snare"]]
+snare_v.b = [[4, 0.82, "snare"], [12, 0.82, "snare"]]
+snare_v.c = [[4, 0.82, "snare"], [12, 0.82, "snare"]]
+snare_v.d = [[4, 0.82, "snare"], [12, 0.82, "snare"], [15, 0.3, "snare"]]
+clap_v = [[4, 0.7, "clap", 4], [12, 0.72, "clap", 6]]
+perc.a = [[6, 0.5, "clave"]]
+perc.b = [[14, 0.45, "clave"]]
+perc.c = [[6, 0.5, "clave"], [15, 0.35, "clave"]]
+perc.d = []
+vinyl.a = [[0, 0.8, "swell"]]
+vinyl.b = []
+vinyl.c = []
+vinyl.d = []
+
+# ------------------------------------------------------------------ voices
+[voices.riff]
+sound = "gs:0:0"
+label = "Grand Piano"
+fx = { hp = 180, lp = 6000, eq = [["peak", 300, -2.0, 1.0]], crush = { bits = 12, rate = 26040, mix = 0.4 }, drive = 1.2, wow = { depth_ms = 1.4, rate = 0.5, flutter_ms = 0.15 }, sends = { room = 0.25, plate = 0.15 }, width = 0.8, gain_db = 0.0 }
+
+[voices.box]
+sound = "gs:0:10"
+label = "Music Box"
+fx = { hp = 500, lp = 8000, crush = { bits = 12, rate = 26040, mix = 0.4 }, wow = { depth_ms = 1.4, rate = 0.5, flutter_ms = 0.15 }, pan = 0.25, sends = { plate = 0.3, echo = 0.15 }, gain_db = 0.0 }
+
+[voices.bell]         # the 808 cowbell, retuned so its lower partial sits on the note
+sound = "own:cowbell-808-tuned"
+label = "TR-808 cowbell, tuned and pitched"
+root = 73
+vol = 100
+fx = { hp = 350, drive = 1.6, crush = { bits = 12, rate = 26040, mix = 0.3 }, sends = { echo = 0.18, plate = 0.12 }, width = 1.0, gain_db = 0.0 }
+
+[voices.choir]
+sound = "gs:0:52"
+label = "Choir Aahs"
+fx = { hp = 220, lp = 4500, width = 0.9, wow = { depth_ms = 1.4, rate = 0.5, flutter_ms = 0.15 }, sends = { plate = 0.4 }, gain_db = 0.0 }
+
+[voices.tubular]      # verses only, so no level target: set by hand
+sound = "gs:0:14"
+label = "Tubular Bells"
+fx = { hp = 300, lp = 6000, pan = -0.3, crush = { bits = 12, rate = 26040, mix = 0.4 }, sends = { plate = 0.45, echo = 0.3 }, gain_db = -17.0 }
+
+[voices.boom]         # the tuned TR-808 bass drum, sliding between tied notes
+sound = "engine:pyvoice"
+[voices.boom.engine]
+kind = "pyvoice"
+glide_gap = 0.04
+preset = { module = "tr808", fn = "note", label = "Tuned TR-808 bass drum with slides (bountiful/tr808_voice.py)", decay = 1.4, drive = 2.8, dist_mix = 0.6, glide = 0.08 }
+hp = 25
+lp = 4000
+mono = true
+gain_db = 0.0
+
+# ------------------------------------------------------------------ mix and master
+[mix]
+level_ref = "kick"
+targets = { boom = 3.0, riff = -5.0, box = -11.0, bell = -6.0, choir = -13.0 }
+test_bars = ["@Hook 2", "@Hook 2+7"]
+mmp_drums = true
+lead_hi_follows_lead = false
+sends = { echo = { type = "delay", time_beats = 0.75, feedback = 0.4, tone = 2000, taps = 5 } }
+
+[[mix.automation]]   # the intro opens up
+type = "lowpass"
+tracks = ["riff", "choir"]
+points = [[1, 500], [3, 900], [4.5, 1800], [5, 18000]]
+
+[[mix.automation]]   # each verse (both blocks of verse 2): the riff low-passed, out of the vocal's way
+type = "lowpass"
+tracks = ["riff"]
+points = [["@Verse 1", 18000], ["@Verse 1+0.01", 2400], ["@Hook 2-0.01", 2400], ["@Hook 2", 18000]]
+
+[[mix.automation]]
+type = "lowpass"
+tracks = ["riff"]
+points = [["@Verse 2 open", 18000], ["@Verse 2 open+0.01", 2400], ["@Hook 3-0.01", 2400], ["@Hook 3", 18000]]
+
+[[mix.automation]]
+type = "lowpass"
+tracks = ["riff", "choir", "boom"]
+points = [["@Outro", 18000], ["@Outro+4", 700]]
+
+[[mix.automation]]
+type = "gain"
+tracks = ["riff", "choir", "boom", "vinyl"]
+points = [["@Outro+2", 0], ["@Outro+3", -10], ["@Outro+4.5", -40]]
+
+[master]
+tape = { drive = 1.6, bias = 0.06, bump_db = 1.0, hf_db = -1.5, lp_hz = 13000, hiss_db = -62, wow_ms = 0.15 }
+target_lufs = -10.0
+true_peak = -1.0
+mono_below = 120
+
+# ------------------------------------------------------------------ checks, run on the render
+[validate]
+length_s = [180, 240]
+lufs_tolerance = 0.7
+
+[[checks]]
+type = "no_drums"
+in = "Intro"
+except = ["swell"]
+name = "intro: no drums"
+
+[[checks]]
+type = "absent"
+track = "bell"
+in = ["Verse 1", "Verse 2 open", "Verse 2"]
+name = "no cowbell lead in the verses"
+
+[[checks]]
+type = "stops"
+in = ["Verse 1", "Verse 2"]
+after_beat = 3
+except = ["swell"]
+name = "verse pockets: beat stops after beat 3 of each verse's last bar"
+
+[[checks]]
+type = "in_harmony"
+tracks = ["bell", "riff"]
+name = "riff and hook in G (harmonic) minor"
+
+[[checks]]
+type = "on_chord"
+track = "boom"
+every_beats = 2
+window_beats = 0.05
+name = "808 on beats 1 and 3 is a chord tone"
+
+[[checks]]
+type = "bands"
+in = "Hook 2"
+a = [20, 120]
+b = [120, 8000]
+db = 2.0
+name = "bass heavy: energy < 120 Hz above 120 Hz-8 kHz (hook 2)"
+
+[[checks]]
+type = "band_drop"
+a = "Hook 2"
+b = "Verse 1"
+bars = [8, 15]        # verse 1 without its pocket bar
+band = [1000, 4000]
+db = 3.0
+name = "room for vocals: verse 1-4 kHz >= 3 dB under the hook"

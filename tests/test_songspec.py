@@ -12,6 +12,7 @@ import lmms_tracks as LT  # noqa: E402
 
 orig_produce = LT.B.produce
 import moss_radio as M  # noqa: E402  (patches LT.B.produce on import)
+import orange_mound as O  # noqa: E402  (so does this one)
 LT.B.produce = orig_produce
 import songspec as SS  # noqa: E402
 
@@ -53,19 +54,26 @@ def check(name, problems):
     fails += bool(problems)
 
 
-S = SS.load(ROOT / "records" / "moss-radio.toml")
-want, want_chart = M.compose()
-got, got_chart = SS.compose(S)
-check("track order", [] if list(want) == list(got) else [f"script {list(want)} != port {list(got)}"])
-check("notes", (f"{t}: {len(want[t])} notes in the script, {len(got.get(t, []))} in the port; first difference at "
-                f"{next((i for i, (a, b) in enumerate(zip(want[t], got.get(t, []))) if a != b), min(len(want[t]), len(got.get(t, []))))}"
-                for t in want if want[t] != got.get(t)))
-check("chord chart", [] if want_chart == got_chart else ["charts differ"])
+def same_record(label, script, toml):
+    """the port composes the script's notes and chord chart and builds its LT spec"""
+    S = SS.load(ROOT / "records" / toml)
+    want, want_chart = script.compose()
+    got, got_chart = SS.compose(S)
+    check(f"{label}: track order", [] if list(want) == list(got) else [f"script {list(want)} != port {list(got)}"])
+    check(f"{label}: notes", (
+        f"{t}: {len(want[t])} notes in the script, {len(got.get(t, []))} in the port; first difference at "
+        f"{next((i for i, (a, b) in enumerate(zip(want[t], got.get(t, []))) if a != b), min(len(want[t]), len(got.get(t, []))))}"
+        for t in want if want[t] != got.get(t)))
+    check(f"{label}: chord chart", [] if want_chart == got_chart else ["charts differ"])
+    a = plain(script.SPEC)
+    b = plain(SS.to_lt(S, log=lambda m: None))
+    a.pop("rebuild"), b.pop("rebuild")
+    check(f"{label}: LT spec", diff(a, b))
+    return S
 
-a = plain(M.SPEC)
-b = plain(SS.to_lt(S, log=lambda m: None))
-a.pop("rebuild"), b.pop("rebuild")
-check("LT spec", diff(a, b))
+
+S = same_record("Moss Radio", M, "moss-radio.toml")
+same_record("Orange Mound Fog", O, "orange-mound-fog.toml")
 
 # the loader puts its hook in only while it builds
 before = LT.B.produce
@@ -99,6 +107,14 @@ s3 = SS.load(ROOT / "records" / "moss-radio.toml")
 s3["voices"]["sub"]["engine"]["layers"][0]["preset"]["glide"] = 0.0
 SS.to_lt(s3, log=notes.append)
 check("glide 0 is raised to 0.01", [] if any("glide" in n for n in notes) else ["no note logged"])
+
+# a grid beat doesn't depend on the order of the section's layers (they come as a set, whose order follows the hash seed)
+import numpy as np  # noqa: E402
+import producer as PR  # noqa: E402
+cfg = {"grid": O.GRID, "drum_humanize_ms": 4, "_bpm": 70}
+layers = ["vinyl", "kick", "snare", "clap", "hat", "open", "perc"]
+takes = [PR.drum_bar("grid", order, None, 5, np.random.default_rng(7), cfg) for order in (layers, layers[::-1])]
+check("grid drums independent of layer order", [] if takes[0] == takes[1] else ["the take changes with the order"])
 
 print("all pass" if not fails else f"{fails} failed")
 sys.exit(1 if fails else 0)

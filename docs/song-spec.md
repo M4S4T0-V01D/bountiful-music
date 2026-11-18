@@ -23,7 +23,7 @@ Ports:
 | Record | Status |
 |---|---|
 | Moss Radio | `records/moss-radio.toml`: same notes, chord chart and LT spec as the script (unit test) |
-| Orange Mound Fog | next |
+| Orange Mound Fog | `records/orange-mound-fog.toml`: same notes, chord chart and LT spec as the script (unit test) |
 | Window Frost | last in Phase 1; it needs `bend`, `cc` and `pedal` events first |
 
 ## One file, top to bottom
@@ -34,7 +34,7 @@ Ports:
 [sounds]        allow = the libraries the record may use
 [chords]        name = { root = "Db", intervals = [4, 7, 11, 14] }
 [loops]         named chord loops, one list of chords per bar (two chords split the bar)
-[voicing]       mode ("lead" | "near"), lo, hi, max_span, center, start
+[voicing]       mode ("lead" | "near"), lo, hi, max_span, center, start, tones (use only the first n intervals)
 [parts]         written notes, per bar
 [players.*]     how each track plays
 [producer]      the loop and parts Bountiful's producer is given (only the drum grid uses them)
@@ -58,8 +58,10 @@ Ports:
   - `gs:8:4`: GeneralUser GS, bank 8, patch 4.
   - `dm:r_n_b/old_kik`: the rendered drum machines.
   - `iowa:<name>` and `pixel:<name>`: the other sample libraries.
-  - `own:vinyl-crackle-80`: sounds we generated ourselves.
-  - `engine:<kind>`: an engine voice, written out in `[voices.x.engine]`.
+  - `own:vinyl-crackle-80`: sounds we generated ourselves. As a voice, `own:` with `root = <midi note>` plays the
+    sample pitched across the keyboard (Orange Mound's tuned cowbell).
+  - `engine:<kind>`: an engine voice, written out in `[voices.x.engine]`. A `pyvoice` engine names its Python voice by
+    `preset.module`, which must be on the loader's allow-list (`tr808` so far), so a `.toml` can't run arbitrary code.
 
   A library must be in `[sounds] allow`. Paths on disk aren't accepted.
 - **Transforms** reuse a part. `{ part = "theme", bars = "3-4", shift = 12, vel = 0.85, rest = 2 }` takes bars 3-4 of
@@ -70,7 +72,8 @@ Ports:
 
 ## Players
 
-Every player takes `track` (defaults to its own name), `jitter_ms` and `gap`.
+Every player takes `track` (defaults to its own name), `jitter_ms`, `gap`, and `sort = true` to sort the track's notes
+by time at the end (the script did that for the 808).
 
 | type | From | What it does |
 |---|---|---|
@@ -119,7 +122,7 @@ clipping, mono lows and that every track is in the MIDI.
 | `stops` | `in` (sections), `after_beat`, `except`: no drums after that beat in the section's last bar |
 | `louder` | `a`, `b`, `db`: RMS of section a over section b |
 | `bands` | `in`, `a = [lo, hi]`, `b = [lo, hi]`, `db` |
-| `band_drop` | `a`, `b`, `band`, `db`: the band is quieter per bar in section b |
+| `band_drop` | `a`, `b`, `band`, `db`, optional `bars = [n_a, n_b]` to compare only the first bars of each: the band is quieter per bar in section b |
 | `count` | `track`, `min` |
 
 ## Proving the ports
@@ -130,6 +133,14 @@ A port counts as done when the Song Spec build of the record matches the script 
    `lmms_tracks.make`. This runs in seconds: `tests/test_songspec.py`.
 2. The audio: LUFS within 0.1 dB of the script build and the same `validation.md` result. LMMS may not render the same
    sample for sample, so a null test is only informative.
+
+Results: Moss Radio -14.0 / -14.0 LUFS, 12/12 checks. Orange Mound Fog -10.09 / -10.11 LUFS, 13/13 checks.
+
+**Grid drums were not reproducible until 2026-11-18.** `producer.drum_bar` walked the section's drum layers as a `set`,
+whose order follows Python's per-process hash seed (and `-I` ignores `PYTHONHASHSEED`), so each build drew its velocity
+and humanize offsets in a different order: same hits, a different take. It now walks them in the grid's order. The
+released grid-drum records can't be rebuilt bar for bar; a rebuild gives a new take that is the same on every run. The
+`stops` check also ends 30 ms before the bar line now, so the next downbeat humanized early doesn't count as a hit.
 
 ## Decisions (2026-11-18)
 
