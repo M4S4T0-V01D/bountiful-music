@@ -1,0 +1,390 @@
+# Moss Radio: lo-fi hip-hop, 80 bpm, F minor, 57 bars (~2:51). The Song Spec port of bountiful/moss_radio.py:
+# it rebuilds the same MIDI note for note (humanize = "legacy": one random stream, drawn in the script's order).
+#   $PY -I bountiful/songspec.py records/moss-radio.toml
+
+[meta]
+title = "Moss Radio"
+genre = "lofi-downtempo"
+skeleton = "songs/lofi-downtempo/lofi-downtempo-1346770832.am.json"   # only for the drum grid's bar count
+key = "F minor"
+scale = ["F", "G", "Ab", "Bb", "C", "Db", "Eb"]
+bpm = 80
+swing = 0.58
+seed = 7
+humanize_seed = 80
+album = ""
+track = 0
+year = 2026
+tracks = ["keys", "guitar", "flute", "bass", "sub", "pad"]   # the MIDI track order
+blurb = """Lo-fi hip-hop at 80 bpm in F minor, composed note by note: a voice-led Dbmaj9 - C7b9 - Fm9 - Ebm9 Ab13 loop on a \
+chorused Tine EP, a jazz-guitar theme with an answer phrase, an eight-bar bridge the flute takes on its second pass, an \
+upright bass walking into every chord over a sine sub, and a dusty boom-bap kit with a laid-back snare."""
+
+[perform]
+humanize = "legacy"
+swing = true
+loop_from = "section"
+
+[sounds]
+allow = ["gs", "dm", "own"]
+
+# ------------------------------------------------------------------ harmony: root and the voiced tones as intervals
+[chords]
+Dbmaj9 = { root = "Db", intervals = [4, 7, 11, 14] }
+C7b9 = { root = "C", intervals = [4, 7, 10, 13] }
+Fm9 = { root = "F", intervals = [3, 7, 10, 14] }
+Ebm9 = { root = "Eb", intervals = [3, 7, 10, 14] }
+Ab13 = { root = "Ab", intervals = [4, 10, 14, 21] }
+Bbm9 = { root = "Bb", intervals = [3, 7, 10, 14] }
+Eb13 = { root = "Eb", intervals = [4, 10, 14, 21] }
+Abmaj9 = { root = "Ab", intervals = [4, 7, 11, 14] }
+Gm7b5 = { root = "G", intervals = [0, 3, 6, 10] }
+C7sus = { root = "C", intervals = [5, 7, 10, 14] }
+
+[loops]
+A = [["Dbmaj9"], ["C7b9"], ["Fm9"], ["Ebm9", "Ab13"]]
+B = [["Bbm9"], ["Eb13"], ["Abmaj9"], ["Dbmaj9"], ["Gm7b5"], ["C7b9"], ["Fm9"], ["C7sus", "C7b9"]]
+END = [["Fm9"]]
+
+[voicing]   # four chord tones in 50-70, nearest to the last voicing
+mode = "lead"
+lo = 50
+hi = 70
+max_span = 14
+center = 60
+start = [53, 56, 60, 63]
+
+# ------------------------------------------------------------------ written parts: per bar [step16, pitch, length16, vel]
+[parts]
+theme = [
+  [[2, 72, 2, 0.62], [4, 75, 2, 0.68], [6, 77, 5, 0.78], [12, 75, 2, 0.60], [14, 72, 2, 0.58]],
+  [[0, 73, 6, 0.75], [8, 70, 2, 0.60], [10, 68, 2, 0.60], [12, 67, 4, 0.66]],
+  [[2, 68, 2, 0.60], [4, 72, 2, 0.66], [6, 67, 10, 0.72]],
+  [[4, 66, 2, 0.58], [6, 70, 3, 0.66], [10, 68, 2, 0.58], [12, 72, 4, 0.70]],
+  [[0, 77, 3, 0.76], [3, 75, 1, 0.55], [4, 72, 4, 0.68], [10, 75, 2, 0.60], [12, 80, 4, 0.78]],   # the answer
+  [[0, 79, 4, 0.74], [4, 76, 2, 0.62], [6, 73, 2, 0.62], [8, 70, 4, 0.66], [14, 72, 2, 0.58]],
+  [[0, 68, 4, 0.66], [4, 67, 2, 0.60], [6, 65, 10, 0.70]],
+  [[6, 66, 2, 0.56], [8, 70, 2, 0.60], [10, 73, 2, 0.64], [12, 72, 4, 0.66]],
+]
+bridge = [
+  [[0, 73, 3, 0.72], [3, 72, 1, 0.55], [4, 68, 4, 0.66], [10, 65, 2, 0.58], [12, 68, 4, 0.66]],
+  [[0, 67, 6, 0.70], [8, 72, 2, 0.62], [10, 70, 2, 0.60], [12, 65, 4, 0.64]],
+  [[0, 67, 3, 0.66], [4, 70, 2, 0.62], [6, 72, 2, 0.66], [8, 75, 8, 0.76]],
+  [[0, 77, 2, 0.74], [2, 75, 2, 0.64], [4, 72, 4, 0.68], [10, 72, 2, 0.58], [12, 77, 4, 0.70]],
+  [[0, 77, 4, 0.72], [4, 73, 2, 0.64], [6, 70, 2, 0.62], [8, 67, 6, 0.68]],
+  [[0, 68, 2, 0.64], [2, 67, 2, 0.60], [4, 64, 4, 0.68], [8, 70, 4, 0.64], [12, 73, 4, 0.70]],
+  [[0, 72, 12, 0.72]],
+  [[8, 70, 2, 0.60], [10, 67, 2, 0.60], [12, 64, 4, 0.64]],
+]
+bass_a = [
+  [[0, 37, 6, 0.90], [7, 44, 2, 0.62], [10, 41, 3, 0.72], [14, 37, 2, 0.60]],
+  [[0, 36, 6, 0.90], [7, 43, 2, 0.62], [10, 46, 2, 0.66], [12, 43, 2, 0.62], [14, 40, 2, 0.60]],
+  [[0, 41, 6, 0.90], [7, 48, 2, 0.62], [10, 41, 2, 0.66], [12, 44, 2, 0.64], [14, 43, 2, 0.60]],
+  [[0, 39, 4, 0.88], [5, 46, 2, 0.60], [8, 44, 4, 0.84], [12, 39, 2, 0.62], [14, 38, 2, 0.62]],
+  [[0, 37, 3, 0.90], [3, 49, 1, 0.50], [4, 44, 3, 0.70], [8, 41, 2, 0.66], [10, 37, 4, 0.72], [14, 35, 2, 0.60]],
+  [[0, 36, 4, 0.90], [6, 43, 2, 0.62], [8, 46, 3, 0.68], [12, 43, 2, 0.62], [14, 40, 2, 0.62]],
+  [[0, 41, 4, 0.90], [4, 41, 2, 0.50], [7, 48, 2, 0.62], [10, 44, 3, 0.68], [14, 40, 2, 0.60]],
+  [[0, 39, 6, 0.88], [7, 46, 1, 0.55], [8, 44, 6, 0.84], [14, 38, 2, 0.62]],
+]
+bass_b = [
+  [[0, 34, 6, 0.90], [7, 41, 2, 0.62], [10, 44, 2, 0.64], [14, 38, 2, 0.60]],
+  [[0, 39, 6, 0.90], [7, 46, 2, 0.62], [10, 43, 2, 0.64], [14, 45, 2, 0.60]],
+  [[0, 44, 6, 0.90], [7, 39, 2, 0.62], [10, 43, 2, 0.64], [12, 44, 2, 0.60], [14, 36, 2, 0.60]],
+  [[0, 37, 6, 0.90], [7, 44, 2, 0.62], [10, 41, 2, 0.64], [14, 42, 2, 0.60]],
+  [[0, 43, 6, 0.90], [7, 37, 2, 0.60], [10, 41, 2, 0.64], [14, 37, 2, 0.60]],
+  [[0, 36, 6, 0.90], [7, 43, 2, 0.62], [10, 40, 2, 0.64], [12, 46, 2, 0.62], [14, 40, 2, 0.60]],
+  [[0, 41, 6, 0.90], [7, 36, 2, 0.60], [10, 41, 2, 0.64], [14, 43, 2, 0.60]],
+  [[0, 36, 4, 0.88], [4, 36, 2, 0.55], [8, 36, 4, 0.82], [12, 40, 2, 0.62], [14, 38, 2, 0.62]],
+]
+
+# ------------------------------------------------------------------ players: who plays what, and how it is humanized
+[players.keys]        # the voiced chord, rolled up from the bottom like a hand
+type = "chords"
+jitter_ms = 6
+roll_ms = 14
+bottom_vel = -0.03
+hold_vel = 0.55
+even = [[0, 9, 0.68], [10, 6, 0.52]]     # comp on 1 and a push on the and-of-3
+odd = [[0, 13, 0.68], [14, 2, 0.45]]
+split = { len = -1, vel = 0.66, step_vel = -0.04 }   # two chords in a bar
+
+[players.pad]         # the keys' voicing without its bottom note, an octave up
+type = "chords"
+drop_bottom = 1
+shift = 12
+hold_vel = 0.42
+jitter_ms = 0
+gap = 0.0
+
+[players.sub_hold]    # the chord root on the sine sub
+type = "root"
+track = "sub"
+octave = 36
+vel = 0.7
+jitter_ms = 0
+
+[players.bass]
+type = "line"
+loops = { A = "bass_a", B = "bass_b" }
+jitter_ms = 5
+gap = 0.02
+
+[players.sub]         # the sine sub doubles every bass note of two steps or more
+type = "follow"
+follows = "bass"
+min_len = 2
+jitter_ms = 0
+gap = 0.02
+
+[players.guitar]
+type = "line"
+repeat = false
+jitter_ms = 11
+
+[players.flute]
+type = "line"
+repeat = false
+jitter_ms = 8
+
+# ------------------------------------------------------------------ arrangement
+[producer]
+loop = "A"
+parts = ["comp"]
+
+[[sections]]
+name = "Intro"
+bars = 4
+loop = "A"
+drums = ["vinyl"]
+rootless_ok = true    # keys alone off the record, no bass yet
+play = { keys = { mode = "hold", hold_vel = 0.5 } }
+
+[[sections]]
+name = "Beat"
+bars = 8
+loop = "A"
+drums = ["vinyl", "kick", "snare", "clap", "ghost", "hat"]
+play = { keys = "comp", bass = true }
+
+[[sections]]
+name = "Theme"
+bars = 8
+loop = "A"
+drums = ["vinyl", "kick", "snare", "clap", "ghost", "hat", "rim"]
+crash = true
+play = { keys = "comp", bass = true, guitar = "theme" }
+
+[[sections]]
+name = "Bridge"
+bars = 8
+loop = "B"
+drums = ["vinyl", "kick", "snare", "clap", "ghost", "hat", "rim", "shaker"]
+crash = true
+fill = "drop"
+play = { keys = "comp", bass = true, guitar = "bridge", pad = true }
+
+[[sections]]
+name = "Break"
+bars = 4
+loop = "A"
+drums = ["vinyl", "hat", "rim"]
+play = { keys = "hold", sub_hold = true, flute = { part = "theme", bars = "3-4", shift = 12, rest = 2 } }
+
+[[sections]]
+name = "Theme again"
+bars = 8
+loop = "A"
+drums = ["vinyl", "kick", "snare", "clap", "ghost", "hat", "rim"]
+crash = true
+fill = "drop"
+play = { keys = "comp", bass = true, guitar = "theme", pad = true, flute = { part = "theme", bars = "5-8", shift = 12, vel = 0.85, rest = 4 } }
+
+[[sections]]
+name = "Bridge, flute"
+bars = 8
+loop = "B"
+drums = ["vinyl", "kick", "snare", "clap", "ghost", "hat", "rim", "shaker"]
+crash = true
+play = { keys = "comp", bass = true, flute = "bridge", pad = true }
+
+[[sections]]
+name = "Outro"
+bars = 8
+loop = "A"
+drums = ["vinyl", "kick", "snare", "clap", "hat"]
+play = { keys = "comp", bass = true, guitar = { part = "theme", bars = "1-4", vel = 0.85 } }
+
+[[sections]]
+name = "Last chord"
+bars = 1
+loop = "END"
+drums = ["vinyl"]
+ring = 2
+play = { keys = "hold" }
+notes = { bass = [[[0, 29, 14, 0.8]]], sub = [[[0, 41, 14, 0.75]]], guitar = [[[2, 72, 10, 0.55]]] }
+
+# ------------------------------------------------------------------ drums: boom-bap, snare laid back, swung 16th hats
+[drums]
+humanize_ms = 8
+
+[drums.kit]
+kick = { sound = "dm:r_n_b/old_kik", bus = "kick" }
+snare = { sound = "dm:acoustic/jazzsnr", bus = "snare" }
+clap = { sound = "dm:r_n_b/clapfilt", bus = "snare", gain_db = -6 }
+ghost = { sound = "dm:acoustic/brush1", bus = "snare", gain_db = -4, lp = 7000 }
+hat = { sound = "dm:r_n_b/hat", bus = "hats", lp = 9000 }
+open = { sound = "dm:r_n_b/hat_o", bus = "hats", gain_db = -5, lp = 8000 }
+rim = { sound = "dm:misc_perc/hollow_wood", bus = "perc" }
+shaker = { sound = "dm:misc_perc/mellow_shake", bus = "perc" }
+crash = { sound = "dm:acoustic/ride3", bus = "hats", gain_db = -8, lp = 7000 }
+swell = { sound = "own:vinyl-crackle-80", bus = "vinyl", detune_cents = 0 }
+
+[drums.buses]
+kick = { hp = 30, mono = true, drive = 1.3, eq = [["peak", 60, 2.0, 1.0], ["peak", 350, -2.5, 1.2]], crush = { bits = 12, rate = 26040, mix = 0.35 }, gain_db = -3.0 }
+snare = { hp = 140, lp = 8500, drive = 1.2, crush = { bits = 12, rate = 26040, mix = 0.45 }, sends = { room = 0.25 }, gain_db = 3.0 }
+hats = { pan = 0.18, hp = 250, lp = 8500, crush = { bits = 12, rate = 22050, mix = 0.4 }, gain_db = 20.0 }
+perc = { pan = -0.3, crush = { bits = 12, rate = 26040, mix = 0.3 }, sends = { room = 0.25 }, gain_db = 14.0 }
+vinyl = { hp = 500, lp = 8000, gain_db = 0.0 }
+
+# per layer, variants a-d (one per bar of the producer's 4-bar cycle): [step16, vel, sound?, late_ms?]
+[drums.grid]
+kick.a = [[0, 0.95], [7, 0.55], [10, 0.85]]
+kick.b = [[0, 0.95], [10, 0.85], [13, 0.5]]
+kick.c = [[0, 0.95], [3, 0.45], [7, 0.55], [10, 0.8]]
+kick.d = [[0, 0.95], [8, 0.6], [10, 0.8], [15, 0.45]]
+snare.a = [[4, 0.9, "snare", 16], [12, 0.92, "snare", 20]]
+snare.b = [[4, 0.9, "snare", 16], [12, 0.92, "snare", 18], [15, 0.3, "snare", 16]]
+clap.a = [[4, 0.6, "clap", 22], [12, 0.62, "clap", 26]]
+ghost.a = [[6, 0.3], [15, 0.26]]
+ghost.b = [[9, 0.28], [13, 0.24]]
+ghost.c = [[2, 0.24], [7, 0.3]]
+ghost.d = [[9, 0.3], [11, 0.22], [14, 0.28]]
+hat.a = [[0, 0.5], [1, 0.22], [2, 0.36], [3, 0.22], [4, 0.5], [5, 0.22], [6, 0.36], [7, 0.22], [8, 0.5], [9, 0.22], [10, 0.36], [11, 0.22], [12, 0.5], [13, 0.22], [14, 0.36]]
+hat.b = [[0, 0.5], [1, 0.2], [2, 0.36], [3, 0.2], [4, 0.5], [5, 0.2], [6, 0.36], [7, 0.2], [8, 0.5], [9, 0.2], [10, 0.36], [12, 0.5], [13, 0.2], [14, 0.36], [15, 0.2]]
+hat.c = [[0, 0.5], [1, 0.22], [2, 0.36], [3, 0.22], [4, 0.5], [5, 0.22], [6, 0.36], [7, 0.22], [8, 0.5], [9, 0.22], [10, 0.36], [11, 0.22], [12, 0.5], [13, 0.22], [14, 0.36], [15, 0.22]]
+hat.d = [[0, 0.5], [1, 0.2], [2, 0.36], [3, 0.2], [4, 0.5], [5, 0.2], [6, 0.36], [7, 0.2], [8, 0.5], [9, 0.2], [10, 0.36], [11, 0.2], [12, 0.5], [13, 0.2], [14, 0.42, "open"]]
+rim.a = [[10, 0.34]]
+rim.b = []
+rim.c = [[6, 0.3], [14, 0.28]]
+rim.d = []
+shaker = [[0, 0.16], [1, 0.26], [2, 0.16], [3, 0.26], [4, 0.16], [5, 0.26], [6, 0.16], [7, 0.26], [8, 0.16], [9, 0.26], [10, 0.16], [11, 0.26], [12, 0.16], [13, 0.26], [14, 0.16], [15, 0.26]]
+vinyl.a = [[0, 0.8, "swell"]]
+vinyl.b = []
+vinyl.c = []
+vinyl.d = []
+
+# ------------------------------------------------------------------ voices
+[voices.keys]
+sound = "gs:8:4"
+label = "Chorused Tine EP"
+fx = { hp = 90, lp = 6500, eq = [["peak", 250, -1.5, 1.0], ["peak", 1200, 1.0, 0.8]], crush = { bits = 12, rate = 26040, mix = 0.4 }, drive = 1.15, wow = { depth_ms = 1.2, rate = 0.6, flutter_ms = 0.12 }, duck = { depth = 0.18, release = 0.18 }, width = 0.9, sends = { room = 0.22, plate = 0.08 }, gain_db = 0.0 }
+
+[voices.guitar]
+sound = "gs:0:26"
+label = "Jazz Guitar"
+fx = { hp = 160, lp = 7000, eq = [["peak", 2200, 1.5, 0.9]], crush = { bits = 12, rate = 26040, mix = 0.3 }, pan = -0.15, sends = { room = 0.25, echo = 0.1 }, gain_db = 0.0 }
+
+[voices.flute]
+sound = "gs:0:73"
+label = "Flute"
+fx = { hp = 300, lp = 7500, pan = 0.2, wow = { depth_ms = 0.8, rate = 0.5, flutter_ms = 0.08 }, sends = { plate = 0.3, echo = 0.18 }, gain_db = 0.0 }
+
+[voices.bass]
+sound = "gs:0:32"
+label = "Acoustic Bass"
+fx = { hp = 35, lp = 2500, mono = true, drive = 1.2, eq = [["peak", 90, 1.5, 0.9], ["peak", 700, 1.5, 1.0]], duck = { depth = 0.15, release = 0.1 }, gain_db = 0.0 }
+
+[voices.sub]          # a sine sub from the engine's bass voice
+sound = "engine:bass"
+[voices.sub.engine]
+kind = "bass"
+layers = [{ kind = "bass", gain_db = 0.0, preset = { release = 0.1, glide = 0.01, sub = 1.0, sub_attack = 0.004, sub_decay = 3.0, sub_h2 = 0.1, body = 0.0, tilt = 1.3, body_decay = 0.9, pluck = 0.0, drive = 1.1 } }]
+glide_gap = 0.03
+hp = 28
+eq = [["peak", 70, 1.0, 0.9], ["peak", 250, -1.5, 1.0]]
+lp = 160
+drive = 1.2
+mono = true
+duck = { depth = 0.3, release = 0.12 }
+gain_db = -12.0
+
+[voices.pad]
+sound = "gs:0:89"
+label = "Warm Pad"
+fx = { hp = 250, lp = 3200, width = 0.8, sends = { plate = 0.3 }, gain_db = -6.0 }
+
+# ------------------------------------------------------------------ mix and master
+[mix]
+level_ref = "kick"
+targets = { keys = -4.0, guitar = -5.0, flute = -8.0, bass = -3.0, sub = -9.0, pad = -15.0 }
+test_bars = ["@Theme again", "@Theme again+7"]
+mmp_drums = true
+lead_hi_follows_lead = false
+sends = { echo = { type = "delay", time_beats = 0.75, feedback = 0.35, tone = 2200, taps = 5 } }
+
+[[mix.automation]]   # the record, then the room
+type = "lowpass"
+tracks = ["keys"]
+points = [[1, 650], [4, 1300], [4.75, 2400], [5, 18000]]
+
+[[mix.automation]]
+type = "lowpass"
+tracks = ["keys", "flute", "hats", "perc"]
+points = [["@Break", 18000], ["@Break+0.01", 1700], ["@Break+3.5", 2600], ["@Theme again", 18000]]
+
+[[mix.automation]]
+type = "lowpass"
+tracks = ["kick", "snare", "hats", "perc", "bass"]
+points = [["@Outro+4", 18000], ["@Last chord", 1200]]
+
+[[mix.automation]]
+type = "gain"
+tracks = ["keys", "guitar", "bass", "sub", "kick", "snare", "hats", "perc", "vinyl"]
+points = [["@Outro+4", 0], ["@Last chord", -8], ["@Last chord+2", -40]]
+
+[master]
+tape = { drive = 1.4, bias = 0.07, bump_db = 1.2, hf_db = -2.0, lp_hz = 14000, hiss_db = -68, wow_ms = 0.18 }
+target_lufs = -14.0
+true_peak = -1.0
+
+# ------------------------------------------------------------------ checks, run on the render
+[validate]
+length_s = [150, 210]
+lufs_tolerance = 0.5
+
+[[checks]]
+type = "no_drums"
+in = "Intro"
+except = ["swell"]
+name = "intro: keys and crackle only"
+
+[[checks]]
+type = "in_harmony"
+tracks = ["guitar", "flute"]
+max_outside = 2
+name = "melody on chord tones or F minor"
+
+[[checks]]
+type = "on_chord"
+track = "bass"
+every_beats = 4
+name = "bass on the downbeats is in the chord"
+
+[[checks]]
+type = "late"
+sound = "snare"
+ms = [10, 40]
+name = "snare sits behind the beat (10-40 ms)"
+
+[[checks]]
+type = "louder"
+a = "Theme again"
+b = "Break"
+db = 2.0
+name = "theme returns >= 2 dB over the break"
+
+[[checks]]
+type = "count"
+track = "keys"
+min = 301
+name = "keys present"
