@@ -67,7 +67,7 @@ EOF
 chmod 755 "$APPDIR/AppRun"
 
 mkdir -p "$APPDIR/usr/share/icons/hicolor" "$APPDIR/usr/share/applications"
-"$PY" scripts/icons.py "$APPDIR/usr/share/icons/hicolor" >/dev/null
+QT_QPA_PLATFORM=offscreen "$PY" scripts/icons.py "$APPDIR/usr/share/icons/hicolor" >/dev/null
 cp "$APPDIR/usr/share/icons/hicolor/256x256/apps/$ID.png" "$APPDIR/$ID.png"
 ln -sf "$ID.png" "$APPDIR/.DirIcon"
 cat > "$APPDIR/usr/share/applications/$ID.desktop" <<EOF
