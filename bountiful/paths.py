@@ -2,7 +2,7 @@
 music: tracks, songs, albums, sessions, samples, friends and taste live in the data folder, so updating the app never
 touches them.
 
-  ~/.config/bountiful/config.toml
+  ~/.config/bountiful/config.toml   (Windows: %APPDATA%\\Bountiful, macOS: ~/Library/Application Support/Bountiful)
     data   = "~/Documents/Projects/bountiful-music"     # the music (default: the repo itself when run from source)
     engine = "~/Documents/Projects/intelligent-jungle"  # the renderer (default: the copy in renderer/)
 Environment variables BOUNTIFUL_DATA and BOUNTIFUL_ENGINE override the file. PY runs the renderer: the engine's own
@@ -18,7 +18,12 @@ from pathlib import Path
 CODE = Path(__file__).resolve().parent.parent
 REPO = "M4S4T0-V01D/bountiful-music"   # GitHub: releases of the app and the sound packs
 APPIMAGE = os.environ.get("APPIMAGE")   # set by the AppImage runtime: this copy runs from a read-only image
-CONFIG_DIR = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config") / "bountiful"
+if sys.platform == "win32":
+    CONFIG_DIR = Path(os.environ.get("APPDATA") or Path.home() / "AppData" / "Roaming") / "Bountiful"
+elif sys.platform == "darwin":
+    CONFIG_DIR = Path.home() / "Library" / "Application Support" / "Bountiful"
+else:
+    CONFIG_DIR = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config") / "bountiful"
 CONFIG_FILE = CONFIG_DIR / "config.toml"
 
 
@@ -56,7 +61,7 @@ def _engine() -> Path:
 
 
 def _python(engine: Path) -> Path:
-    venv = engine / ".venv" / "bin" / "python"
+    venv = engine / ".venv" / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
     return venv if venv.exists() else Path(sys.executable)
 
 
@@ -67,16 +72,19 @@ TRACKS, SONGS, SESSIONS = DATA / "tracks", DATA / "songs", DATA / "sessions"
 SAMPLES = DATA / "samples" if (DATA / "samples").is_dir() else CODE / "samples"   # not in git: it lives with the data
 
 
-def _lmms_share() -> Path:   # same lookup as the renderer's engine/share.py
-    for cand in (os.environ.get("LMMS_SHARE"), "/usr/share/lmms", "/usr/local/share/lmms", "/opt/lmms/share/lmms",
-                 "~/.local/share/lmms"):
-        if cand and (_p(cand) / "samples").is_dir():
-            return _p(cand)
-    return Path("/usr/share/lmms")
+def _load_share():   # the bundled renderer's LMMS lookup (per platform), so the app and the renderer agree
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("_bountiful_lmms_share", BUNDLED / "engine" / "share.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
 
 
-LMMS_SAMPLES = _lmms_share() / "samples"
-FONT_DIRS = ("/usr/share/fonts", "/usr/local/share/fonts", "~/.local/share/fonts", "~/.fonts")
+_share = _load_share()
+find_lmms = _share.find_lmms
+LMMS_SAMPLES = _share.SAMPLES
+FONT_DIRS = ("/usr/share/fonts", "/usr/local/share/fonts", "~/.local/share/fonts", "~/.fonts", "/Library/Fonts",
+             "/System/Library/Fonts", "~/Library/Fonts", os.path.join(os.environ.get("WINDIR", "C:/Windows"), "Fonts"))
 
 
 def font(name: str, size: int):

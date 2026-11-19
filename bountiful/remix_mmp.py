@@ -32,6 +32,7 @@ import render_midi as RM  # noqa: E402
 from engine import fx  # noqa: E402
 from engine.export import analyse, mp3, write_audio  # noqa: E402
 from engine.render import master  # noqa: E402
+from engine.share import lmms_bin, niced  # noqa: E402
 
 SR = 44100
 
@@ -101,7 +102,7 @@ def remix(track: Path, log=print, mmp: Path | None = None, tag: str = "mmp") -> 
             log(f"  {nm}: Carla Audio Gain x{g:.3g} ({20 * np.log10(max(g, 1e-6)):+.1f} dB) applied after rendering (headless LMMS cannot run Carla plugins)")
         (d / "p.mmp").write_text(txt)
         (d / "out").mkdir()
-        r = subprocess.run(["nice", "-n", "12", "lmms", "rendertracks", str(d / "p.mmp"), "-o", str(d / "out"), "-f", "wav", "-a", "-s", str(SR)],
+        r = subprocess.run(niced([lmms_bin(), "rendertracks", str(d / "p.mmp"), "-o", str(d / "out"), "-f", "wav", "-a", "-s", str(SR)], 12),
                            capture_output=True, text=True, timeout=3600)
         files = sorted((d / "out").glob("*.wav"), key=lambda f: int(f.name.split("_", 1)[0]))
         rendered = {f.name.split("_", 1)[1][:-4]: f for f in files}

@@ -24,7 +24,7 @@ from xml.sax.saxutils import quoteattr
 import numpy as np
 import soundfile as sf
 
-from .share import PRESETS, SAMPLES, lmms_bin
+from .share import PRESETS, SAMPLES, lmms_bin, niced
 ZYN = PRESETS / "ZynAddSubFX"
 TEMPLATE = Path(__file__).resolve().parent / "data" / "zyn_master_template.xml"
 TPB = 48   # LMMS ticks per beat
@@ -233,8 +233,8 @@ def render_parts(parts: dict[str, tuple[dict, list]], bpm: float, n_samples: int
         tracks = [(f"p{i:02d}", instrument_xml(parts[nm][0]), parts[nm][1], False) for i, nm in enumerate(names)]
         (d / "parts.mmp").write_text(project_xml(bpm, tracks, length_ticks))
         (d / "out").mkdir()
-        r = subprocess.run(["nice", "-n", "15", lmms_bin(), "rendertracks", str(d / "parts.mmp"), "-o", str(d / "out"),
-                            "-f", "wav", "-a", "-s", str(sr)], capture_output=True, text=True, timeout=timeout)
+        r = subprocess.run(niced([lmms_bin(), "rendertracks", str(d / "parts.mmp"), "-o", str(d / "out"),
+                            "-f", "wav", "-a", "-s", str(sr)]), capture_output=True, text=True, timeout=timeout)
         files = sorted((d / "out").glob("*.wav"), key=lambda f: int(f.name.split("_", 1)[0]))
         if len(files) != len(names):
             raise RuntimeError(f"LMMS rendered {len(files)} of {len(names)} tracks:\n{r.stdout[-800:]}\n{r.stderr[-800:]}")

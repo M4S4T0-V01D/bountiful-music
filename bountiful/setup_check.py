@@ -5,7 +5,6 @@
 """
 from __future__ import annotations
 
-import os
 import shutil
 import subprocess
 import sys
@@ -21,8 +20,9 @@ TOOLS = {
     "fluidsynth": ("the General MIDI voices, and hearing them in the sound picker", True),
     "node": ("writing new songs from a Bounty (the composer runs in Node)", True),
     "lame": ("exporting MP3s (WAV export works without it)", False),
-    "portaudio": ("playing sound through your speakers (a library; without it the app is silent)", True),
 }
+if sys.platform.startswith("linux"):   # elsewhere the sounddevice wheel carries its own PortAudio
+    TOOLS["portaudio"] = ("playing sound through your speakers (a library; without it the app is silent)", True)
 LIBRARIES = {"portaudio"}   # found with the system's library lookup, not on PATH
 PACKAGES = {   # package manager -> install command prefix, and package names that differ from the tool's
     "pacman": ("sudo pacman -S", {"node": "nodejs"}),
@@ -30,6 +30,12 @@ PACKAGES = {   # package manager -> install command prefix, and package names th
     "dnf": ("sudo dnf install", {"node": "nodejs"}),
     "zypper": ("sudo zypper install", {"node": "nodejs", "portaudio": "libportaudio2"}),
     "brew": ("brew install", {}),
+}
+DOWNLOADS = {   # where Windows users get each tool (no package manager is assumed there)
+    "lmms": "https://lmms.io/download",
+    "fluidsynth": "https://github.com/FluidSynth/fluidsynth/releases",
+    "node": "https://nodejs.org",
+    "lame": "https://lame.sourceforge.io/download.php",
 }
 
 
@@ -41,8 +47,8 @@ def find_library(name: str) -> str | None:
 def which(tool: str) -> str | None:
     if tool in LIBRARIES:
         return find_library(tool)
-    if tool == "lmms" and os.environ.get("LMMS"):
-        return os.environ["LMMS"] if Path(os.environ["LMMS"]).exists() else None
+    if tool == "lmms":
+        return paths.find_lmms()
     return shutil.which(tool)
 
 
@@ -56,6 +62,12 @@ def version(exe: str) -> str:
 
 
 def install_hint(missing: list[str]) -> str:
+    if sys.platform == "win32":
+        return "download " + "; ".join(f"{t} from {DOWNLOADS.get(t, 'its website')}" for t in missing)
+    if sys.platform == "darwin" and shutil.which("brew"):
+        casks, formulas = [t for t in missing if t == "lmms"], [t for t in missing if t != "lmms"]
+        return " && ".join(([f"brew install {' '.join(formulas)}"] if formulas else [])
+                           + ([f"brew install --cask {' '.join(casks)}"] if casks else []))
     for pm, (cmd, names) in PACKAGES.items():
         if shutil.which(pm):
             return f"{cmd} {' '.join(names.get(t, t) for t in missing)}"

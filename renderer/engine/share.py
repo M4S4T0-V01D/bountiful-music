@@ -4,9 +4,19 @@ from __future__ import annotations
 
 import os
 import shutil
+import sys
 from pathlib import Path
 
-_SHARES = ("/usr/share/lmms", "/usr/local/share/lmms", "/opt/lmms/share/lmms", "~/.local/share/lmms")
+if sys.platform == "win32":   # the LMMS installer's folder: lmms.exe, with its sounds in data/
+    _PF = [os.environ.get(v) for v in ("ProgramFiles", "ProgramFiles(x86)", "LOCALAPPDATA")]
+    _SHARES = tuple(str(Path(d) / sub / "data") for d in _PF if d for sub in ("LMMS", "Programs/LMMS"))
+    _BINS = tuple(str(Path(d).parent / "lmms.exe") for d in _SHARES)
+elif sys.platform == "darwin":
+    _SHARES = ("/Applications/LMMS.app/Contents/share/lmms", "~/Applications/LMMS.app/Contents/share/lmms")
+    _BINS = ("/Applications/LMMS.app/Contents/MacOS/lmms", "~/Applications/LMMS.app/Contents/MacOS/lmms")
+else:
+    _SHARES = ("/usr/share/lmms", "/usr/local/share/lmms", "/opt/lmms/share/lmms", "~/.local/share/lmms")
+    _BINS = ()
 
 
 def lmms_share() -> Path:
@@ -34,8 +44,20 @@ def sample(rel) -> Path:
     return p
 
 
+def find_lmms() -> str | None:
+    """$LMMS, lmms on PATH, or where the Windows / macOS installers put it."""
+    if os.environ.get("LMMS"):
+        return os.environ["LMMS"] if Path(os.environ["LMMS"]).exists() else None
+    return shutil.which("lmms") or next((os.path.expanduser(b) for b in _BINS if Path(os.path.expanduser(b)).exists()), None)
+
+
+def niced(cmd: list, n: int = 15) -> list:
+    """cmd at a lower priority where `nice` exists (not on Windows)."""
+    return ["nice", "-n", str(n), *cmd] if shutil.which("nice") else cmd
+
+
 def lmms_bin() -> str:
-    exe = os.environ.get("LMMS") or shutil.which("lmms")
+    exe = find_lmms()
     if not exe:
         raise RuntimeError("LMMS isn't installed (no lmms on PATH): install it from lmms.io or your package manager, "
                            "or set LMMS to the program")
