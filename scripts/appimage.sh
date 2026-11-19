@@ -38,8 +38,8 @@ rm -f "$APPDIR/usr/python/lib/python3.13/EXTERNALLY-MANAGED"
 
 # trim what the app never loads
 LIB="$APPDIR/usr/python/lib/python3.13"
-rm -rf "$LIB"/{test,idlelib,tkinter,turtledemo,ensurepip,lib2to3} "$LIB"/lib-dynload/_tkinter* \
-       "$APPDIR/usr/python/lib"/{libtcl,libtk,tcl,tk,itcl,thread}* "$APPDIR/usr/python/include" "$APPDIR/usr/python/share"
+# (tkinter stays: the MIDI Studio is a Tk app, and the core uses its TOML writer)
+rm -rf "$LIB"/{test,idlelib,turtledemo,ensurepip,lib2to3} "$APPDIR/usr/python/include" "$APPDIR/usr/python/share"
 SP="$LIB/site-packages"
 PS="$SP/PySide6"
 rm -rf "$SP"/pip "$SP"/pip-* "$PS"/{assistant,designer,linguist,lrelease,lupdate,qmlformat,qmllint,qmlls,include,glue,doc,typesystems} \
