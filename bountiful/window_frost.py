@@ -557,9 +557,10 @@ def tempo_track() -> bytes:
 
 def stem_track(name: str) -> bytes:
     prog, bank, ch, rev, _g = STEMS[name]
-    ev = [(0, 0, bytes([0xFF, 0x03, len(name)]) + name.encode()),
-          (0, 0, bytes([0xB0 | ch, 0, bank])),
-          (0, 0, bytes([0xC0 | ch, prog])),
+    ev = [(0, 0, bytes([0xFF, 0x03, len(name)]) + name.encode())]
+    if bank < 128:                    # bank 128 (drums) isn't a MIDI byte; fluidsynth's channel 10 is drums already
+        ev.append((0, 0, bytes([0xB0 | ch, 0, bank])))
+    ev += [(0, 0, bytes([0xC0 | ch, prog])),
           (0, 0, bytes([0xB0 | ch, 7, 100])),
           (0, 0, bytes([0xB0 | ch, 91, rev])),
           (0, 0, bytes([0xB0 | ch, 93, 0]))]

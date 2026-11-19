@@ -488,6 +488,9 @@ def inject(G: Song, M):
     M.BAR_START, M.TOTAL_BEATS, M.START = G.bar_start, float(G.bar_start[-1]), dict(G.start)
     M.NOTES, M.CTRL, M.SUB_NOTES = G.notes, G.ctrl, G.sub
     M.rng = G.rng                          # the mixer goes on drawing from the same stream (wind, fire, room)
+    meta = G.S["meta"]                     # the mixer times its renders and its MIDI tempo from these, not the notes
+    M.BPM, M.SWING = meta["bpm"], meta.get("swing", 0.5)
+    M.SPB = 60.0 / M.BPM
     if M.__name__ == "window_frost":       # the parts its checks compare with the printed scores
         P, raw = G.parts, G.S["parts"]
         M.SOLO_LINE, M.TANNEN, M.OUTRO_TUNE = P["solo"], P["tannen"], P["tannen_outro"]

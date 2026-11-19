@@ -32,6 +32,7 @@ from bountiful.daw import lab as L  # noqa: E402
 from bountiful.daw import model as M  # noqa: E402
 from bountiful.daw import observatory as OB  # noqa: E402
 from bountiful.daw import panels as P  # noqa: E402
+from bountiful.daw import record as RP  # noqa: E402
 from bountiful.daw import views as V  # noqa: E402
 
 APP_ID = "dev.m4s4t0.bountiful"
@@ -90,6 +91,9 @@ def TABS(win) -> list[tuple[QWidget, str, str]]:
         (helped(win.song, "Write a whole song from a Bounty. Make it from the rules alone, or type a brief in your "
                           "own words (\"a restless break, a huge ending\") and see what it changes before you make it."),
          "New song", "a whole song from a Bounty, with key, tempo and a brief in your own words"),
+        (helped(win.record, "Song Spec records: whole songs written as TOML files in records/. Change the tempo, swing "
+                            "or seed, make a new take, then check it and build it; every bar shows what plays in it."),
+         "Record", "songs written as Song Spec files: edit, take again, build"),
         (win.game, "Game music", "loops in four intensity states, stingers, and files for Godot and Unity"),
         (helped(win.livep, "The Electronium plays without stopping. Turn its knobs, mute channels and change the "
                            "rhythm: each change starts on the next bar and is recorded, so the take can become a song."),
@@ -145,6 +149,7 @@ class Window(QMainWindow):
         self.arr = arr
         self.game = GP.GamePanel(self)
         self.start = SP.StartPanel(self)
+        self.record = RP.RecordPanel(self)
         self.tabs = QTabWidget()
         for w, name, tip in TABS(self):
             self.tabs.setTabToolTip(self.tabs.addTab(w, name), tip)
@@ -665,6 +670,17 @@ def smoke(win: Window, app: QApplication) -> int:
             problems.append("game music preview: combat not louder than calm, or out of range")
         if not all(b.isEnabled() for b in gp.state_btn.values()):
             problems.append("game music: state buttons stay disabled")
+    # the Record tab: every record listed, a bar map, and a check that composes one without rendering
+    rp = win.record
+    if rp.list.topLevelItemCount() != len(RP.R.records()) or not rp.map.lanes or not rp.fields["title"].text():
+        problems.append("record tab: list, bar map or fields")
+    else:
+        rp.map.picked.emit(0)
+        ran = []
+        rp.run("check", then=lambda rc: ran.append(rc))
+        A.wait_until(lambda: (app.processEvents(), bool(ran))[1], 120)
+        if ran != [0] or "bar 1:" not in rp.bar_info.text() or rp.changes():
+            problems.append(f"record tab check: {ran} {rp.status.text()}")
     # the Start page and plain tab names
     if win.tabs.tabText(0) != "Start" or "Game music" not in [win.tabs.tabText(i) for i in range(win.tabs.count())]:
         problems.append("tab names")

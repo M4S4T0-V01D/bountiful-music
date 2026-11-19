@@ -120,10 +120,26 @@ These cost a build each time. The loader checks them in seconds, before it rende
 | a track that is silent in `test_bars` gets no auto-trim | error before rendering, naming the track (done) |
 | m11 and other rootless voicings with nothing under them | a warning, unless the section has `rootless_ok = true` (done) |
 | a grid entry without a sound name uses the layer's name | error if the kit has no sound with that name (done) |
-| a sound outside the allowed libraries | error (done). A cleared-only list per library comes with the Record tab. |
+| a sound outside the allowed libraries | error (done). Planned: a cleared-only sound picker in the Record tab |
 | unknown chord, loop or drum layer | error naming the section (done) |
 | `targets` don't trim drum stems (hats needed +20 dB, perc +14) | planned: targets for drum buses, with `gain_db` set from the test render |
-| dict grid patterns cycle by `bar % len(keys)` | planned: the Record tab shows which pattern each bar uses |
+| dict grid patterns cycle by `bar % len(keys)` | the Record tab's bar map shows which pattern each bar uses (done) |
+
+## The Record tab
+
+The app's **Record** tab (`bountiful/daw/record.py`, with the logic in `bountiful/record_desk.py`) lists the records
+and works on one without opening the TOML:
+
+- **Bar map**: sections, chords and one lane per player or drum layer, with the pattern each bar uses. Click a bar to
+  see everything in it.
+- **Title, key, tempo, swing, seed**: Save writes only those lines of `[meta]`, so comments and layout stay. Values out
+  of range are refused and the file is left as it was.
+- **New take …**: writes `records/<title>.toml` that `extends` the record with the next seed: the same song, played
+  again. Takes are listed with ↳.
+- **✓ Check** composes and lints without rendering (`--dry`). **Test build** builds into `tracks/<title>-spec-test`.
+  **● Build record** builds the record itself. **Open in Arrange** opens the result.
+
+Records live in `<data>/records` when that folder exists, otherwise in the app's `records/`.
 
 ## Checks
 

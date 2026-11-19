@@ -31,7 +31,7 @@ import mido  # noqa: E402
 import numpy as np  # noqa: E402
 
 ROOT = HERE.parent
-RECORDS = ROOT / "records"
+RECORDS = LT.B.DATA / "records" if (LT.B.DATA / "records").is_dir() else ROOT / "records"   # yours, else the examples
 SAMPLES = ROOT / "samples"
 SF2 = SAMPLES / "sf2" / "GeneralUser-GS.sf2"
 # the cleared library (docs/sample-audit.md). A sound id is "<library>:<name>"
