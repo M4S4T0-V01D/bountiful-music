@@ -19,7 +19,9 @@ from pathlib import Path
 
 import numpy as np
 
-sys.path.insert(0, "/home/s0ich1r0/Documents/Projects/intelligent-jungle/studio")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from paths import ENGINE  # noqa: E402
+sys.path.insert(0, str(ENGINE / "studio"))
 from render_midi import read_midi  # noqa: E402
 
 HARMONY = ("pad", "comp", "stab", "vox", "arp", "bass")

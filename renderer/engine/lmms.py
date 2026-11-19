@@ -24,7 +24,7 @@ from xml.sax.saxutils import quoteattr
 import numpy as np
 import soundfile as sf
 
-PRESETS = Path("/usr/share/lmms/presets")
+from .share import PRESETS, SAMPLES, lmms_bin
 ZYN = PRESETS / "ZynAddSubFX"
 TEMPLATE = Path(__file__).resolve().parent / "data" / "zyn_master_template.xml"
 TPB = 48   # LMMS ticks per beat
@@ -100,6 +100,8 @@ def _find(base: Path, rel: str) -> Path:
     p = Path(rel)
     if p.is_absolute() and p.exists():
         return p
+    if not base.is_dir():
+        raise FileNotFoundError(f"LMMS preset {rel}: {base} doesn't exist; install LMMS or set LMMS_SHARE")
     if (base / rel).exists():
         return base / rel
     hits = list(base.rglob(Path(rel).name))
@@ -129,9 +131,6 @@ def instrument_xml(v: dict) -> str:
         else:
             it = it[:it.rindex("</instrumenttrack>")] + chain + "</instrumenttrack>"
     return it
-
-
-SAMPLES = Path("/usr/share/lmms/samples")
 
 
 def sample_root(path: Path) -> int:
@@ -234,7 +233,7 @@ def render_parts(parts: dict[str, tuple[dict, list]], bpm: float, n_samples: int
         tracks = [(f"p{i:02d}", instrument_xml(parts[nm][0]), parts[nm][1], False) for i, nm in enumerate(names)]
         (d / "parts.mmp").write_text(project_xml(bpm, tracks, length_ticks))
         (d / "out").mkdir()
-        r = subprocess.run(["nice", "-n", "15", "lmms", "rendertracks", str(d / "parts.mmp"), "-o", str(d / "out"),
+        r = subprocess.run(["nice", "-n", "15", lmms_bin(), "rendertracks", str(d / "parts.mmp"), "-o", str(d / "out"),
                             "-f", "wav", "-a", "-s", str(sr)], capture_output=True, text=True, timeout=timeout)
         files = sorted((d / "out").glob("*.wav"), key=lambda f: int(f.name.split("_", 1)[0]))
         if len(files) != len(names):

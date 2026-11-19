@@ -303,8 +303,8 @@ def kit():
             snd[s] = {"samples": [str(OUT / f"{s}.wav")], "stem": "ride", **lead}
         elif s in ("kick1", "snr1", "gh1", "zk1", "zs1"):
             snd[s] = {"samples": [str(OUT / f"{s}.wav")], "stem": "break2" if two else "break", **lead, "detune_cents": 4}
-    snd["kreinf"] = {"samples": ["/usr/share/lmms/samples/drums/bassdrum01.ogg"], "lp": 160, "stem": "kick", "detune_cents": 0}
-    snd["snlay"] = {"samples": ["/usr/share/lmms/samples/drums/snare01.ogg"], "hp": 1500, "stem": "snlay", "detune_cents": 6}
+    snd["kreinf"] = {"samples": [str(BM.LMMS / "bassdrum01.ogg")], "lp": 160, "stem": "kick", "detune_cents": 0}
+    snd["snlay"] = {"samples": [str(BM.LMMS / "snare01.ogg")], "hp": 1500, "stem": "snlay", "detune_cents": 6}
     return {"map": {key_of(NOTES[s]): s for s in snd}, "sounds": snd,
             "stems": {"break": {"hp": 30, "eq": [["peak", 110, 1.5, 0.9], ["highshelf", 8000, -2.0]], "sends": {"room": 0.08}, "gain_db": -2.0},
                       # the second break: its own low end thinned so it sits under the Amen's kicks when layered

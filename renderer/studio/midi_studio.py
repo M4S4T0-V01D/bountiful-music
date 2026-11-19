@@ -32,7 +32,7 @@ import render_midi as RM  # noqa: E402
 
 PY = str(ENGINE / ".venv" / "bin" / "python")
 ATLAS = ENGINE / "docs" / "lmms-atlas"
-SAMPLES = Path("/usr/share/lmms/samples")
+from engine.share import SAMPLES  # noqa: E402
 NOTE = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
 C = {"bg": "#16121c", "panel": "#211a29", "panel2": "#2a2134", "fg": "#eee4f0", "mut": "#a99bb3", "acc": "#f0a070",

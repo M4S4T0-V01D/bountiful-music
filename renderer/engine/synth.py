@@ -566,7 +566,8 @@ def sampler_note(midi: float, vel: float, dur: float, p: dict, rng: np.random.Ge
     from pathlib import Path
     key = p["sample"]
     if key not in _smp_cache:
-        path = Path(key) if Path(key).is_absolute() else Path("/usr/share/lmms/samples") / key
+        from .share import sample
+        path = sample(key)
         x, sr = sf.read(str(path), dtype="float32", always_2d=True)
         m = x.mean(1)
         if sr != fx.SR:

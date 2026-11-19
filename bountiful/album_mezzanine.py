@@ -217,10 +217,8 @@ def make_cover(path: Path):
     im = ImageChops.screen(im, Image.eval(glow.filter(ImageFilter.GaussianBlur(2)), lambda v: int(v * 0.85)))   # the lit windows
     d = ImageDraw.Draw(im)
     def font(sz):
-        for f in ("/usr/share/fonts/TTF/DejaVuSans-Bold.ttf", "/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf", "/usr/share/fonts/noto/NotoSans-Bold.ttf"):
-            if Path(f).exists():
-                return ImageFont.truetype(f, sz)
-        return ImageFont.load_default()
+        import paths
+        return paths.font("DejaVuSans-Bold.ttf", sz)
     d.text((80, 1020), "MEZZANINE", font=font(130), fill=(255, 214, 160))
     d.text((84, 1160), "SESSIONS", font=font(84), fill=(240, 228, 245))
     d.text((84, 110), ARTIST, font=font(64), fill=(240, 228, 245))

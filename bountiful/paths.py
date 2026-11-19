@@ -65,6 +65,28 @@ TRACKS, SONGS, SESSIONS = DATA / "tracks", DATA / "songs", DATA / "sessions"
 SAMPLES = DATA / "samples" if (DATA / "samples").is_dir() else CODE / "samples"   # not in git: it lives with the data
 
 
+def _lmms_share() -> Path:   # same lookup as the renderer's engine/share.py
+    for cand in (os.environ.get("LMMS_SHARE"), "/usr/share/lmms", "/usr/local/share/lmms", "/opt/lmms/share/lmms",
+                 "~/.local/share/lmms"):
+        if cand and (_p(cand) / "samples").is_dir():
+            return _p(cand)
+    return Path("/usr/share/lmms")
+
+
+LMMS_SAMPLES = _lmms_share() / "samples"
+FONT_DIRS = ("/usr/share/fonts", "/usr/local/share/fonts", "~/.local/share/fonts", "~/.fonts")
+
+
+def font(name: str, size: int):
+    """A PIL font by file name (e.g. "DejaVuSans-Bold.ttf") from the system font folders, else PIL's default."""
+    from PIL import ImageFont
+    for d in FONT_DIRS:
+        hit = next(_p(d).rglob(name), None) if _p(d).is_dir() else None
+        if hit:
+            return ImageFont.truetype(str(hit), size)
+    return ImageFont.load_default(size)
+
+
 def _toml_val(v) -> str:
     if isinstance(v, bool):
         return "true" if v else "false"

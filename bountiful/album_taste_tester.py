@@ -62,10 +62,8 @@ def make_cover(path: Path):
     d.rectangle([0, 1010, W, W], fill=(28, 16, 12))
 
     def font(sz):
-        for f in ("/usr/share/fonts/TTF/DejaVuSans-Bold.ttf", "/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf", "/usr/share/fonts/noto/NotoSans-Bold.ttf"):
-            if Path(f).exists():
-                return ImageFont.truetype(f, sz)
-        return ImageFont.load_default()
+        import paths
+        return paths.font("DejaVuSans-Bold.ttf", sz)
 
     d.text((80, 1040), "TASTE TESTER", font=font(140), fill=(250, 232, 190))
     d.text((84, 1210), f"{ARTIST}  ·  composed by {COMPOSER}", font=font(46), fill=(230, 190, 150))

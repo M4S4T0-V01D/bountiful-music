@@ -17,14 +17,14 @@ import numpy as np
 import soundfile as sf
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from paths import ENGINE  # noqa: E402
+from paths import ENGINE, LMMS_SAMPLES, SAMPLES  # noqa: E402
 sys.path.insert(0, str(ENGINE))
 from engine import fx  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
-DM = ROOT / "samples" / "drummachines"
-LMMS = Path("/usr/share/lmms/samples/drums")
-OUT = ROOT / "samples" / "breaks" / "clizzy"
+DM = SAMPLES / "drummachines"
+LMMS = LMMS_SAMPLES / "drums"
+OUT = SAMPLES / "breaks" / "clizzy"
 SR = 44100
 PLAY_BPM = 140
 

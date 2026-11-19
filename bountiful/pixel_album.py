@@ -76,7 +76,8 @@ def make_cover(path: Path):
     im = Image.fromarray(np.clip(img, 0, 255).astype("uint8"))
 
     def font(sz):
-        return ImageFont.truetype("/usr/share/fonts/TTF/DejaVuSansMono-Bold.ttf", sz)
+        import paths
+        return paths.font("DejaVuSansMono-Bold.ttf", sz)
 
     def title(text, y, sz, top, bot):
         """Hard-edged text with a vertical gradient fill and a one-pixel drop shadow, centred."""

@@ -97,7 +97,8 @@ def second_lead(lead_track):
 
 def LEAD2_XML(notes):
     import sys
-    sys.path.insert(0, "/home/s0ich1r0/Documents/Projects/intelligent-jungle")
+    from paths import ENGINE
+    sys.path.insert(0, str(ENGINE))
     from engine import lmms as LM
     v = {k: x for k, x in LEAD2.items() if k != "label"}
     name = "lead2 - " + LEAD2["label"]

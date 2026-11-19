@@ -23,12 +23,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import album_mezzanine as V1  # noqa: E402
+import paths  # noqa: E402
 import lmms_tracks as LT  # noqa: E402
 import producer as PR  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
-DM = ROOT / "samples" / "drummachines"
-LMMS_DRUMS = Path("/usr/share/lmms/samples/drums")
+DM = paths.SAMPLES / "drummachines"
+LMMS_DRUMS = paths.LMMS_SAMPLES / "drums"
 ALBUM, ARTIST, COMPOSER, YEAR = V1.ALBUM, V1.ARTIST, V1.COMPOSER, V1.YEAR
 SONGS = ROOT / "songs" / "album2"
 

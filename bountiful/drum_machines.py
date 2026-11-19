@@ -14,11 +14,13 @@ from pathlib import Path
 import numpy as np
 import soundfile as sf
 
-sys.path.insert(0, "/home/s0ich1r0/Documents/Projects/intelligent-jungle")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import paths  # noqa: E402
+sys.path.insert(0, str(paths.ENGINE))
 from engine import lmms as LM  # noqa: E402
 
-SRC = Path("/usr/share/lmms/samples/drumsynth")
-OUT = Path(__file__).resolve().parent.parent / "samples" / "drummachines"
+SRC = paths.LMMS_SAMPLES / "drumsynth"
+OUT = paths.SAMPLES / "drummachines"
 KITS = ["tr909", "tr808", "tr606", "tr77", "linn", "cr78", "cr8000", "latin", "r_n_b", "misc_perc", "acoustic"]
 SR = 44100
 

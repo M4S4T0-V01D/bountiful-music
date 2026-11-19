@@ -64,7 +64,7 @@ BREAKS = {
 }
 
 
-SAMPLE_DIR = "/usr/share/lmms/samples"
+from .share import SAMPLES as SAMPLE_DIR, sample  # noqa: E402
 _sample_cache: dict = {}
 
 
@@ -75,7 +75,7 @@ def load_sample(rel: str) -> np.ndarray:
         return _sample_cache[rel]
     import soundfile as sf
     from pathlib import Path
-    p = Path(rel) if Path(rel).is_absolute() else Path(SAMPLE_DIR) / rel
+    p = sample(rel)
     x, sr = sf.read(str(p), dtype="float32", always_2d=True)
     m = x.mean(1)
     if sr != fx.SR:

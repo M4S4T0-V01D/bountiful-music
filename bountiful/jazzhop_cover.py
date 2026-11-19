@@ -137,7 +137,10 @@ def main() -> None:
     # variant with the artist name, set small like an old label credit
     t = im.copy()
     d = ImageDraw.Draw(t)
-    font = ImageFont.truetype("/usr/share/fonts/TTF/DejaVuSansCondensed-Bold.ttf", 110)
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import paths
+    font = paths.font("DejaVuSansCondensed-Bold.ttf", 110)
     x = 0.07 * W
     for ch in ARTIST:
         d.text((x, 0.955 * W - 110), ch, font=font, fill=(226, 216, 236))

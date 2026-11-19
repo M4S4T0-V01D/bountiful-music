@@ -52,7 +52,7 @@ SPEC = {
     "kit_def": kit({"kick": (dm("tr808/kicklong"), "kick", {"gate": 0.45}), "snare": (dm("tr808/snr_snap"), "break", None),
                     "clap": (dm("tr808/handclap"), "break", None), "hat": (dm("tr808/hat_c"), "hats", {"gate": 0.06}),
                     "open": (dm("tr808/hat_o"), "hats", {"gate": 0.2}),
-                    "rim": (dm("tr808/rimshot"), "perc", None), "crash": ("/usr/share/lmms/samples/drums/crash02.ogg", "hats", {"gate": 0.6})},
+                    "rim": (dm("tr808/rimshot"), "perc", None), "crash": (str(A2.LMMS_DRUMS / "crash02.ogg"), "hats", {"gate": 0.6})},
                    {"kick": {"hp": 28, "mono": True, "drive": 2.0, "gain_db": -2.0},
                     "break": {"hp": 150, "drive": 1.6, "crush": {"bits": 12, "rate": 26040, "mix": 0.4}, "sends": {"room": 0.12}, "gain_db": -4.0},
                     "hats": {"hp": 400, "pan": 0.2, "gain_db": 2.0}, "perc": {"pan": -0.3, "sends": {"room": 0.2}, "gain_db": -8.0}}),
