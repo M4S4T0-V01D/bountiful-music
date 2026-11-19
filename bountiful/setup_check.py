@@ -21,17 +21,26 @@ TOOLS = {
     "fluidsynth": ("the General MIDI voices, and hearing them in the sound picker", True),
     "node": ("writing new songs from a Bounty (the composer runs in Node)", True),
     "lame": ("exporting MP3s (WAV export works without it)", False),
+    "portaudio": ("playing sound through your speakers (a library; without it the app is silent)", True),
 }
+LIBRARIES = {"portaudio"}   # found with the system's library lookup, not on PATH
 PACKAGES = {   # package manager -> install command prefix, and package names that differ from the tool's
     "pacman": ("sudo pacman -S", {"node": "nodejs"}),
-    "apt": ("sudo apt install", {"node": "nodejs"}),
+    "apt": ("sudo apt install", {"node": "nodejs", "portaudio": "libportaudio2"}),
     "dnf": ("sudo dnf install", {"node": "nodejs"}),
-    "zypper": ("sudo zypper install", {"node": "nodejs"}),
+    "zypper": ("sudo zypper install", {"node": "nodejs", "portaudio": "libportaudio2"}),
     "brew": ("brew install", {}),
 }
 
 
+def find_library(name: str) -> str | None:
+    import ctypes.util
+    return ctypes.util.find_library(name)
+
+
 def which(tool: str) -> str | None:
+    if tool in LIBRARIES:
+        return find_library(tool)
     if tool == "lmms" and os.environ.get("LMMS"):
         return os.environ["LMMS"] if Path(os.environ["LMMS"]).exists() else None
     return shutil.which(tool)
@@ -78,7 +87,7 @@ def report() -> dict:
     tools = {}
     for t, (why, basic) in TOOLS.items():
         exe = which(t)
-        tools[t] = {"ok": bool(exe), "why": why, "basic": basic, "path": exe or "", "version": version(exe) if exe else ""}
+        tools[t] = {"ok": bool(exe), "why": why, "basic": basic, "path": exe or "", "version": version(exe) if exe and t not in LIBRARIES else ""}
     ok, where = data_ok()
     pk = {n: pack_state(n) for n in packs.PACKS}
     missing = [t for t, v in tools.items() if not v["ok"]]

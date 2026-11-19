@@ -16,6 +16,8 @@ import tomllib
 from pathlib import Path
 
 CODE = Path(__file__).resolve().parent.parent
+REPO = "M4S4T0-V01D/bountiful-music"   # GitHub: releases of the app and the sound packs
+APPIMAGE = os.environ.get("APPIMAGE")   # set by the AppImage runtime: this copy runs from a read-only image
 CONFIG_DIR = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config") / "bountiful"
 CONFIG_FILE = CONFIG_DIR / "config.toml"
 

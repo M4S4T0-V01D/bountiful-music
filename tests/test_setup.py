@@ -25,10 +25,11 @@ def check_packs():
 def check_missing():
     path, lmms = os.environ.get("PATH", ""), os.environ.pop("LMMS", None)
     os.environ["PATH"] = "/nonexistent"
+    found, SC.find_library = SC.find_library, lambda name: None
     try:
         r = SC.report()
         assert not r["ready"] and set(r["missing"]) == set(SC.TOOLS)
-        assert r["hint"] == "install lmms, fluidsynth, node, lame from your package manager"
+        assert r["hint"] == "install lmms, fluidsynth, node, lame, portaudio from your package manager"
         try:
             SC.need("node")
             raise AssertionError("need() let a missing program through")
@@ -36,6 +37,7 @@ def check_missing():
             assert "node" in str(e) and "Setup" in str(e)
     finally:
         os.environ["PATH"] = path
+        SC.find_library = found
         if lmms:
             os.environ["LMMS"] = lmms
     with tempfile.TemporaryDirectory() as t:   # a package manager on PATH gets its own command and names
@@ -43,7 +45,7 @@ def check_missing():
         (Path(t) / "apt").chmod(0o755)
         os.environ["PATH"] = t
         try:
-            assert SC.install_hint(["node", "lame"]) == "sudo apt install nodejs lame"
+            assert SC.install_hint(["node", "lame", "portaudio"]) == "sudo apt install nodejs lame libportaudio2"
         finally:
             os.environ["PATH"] = path
 

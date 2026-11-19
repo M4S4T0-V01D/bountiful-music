@@ -32,7 +32,23 @@ import mido  # noqa: E402
 import numpy as np  # noqa: E402
 
 ROOT = HERE.parent
-RECORDS = LT.B.DATA / "records" if (LT.B.DATA / "records").is_dir() else ROOT / "records"   # yours, else the examples
+
+
+def _records(data: Path, examples: Path) -> Path:
+    """The records you edit live in the music folder; the first time, it gets a copy of the examples that come
+    with the app (the app's own folder may be read-only, and edits there would block updates)."""
+    mine = data / "records"
+    if not mine.is_dir() and data.resolve() != examples.parent.resolve():
+        try:
+            mine.mkdir(parents=True)
+            for f in examples.glob("*.toml"):
+                (mine / f.name).write_bytes(f.read_bytes())
+        except OSError:
+            return examples
+    return mine if mine.is_dir() else examples
+
+
+RECORDS = _records(LT.B.DATA, ROOT / "records")
 SAMPLES = paths.SAMPLES
 SF2 = SAMPLES / "sf2" / "GeneralUser-GS.sf2"
 # the cleared library (docs/sample-audit.md). A sound id is "<library>:<name>"

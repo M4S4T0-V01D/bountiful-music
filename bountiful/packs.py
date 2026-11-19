@@ -28,7 +28,7 @@ import soundfile as sf
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import paths  # noqa: E402
 
-REPO = "M4S4T0-V01D/bountiful-music"
+REPO = paths.REPO
 RELEASE = "packs-v1"
 URL = f"https://github.com/{REPO}/releases/download/{RELEASE}/"
 MANIFEST = Path(__file__).resolve().parent / "packs.json"

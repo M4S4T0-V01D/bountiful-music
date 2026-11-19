@@ -144,5 +144,16 @@ try:
 except SS.SpecError:
     check("render backend allow-list", [])
 
+# a music folder without records/ gets a copy of the examples (the app's own folder may be read-only)
+import tempfile  # noqa: E402
+with tempfile.TemporaryDirectory() as t:
+    got = SS._records(Path(t), ROOT / "records")
+    names = sorted(f.name for f in got.glob("*.toml"))
+    check("records seeded into the music folder",
+          [] if got == Path(t) / "records" and names == sorted(f.name for f in (ROOT / "records").glob("*.toml"))
+          else [f"{got}: {names}"])
+check("records stay in the repo when it is the music folder", [] if SS._records(ROOT, ROOT / "records") == ROOT / "records"
+      else ["copied into itself"])
+
 print("all pass" if not fails else f"{fails} failed")
 sys.exit(1 if fails else 0)

@@ -532,7 +532,8 @@ class Window(QMainWindow):
     def check_updates(self, quiet=True):
         def done(st):
             if st["ok"] and st["behind"]:
-                self.upd_btn.setText(f"⬆ Update ({st['behind']} new)")
+                rel = st.get("release")
+                self.upd_btn.setText(f"⬆ Update to {rel['tag']}" if rel else f"⬆ Update ({st['behind']} new)")
                 self.upd_btn.setToolTip("\n".join(st["changes"][:20]))
                 self.upd_btn.show()
                 if not quiet:
