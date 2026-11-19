@@ -16,6 +16,8 @@ To update from GitHub instead, point the clone there: `git -C ~/.local/lib/bount
 
 Other install commands: `scripts/install.sh --uninstall` removes the app, launcher, menu entry and icons, but keeps your music and config. `scripts/install.sh --refresh` reinstalls dependencies, menu entry and icons only.
 
+**The AppImage.** `scripts/appimage.sh` builds `dist/Bountiful-<version>-x86_64.AppImage` from the committed code (the version is the newest `vX.Y.Z` tag): one file with its own Python and Qt. Download it, `chmod +x` it and run it. The first time, Settings → Setup downloads the sound packs and says which programs to install: LMMS, FluidSynth, Node and PortAudio (LAME too, for MP3 export; on X11 desktops, Qt also needs `libxcb-cursor0`). ⬆ Update checks GitHub releases and replaces the AppImage file with the new one.
+
 | View | What it does |
 |---|---|
 | **Start** | Make a new song in one click, jump to the main jobs, or reopen a recent track. Every tab has a short help line, and hovering over a control shows a hint. |
