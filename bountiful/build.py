@@ -34,8 +34,9 @@ sys.path.insert(0, str(ROOT / "tools"))
 import producer as PR  # noqa: E402
 import skeleton as SK  # noqa: E402
 
+import paths  # noqa: E402
 from paths import DATA, ENGINE  # noqa: E402  (paths.py: the music lives in DATA, the renderer in ENGINE)
-PY = str(ENGINE / ".venv" / "bin" / "python")
+PY = str(paths.PY)
 RENDER = ENGINE / "studio" / "render_midi.py"
 from credits import ARTIST, COMPOSER as COMPOSER_CREDIT, PRODUCED_COMPOSER as COMPOSER, stamp  # noqa: E402,F401  (credits.py)
 PART_ORDER = ["lead", "lead_hi", "sidekick", "arp", "comp", "stab", "vox", "pad", "bass", "bass2"]

@@ -25,7 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from credits import ARTIST  # noqa: E402
 import soundfile as sf
 
-ENGINE = Path("/home/s0ich1r0/Documents/Projects/intelligent-jungle")
+from paths import ENGINE  # noqa: E402
 sys.path.insert(0, str(ENGINE / "studio"))
 sys.path.insert(0, str(ENGINE))
 import render_midi as RM  # noqa: E402

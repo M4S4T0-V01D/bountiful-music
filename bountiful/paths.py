@@ -4,12 +4,14 @@ touches them.
 
   ~/.config/bountiful/config.toml
     data   = "~/Documents/Projects/bountiful-music"     # the music (default: the repo itself when run from source)
-    engine = "~/Documents/Projects/intelligent-jungle"  # the renderer (studio/render_midi.py and its .venv)
-Environment variables BOUNTIFUL_DATA and BOUNTIFUL_ENGINE override the file.
+    engine = "~/Documents/Projects/intelligent-jungle"  # the renderer (default: the copy in renderer/)
+Environment variables BOUNTIFUL_DATA and BOUNTIFUL_ENGINE override the file. PY runs the renderer: the engine's own
+.venv when it has one, else the Python running the app.
 """
 from __future__ import annotations
 
 import os
+import sys
 import tomllib
 from pathlib import Path
 
@@ -40,17 +42,25 @@ def _data() -> Path:
     return Path.home() / "Music" / "Bountiful"
 
 
+BUNDLED = CODE / "renderer"
+
+
 def _engine() -> Path:
     c = config()
-    for cand in (os.environ.get("BOUNTIFUL_ENGINE"), c.get("engine"), CODE.parent / "intelligent-jungle",
-                 Path.home() / "Documents" / "Projects" / "intelligent-jungle"):
+    for cand in (os.environ.get("BOUNTIFUL_ENGINE"), c.get("engine"), BUNDLED):
         if cand and (_p(cand) / "studio" / "render_midi.py").exists():
             return _p(cand)
-    return _p(c.get("engine") or CODE.parent / "intelligent-jungle")
+    return BUNDLED
+
+
+def _python(engine: Path) -> Path:
+    venv = engine / ".venv" / "bin" / "python"
+    return venv if venv.exists() else Path(sys.executable)
 
 
 DATA = _data()
 ENGINE = _engine()
+PY = _python(ENGINE)
 TRACKS, SONGS, SESSIONS = DATA / "tracks", DATA / "songs", DATA / "sessions"
 SAMPLES = DATA / "samples" if (DATA / "samples").is_dir() else CODE / "samples"   # not in git: it lives with the data
 

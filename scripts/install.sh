@@ -108,7 +108,7 @@ c = paths.config()
 changes = {}
 if not c.get("data") and (Path(src) / "tracks").exists():
     changes["data"] = src
-if not c.get("engine") and (paths.ENGINE / "studio" / "render_midi.py").exists():
+if not c.get("engine") and paths.ENGINE != paths.BUNDLED and (paths.ENGINE / "studio" / "render_midi.py").exists():
     changes["engine"] = str(paths.ENGINE)
 if changes:
     paths.save_config(**changes)

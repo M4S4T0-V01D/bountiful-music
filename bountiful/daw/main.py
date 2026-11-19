@@ -505,7 +505,7 @@ class Window(QMainWindow):
         if not self._need_track():
             return
         studio = paths.ENGINE / "studio" / "midi_studio.py"
-        py = paths.ENGINE / ".venv" / "bin" / "python"
+        py = paths.PY
         if studio.exists():
             subprocess.Popen([str(py), str(studio), str(self.track.mid), str(self.track.folder / "instruments.toml")], start_new_session=True)
         else:

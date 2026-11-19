@@ -70,7 +70,7 @@ A genre file holds:
 - pad, comp and arpeggio parts
 - the drum style and kit (`genres/kits.toml`)
 - the arrangement template
-- the sounds (an instrument map, rendered by `../intelligent-jungle/studio/render_midi.py`)
+- the sounds (an instrument map, rendered by `renderer/studio/render_midi.py`)
 
 To make a new genre, copy a file. A genre can also have an `[experimental_synthesis]` table (off by default; `produce --experimental` switches it on) that lets the Lab's engines play its parts: see [docs/synthesis-lab.md](docs/synthesis-lab.md).
 
@@ -154,4 +154,4 @@ Tests: `$PY tests/test_electronium.py` (Electronium, credits, friends), `$PY tes
 
 The composer core is **Abundant Music** by Per Nyblom (2012–2017), MIT License (`upstream/abundant-music/LICENSE`), sparse-checked out from github.com/pernyblom/pernyblom.github.io. Bountiful runs its `composeworkersource.js` unmodified in a Node sandbox. Two changes are made around it, not inside it: its 76 per-aspect seeds are derived from the song seed (upstream defaults them all to the same value), and its output is re-performed by the genre producer.
 
-Rendering uses the engine in `../intelligent-jungle`. Python 3.11 with numpy, scipy, soundfile, mido and pyloudnorm, plus Node 22 and LAME.
+Rendering uses `renderer/`, a copy of the intelligent-jungle renderer (`scripts/sync-renderer.sh` refreshes it; `engine` in the config or `BOUNTIFUL_ENGINE` picks another). The LMMS parts need LMMS installed. Python 3.11 with numpy, scipy, soundfile, mido and pyloudnorm, plus Node 22 and LAME.

@@ -16,7 +16,8 @@ from pathlib import Path
 import numpy as np
 import soundfile as sf
 
-ENGINE = Path("/home/s0ich1r0/Documents/Projects/intelligent-jungle")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from paths import ENGINE  # noqa: E402
 sys.path.insert(0, str(ENGINE))
 from engine import fx  # noqa: E402
 
