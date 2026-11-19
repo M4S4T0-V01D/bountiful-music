@@ -1,0 +1,3 @@
+{"_about": "Polivoks/Aelita-style lead: two saws +-7 cents and a strong pulse, resonant filter opening on each note, wide delayed vibrato, some drive.",
+ "detune": [-7, 7], "pulse": 0.6, "cutoff": 1300, "key_track": 0.5, "env_amount": 2000, "filter_decay": 0.4,
+ "attack": 0.015, "decay": 0.6, "sustain": 0.75, "release": 0.3, "vib_cents": 14, "drive": 1.8, "max_hz": 10000}

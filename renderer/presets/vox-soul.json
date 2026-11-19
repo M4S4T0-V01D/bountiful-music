@@ -1,0 +1,2 @@
+{"_about": "Wordless soul voice: slow vowel morph (aa/oo/oh/ah), scoop into notes, delayed vibrato, breath.",
+ "vowels": ["aa", "oo", "oh", "ah"], "attack": 0.035, "release": 0.2, "scoop": 35, "vibrato_delay": 0.25, "vibrato_cents": 22, "breath": 0.03, "morph": true}

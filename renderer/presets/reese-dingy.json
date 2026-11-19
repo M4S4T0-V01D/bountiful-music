@@ -1,0 +1,14 @@
+{
+ "_about": "Dark-jungle reese: clean sine sub + two saws 14 cents apart, filter breathing, driven and 10-bit reduced in the mids only.",
+ "release": 0.05,
+ "glide": 0.08,
+ "detune_cents": 14,
+ "cutoff_hi": 2300,
+ "cutoff_lo": 260,
+ "lfo_hz": 0.35,
+ "env_decay": 0.8,
+ "drive": 3.2,
+ "bits": 10,
+ "sub": 0.9,
+ "mid": 0.8
+}

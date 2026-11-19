@@ -1,0 +1,3 @@
+{"_about": "Dark Polivoks lead: hollow (strong pulse), low filter that opens slowly, wide wobbly vibrato, driven.",
+ "detune": [-9, 9], "pulse": 0.9, "cutoff": 850, "key_track": 0.4, "env_amount": 1400, "filter_decay": 0.6,
+ "attack": 0.025, "decay": 0.9, "sustain": 0.8, "release": 0.4, "vib_cents": 17, "drive": 2.1, "max_hz": 8000}

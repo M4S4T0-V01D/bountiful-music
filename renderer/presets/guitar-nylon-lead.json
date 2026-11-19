@@ -1,0 +1,3 @@
+{"_about": "Nylon lead: longer sustain, rounder pluck, slides (glide) and delayed finger vibrato; hammer-ons for legato notes.",
+ "sustain": 0.998, "pluck_tone": 2600, "pluck_pos": 0.22, "release": 0.18, "level": 1.0,
+ "glide": 0.11, "vib_cents": 10, "vib_rate": 5.0, "vib_delay": 0.32, "vib_min_dur": 0.4, "legato_level": 0.65}

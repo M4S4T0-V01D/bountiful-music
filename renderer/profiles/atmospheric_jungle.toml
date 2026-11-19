@@ -1,0 +1,14 @@
+# Atmospheric jungle profile — chopped breaks, rolling percussion, sub bass, hypnotic minor-9 drift.
+bpm = 164
+mix_base = "track-01"
+[swing]
+drums = 0.06
+hats = 0.12
+melody = 0.05
+[breaks]
+record_bpm = 138
+[progressions]
+minor9_drift = ["Cm9", "-", "Dm9", "-", "Ebm9", "-", "Dm9", "-"]   # never really resolves
+median_slip = ["Abmaj9", "-", "Emaj9", "-", "Abmaj9", "-", "-", "-"]
+[bass_cells]
+jungle = [[[0, "R", 6, 1.0], [8, "R", 2, 0.6], [10, "5", 2, 0.7], [14, "A", 2, 0.8]], [[0, "R", 10, 1.0], [12, "7", 2, 0.7], [14, "A", 2, 0.8]]]

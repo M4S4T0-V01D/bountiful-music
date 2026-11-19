@@ -1,0 +1,14 @@
+{
+ "_about": "Suitcase-style electric piano: 2-operator FM (1:1) for the body, a fast-decaying 14:1 partial for the tine 'ding', soft-clip bark that grows with velocity.",
+ "release": 0.25,
+ "decay": 2.4,
+ "index": 2.6,
+ "index_decay": 0.32,
+ "index_floor": 0.35,
+ "ratio": 1.0,
+ "tine": 0.22,
+ "tine_ratio": 14.0,
+ "tine_decay": 0.032,
+ "bark": 1.2,
+ "detune_cents": 2.0
+}

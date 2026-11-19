@@ -1,0 +1,18 @@
+{
+ "_about": "Hammond B3-style house organ. Drawbar list in engine order (16', 8', 5 1/3', 4', 2 2/3', 2', 1 3/5', 1 1/3', 1'): a light 16', full 8', 5 1/3' and 4' body, a bright 2' and a little 1' for bite. Third-harmonic percussion, key click, warm overdrive. The Leslie is in the mix (instruments.toml).",
+ "drawbars": [
+  2,
+  8,
+  6,
+  5,
+  0,
+  5,
+  0,
+  0,
+  2
+ ],
+ "percussion": 0.35,
+ "click": 0.3,
+ "release": 0.04,
+ "drive": 2.1
+}

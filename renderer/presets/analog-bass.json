@@ -1,0 +1,3 @@
+{"_about": "Rounded analog mono bass: saw + square, resonant low-pass snapping shut, sine sub, light drive.",
+ "saw": 0.7, "square": 0.4, "cutoff": 220, "env_amount": 1700, "filter_decay": 0.09, "resonance": 0.45,
+ "sub": 0.6, "sustain": 0.6, "amp_decay": 0.2, "release": 0.05, "glide": 0.06, "drive": 1.6}

@@ -1,0 +1,27 @@
+# Deep / soulful house — four-to-the-floor, offbeat bass, real piano or organ chords on the changes.
+bpm = 122
+mix_base = "track-01"
+[swing]
+drums = 0.1
+hats = 0.15
+rhodes = 0.1
+bass = 0.06
+[kit.samples]
+kick = ["drums/kick02.ogg"]
+clap = ["drums/clap02.ogg", "drums/clap03.ogg"]
+hat = ["drums/hihat_closed01.ogg", "drums/hihat_closed02.ogg"]
+open = ["drums/hihat_opened01.ogg"]
+shaker = ["drums/shaker02.ogg", "drums/shaker03.ogg"]
+[voices.piano]
+backend = "lmms"
+sample = "instruments/piano02.ogg"
+release = 0.35
+[comp_patterns]
+house_chords = [[[0, 3, 0.62, 0], [6, 2, 0.5, 0], [10, 3, 0.55, 0]], [[2, 4, 0.58, 0], [8, 3, 0.55, 0], [14, 2, 0.55, 1]]]
+[bass_cells]
+house = [[[0, "R", 3, 0.9], [6, "R", 2, 0.7], [10, "O", 2, 0.65], [14, "5", 2, 0.7]], [[0, "R", 4, 0.9], [8, "R", 3, 0.8], [14, "A", 2, 0.75]]]
+[progressions]
+gospel_minor = ["Am9", "G6", "Fmaj9", "E7sus E7#9"]   # Am7-G6-Fmaj7 with a gospel turnaround
+anthem = ["Cmaj9", "G6/9", "Am9", "Fmaj9"]            # I-V-vi-IV
+classic = ["Cmaj9", "Am9", "Fmaj9", "G13"]            # I-vi-IV-V
+vocal_lift = ["Cmaj9", "Fmaj9", "Am9", "G13sus G13"]  # I-IV-vi-V

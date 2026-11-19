@@ -1,0 +1,2 @@
+{"_about": "Rave stab: 5 detuned saws per voice, root+5th+octave stacked, filter snaps shut.",
+ "voices": 5, "detune_cents": 18, "chord": [0, 7, 12], "cutoff_hi": 6500, "cutoff_lo": 900, "filter_decay": 0.11, "amp_decay": 0.45, "release": 0.08}

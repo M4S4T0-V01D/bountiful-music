@@ -1,0 +1,2 @@
+{"_about": "Dark jungle stab: minor triad on every note, detuned saws, filter snapping shut fast.",
+ "voices": 3, "detune_cents": 12, "chord": [0, 3, 7], "cutoff_hi": 4200, "cutoff_lo": 700, "filter_decay": 0.07, "amp_decay": 0.28, "release": 0.05}

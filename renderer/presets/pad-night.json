@@ -1,0 +1,4 @@
+{
+  "_about": "Three detuned saws per chord tone, slow swell, low-passed; filter moves via section automation (pad_lp).",
+  "attack": 0.9, "release": 1.6, "detune": [-7, 0, 7], "cutoff": 1400
+}

@@ -1,0 +1,2 @@
+{"_about": "Darker, softer Rhodes for slow tunes: less FM index and tine, longer decay.",
+ "release": 0.3, "decay": 3.0, "index": 1.6, "index_decay": 0.4, "index_floor": 0.2, "ratio": 1.0, "tine": 0.12, "tine_ratio": 14.0, "tine_decay": 0.03, "bark": 0.6, "detune_cents": 3.0}

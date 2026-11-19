@@ -1,0 +1,21 @@
+# Intelligent / atmospheric DnB profile — fast rolling breaks, wide floating pads, long builds, deep sub.
+bpm = 172
+mix_base = "track-01"
+[swing]
+drums = 0.05
+hats = 0.08
+melody = 0.04
+[breaks]
+record_bpm = 140
+[voices.pad]
+kind = "pad"
+preset = "pad-tide.json"
+[voices.vibes]
+backend = "lmms"
+plugin = "malletsstk"
+attrs = { preset = 1, version = 1 }
+[bass_cells]
+roll = [[[0, "R", 8, 1.0], [10, "5", 2, 0.6], [12, "R", 4, 0.8]], [[0, "R", 6, 1.0], [6, "R", 2, 0.6], [10, "O", 2, 0.6], [14, "A", 2, 0.8]]]
+[progressions]
+maj7_lift = ["Abmaj9", "-", "-", "-", "Ebmaj9", "-", "-", "-", "Fmaj9", "-", "-", "-", "Fmaj9", "-", "-", "-"]   # luminous, non-functional
+median_slip = ["Gmaj9", "-", "-", "-", "Ebmaj9", "-", "-", "-", "Gmaj9", "-", "-", "-", "Gmaj9", "-", "-", "-"]

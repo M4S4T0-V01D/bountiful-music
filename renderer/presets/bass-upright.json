@@ -1,0 +1,14 @@
+{
+ "_about": "Upright-leaning bass: more plucked body and finger noise, softer sub.",
+ "release": 0.08,
+ "glide": 0.06,
+ "sub": 0.62,
+ "sub_attack": 0.008,
+ "sub_decay": 1.6,
+ "sub_h2": 0.08,
+ "body": 0.75,
+ "tilt": 1.0,
+ "body_decay": 1.3,
+ "pluck": 0.22,
+ "drive": 1.2
+}

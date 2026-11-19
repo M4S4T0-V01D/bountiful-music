@@ -1,0 +1,38 @@
+# Jazzstep / jazzy jungle profile — modal jazz harmony over rolling breaks, melodic bass, Rhodes,
+# muted trumpet, vibes. Use with `profile = "jazzstep"` in a song.toml; anything the song sets wins.
+bpm = 168                      # 160–175 (or a 110–115 half-time feel, as on track 1)
+mix_base = "track-01"
+[swing]
+drums = 0.08
+hats = 0.12
+rhodes = 0.08
+bass = 0.05
+melody = 0.06
+[breaks]
+record_bpm = 138
+[kit.break.samples]
+kick = ["drums/bassdrum_acoustic02.ogg", "drums/kick_hiphop01.ogg"]
+snare = ["drums/snare_hiphop01.ogg", "drums/snare07.ogg"]
+ghost = ["drums/snare_muffled02.ogg", "drums/snare_hiphop02.ogg"]
+hat = ["drums/hihat_closed01.ogg", "drums/hihat_closed02.ogg", "drums/hihat_closed03.ogg"]
+open = ["drums/hihat_opened01.ogg"]
+ride = ["drums/ride01.ogg"]
+[voices.rhodes]
+backend = "lmms"
+zyn = "Ice Rhodes1"
+[voices.horn]
+backend = "lmms"
+sample = "instruments/trumpet01.ogg"
+release = 0.15
+[voices.vibes]
+backend = "lmms"
+plugin = "malletsstk"
+attrs = { preset = 1, version = 1 }
+[comp_patterns]
+roll = [[[0, 8, 0.6, 0]], [[0, 4, 0.58, 0], [10, 6, 0.5, 0]], [[3, 6, 0.55, 0], [14, 2, 0.6, 1]]]
+[bass_cells]
+roll = [[[0, "R", 6, 1.0], [8, "5", 4, 0.8], [14, "A", 2, 0.8]], [[0, "R", 8, 1.0], [10, "O", 2, 0.6], [12, "7", 2, 0.7], [14, "A", 2, 0.8]]]
+[progressions]
+so_what = ["Dm11", "-", "Em11", "-"]              # So What slide (m11 = 4th, b7, b3, 5th)
+so_what_down = ["Dm11", "-", "Cm11", "-"]
+two_five_one = ["Dm9", "G13", "Cmaj9", "-"]       # extended II-V-I

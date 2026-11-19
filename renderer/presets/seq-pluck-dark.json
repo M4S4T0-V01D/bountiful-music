@@ -1,0 +1,3 @@
+{"_about": "Dark sequencer pluck: square wave, low filter with a short blip, cold.",
+ "detune": [0], "pulse": 1.0, "cutoff": 450, "key_track": 0.5, "env_amount": 2200, "filter_decay": 0.07,
+ "attack": 0.002, "decay": 0.12, "sustain": 0.08, "release": 0.06, "vib_cents": 0, "drive": 1.6, "max_hz": 7000}

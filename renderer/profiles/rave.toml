@@ -1,0 +1,18 @@
+# Classic UK rave / hardcore breakbeat — pitched breaks over a 4/4 kick, piano stabs, euphoric minor loops.
+bpm = 140
+mix_base = "track-01"
+[swing]
+drums = 0.04
+hats = 0.06
+[breaks]
+record_bpm = 128
+[kit.break.samples]
+kick = ["drums/kick01.ogg", "drums/bassdrum01.ogg"]
+snare = ["drums/snare02.ogg", "drums/snare04.ogg"]
+hat = ["drums/hihat_closed02.ogg", "drums/hihat_closed05.ogg"]
+[voices.piano]
+backend = "lmms"
+sample = "instruments/piano01.ogg"
+release = 0.2
+[progressions]
+euphoric = ["Am9", "Fmaj9", "Cmaj9", "G13sus G13"]   # vi-IV-I-V

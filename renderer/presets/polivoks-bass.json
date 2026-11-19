@@ -1,0 +1,3 @@
+{"_about": "Polivoks-style bass: saw + square through a resonant, aggressive low-pass that snaps shut, driven hard; a little sine sub for weight.",
+ "saw": 0.8, "square": 0.5, "cutoff": 280, "env_amount": 2400, "filter_decay": 0.12, "resonance": 0.9,
+ "sub": 0.5, "sustain": 0.5, "amp_decay": 0.2, "release": 0.04, "glide": 0.02, "drive": 2.4}

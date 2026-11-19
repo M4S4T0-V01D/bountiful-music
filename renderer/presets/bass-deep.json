@@ -1,0 +1,14 @@
+{
+ "_about": "Sub sine (mono, the weight) + plucked additive body (upper harmonics die faster, like a string) + finger noise. 'bright' per note opens it towards an upright.",
+ "release": 0.06,
+ "glide": 0.07,
+ "sub": 1.0,
+ "sub_attack": 0.006,
+ "sub_decay": 3.0,
+ "sub_h2": 0.06,
+ "body": 0.5,
+ "tilt": 1.05,
+ "body_decay": 1.6,
+ "pluck": 0.12,
+ "drive": 1.3
+}

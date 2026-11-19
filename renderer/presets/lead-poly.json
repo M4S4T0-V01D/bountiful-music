@@ -1,0 +1,19 @@
+{
+ "_about": "Warm early-90s poly synth lead (Juno/Polysix school): two saws detuned +-5 cents plus a pulse, 24 dB low-pass opening with each note, gentle delayed vibrato. Chorus and delay in the mix.",
+ "detune": [
+  -5,
+  5
+ ],
+ "pulse": 0.35,
+ "cutoff": 1400,
+ "key_track": 0.5,
+ "env_amount": 3000,
+ "filter_decay": 0.35,
+ "attack": 0.006,
+ "decay": 0.5,
+ "sustain": 0.7,
+ "release": 0.22,
+ "vib_cents": 7,
+ "drive": 1.3,
+ "max_hz": 11000
+}

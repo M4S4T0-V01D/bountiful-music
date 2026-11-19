@@ -1,0 +1,6 @@
+{
+  "_about": "Muted trumpet / soft horn: additive saw with a brightness envelope, pitch scoop into each note, delayed vibrato, breath noise. The harmon-mute nasal peak is EQ in mix.horn.",
+  "release": 0.09, "attack": 0.035, "swell": 0.25,
+  "scoop": 45, "vibrato_delay": 0.28, "vibrato_cents": 14, "vibrato_rate": 5.4,
+  "bright_min": 1.5, "bright_max": 5.5, "breath": 0.05
+}

@@ -1,0 +1,18 @@
+# UK garage 2-step — skippy kicks, shuffled hats, deep sliding sub, short chopped phrases.
+bpm = 132
+mix_base = "track-01"
+[swing]
+drums = 0.22
+hats = 0.33
+rhodes = 0.25
+bass = 0.2
+melody = 0.15
+[kit.samples]
+kick = ["drums/kick_hiphop01.ogg"]
+clap = ["drums/clap02.ogg"]
+rim = ["drums/rim01.ogg"]
+hat = ["drums/hihat_closed02.ogg", "drums/hihat_closed03.ogg"]
+[bass_cells]
+garage = [[[0, "R", 3, 1.0], [3, "R", 1, 0.6], [6, "O", 2, 0.7], [10, "5", 2, 0.8], [14, "A", 2, 0.8]], [[0, "R", 2, 1.0], [4, "R", 2, 0.7], [8, "5", 3, 0.8], [14, "N", 2, 0.8]]]
+[progressions]
+dark_two_step = ["Gm9", "Ebmaj9", "Cm11", "D7#9"]
