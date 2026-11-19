@@ -210,3 +210,139 @@ def final_wav(folder: Path) -> Path | None:
     """the mastered WAV in a track's exports (LMMS names it <slug>.wav, the beats backend "<Title> - <artist>.wav")"""
     wavs = sorted(p for p in (Path(folder) / "exports").glob("*.wav") if "premaster" not in p.stem)
     return next((p for p in wavs if p.stem == Path(folder).name), wavs[0] if wavs else None)
+
+
+# ------------------------------------------------------------------ sounds: only the cleared libraries (docs/sample-audit.md)
+# what each kind of slot can hold: a drum kit entry is a sample, a voice an instrument (or one of our samples with a root)
+SLOT_LIBS = {"sample": ("dm", "pixel", "iowa", "own"), "voice": ("gs",)}
+
+
+def sf2_presets(path=SS.SF2) -> list[tuple[int, int, str]]:
+    """(bank, patch, name) of every preset in a SoundFont, read from its phdr chunk"""
+    import struct
+    b = Path(path).read_bytes()
+    i = b.find(b"phdr")
+    if b[:4] != b"RIFF" or i < 0:
+        raise SpecError(f"{Path(path).name} isn't a SoundFont")
+    n = struct.unpack_from("<I", b, i + 4)[0] // 38
+    out = []
+    for k in range(n - 1):                                        # the last record is the end marker (EOP)
+        name, patch, bank = struct.unpack_from("<20sHH", b, i + 8 + 38 * k)
+        out.append((bank, patch, name.split(b"\0")[0].decode("latin-1").strip()))
+    return sorted(out)
+
+
+def catalog(lib: str) -> list[tuple[str, str]]:
+    """(sound id, label) for every cleared sound in a library"""
+    if lib == "gs":
+        return [(f"gs:{b}:{p}", n) for b, p, n in sf2_presets()]
+    if lib == "own":
+        return [(f"own:{k}", v.name) for k, v in SS.OWN.items()]
+    root = {"dm": SS.SAMPLES / "drummachines", "iowa": SS.SAMPLES / "iowa", "pixel": SS.SAMPLES / "pixel"}.get(lib)
+    if root is None:
+        raise SpecError(f"unknown library {lib!r}")
+    wavs = (p for p in root.rglob("*.wav") if not (lib == "iowa" and p.relative_to(root).parts[0] == "raw"))
+    return [(f"{lib}:{p.relative_to(root).with_suffix('').as_posix()}", p.relative_to(root).as_posix())
+            for p in sorted(wavs)]
+
+
+def slots(S) -> list[dict]:
+    """the record's sounds that come from a library: the drum kit's samples and the instrument voices"""
+    out = []
+    for name, v in S.get("drums", {}).get("kit", {}).items():
+        if isinstance(v, dict) and ":" in v.get("sound", ""):
+            out.append({"table": "drums.kit", "name": name, "sound": v["sound"], "kind": "sample", "label": v.get("bus", "")})
+    for name, v in S.get("voices", {}).items():
+        lib = v.get("sound", "").partition(":")[0]
+        if lib == "gs":
+            out.append({"table": "voices", "name": name, "sound": v["sound"], "kind": "voice", "label": v.get("label", "")})
+    return out
+
+
+def allowed(S, kind: str) -> list[str]:
+    allow = S.get("sounds", {}).get("allow", ["gs", "dm", "own"])
+    return [lib for lib in SLOT_LIBS[kind] if lib in allow and lib in SS.LIBRARIES]
+
+
+def set_sound(path, table: str, name: str, sid: str, label: str | None = None) -> str:
+    """put a cleared sound into a kit entry or a voice, in the file (a take gets its own copy of just that line)"""
+    path = Path(path)
+    S = SS.load(path)
+    slot = next((s for s in slots(S) if (s["table"], s["name"]) == (table, name)), None)
+    if slot is None:
+        raise SpecError(f"{table}.{name} isn't a sound the tab can change")
+    lib = sid.partition(":")[0]
+    if lib not in allowed(S, slot["kind"]) or sid not in dict(catalog(lib)):
+        raise SpecError(f"{sid!r} isn't a cleared {slot['kind']} this record allows")
+    lines = path.read_text().splitlines(keepends=True)
+    head = f"[{table}]" if table == "drums.kit" else f"[voices.{name}]"
+    h = next((i for i, l in enumerate(lines) if l.split("#")[0].strip() == head), None)
+    end = next((i for i in range(h + 1, len(lines)) if lines[i].lstrip().startswith("[")), len(lines)) if h is not None else None
+    sound_re = re.compile(r'(sound\s*=\s*)"[^"]*"')
+    if table == "drums.kit":
+        row = next((i for i in range(h + 1, end) if re.match(rf"\s*{re.escape(name)}\s*=", lines[i])), None) if h is not None else None
+        if row is not None and sound_re.search(lines[row]):
+            lines[row] = sound_re.sub(lambda m: m.group(1) + _toml(sid), lines[row], count=1)
+        elif h is not None:
+            lines[h + 1:h + 1] = [f"{name} = {{ sound = {_toml(sid)} }}\n"]   # tables merge, so the rest comes from the parent
+        else:
+            lines += [f"\n[drums.kit]\n{name} = {{ sound = {_toml(sid)} }}\n"]
+    else:
+        new = {"sound": sid} | ({"label": label} if label else {})
+        if h is None:
+            lines += [f"\n{head}\n"] + [f"{k} = {_toml(v)}\n" for k, v in new.items()]
+        else:
+            for k, v in new.items():
+                row = next((i for i in range(h + 1, end) if re.match(rf"\s*{k}\s*=", lines[i])), None)
+                if row is None:
+                    lines[h + 1:h + 1] = [f"{k} = {_toml(v)}\n"]
+                    end += 1
+                else:
+                    lines[row] = re.sub(rf'({k}\s*=\s*)"[^"]*"', lambda m: m.group(1) + _toml(v), lines[row], count=1)
+    text = "".join(lines)
+    tmp = path.with_suffix(".toml.tmp")
+    tmp.write_text(text)
+    try:
+        got = next(s for s in slots(SS.load(tmp)) if (s["table"], s["name"]) == (table, name))
+        if got["sound"] != sid:
+            raise SpecError("the edit didn't read back as written; the file is unchanged")
+    except (tomllib.TOMLDecodeError, StopIteration) as e:
+        tmp.unlink()
+        raise SpecError(f"the edit didn't read back ({e}); the file is unchanged") from None
+    except SpecError:
+        tmp.unlink()
+        raise
+    os.replace(tmp, path)
+    return sid
+
+
+def audition(sid: str, folder) -> Path:
+    """a WAV to hear a sound by: the sample itself, or an instrument playing a few notes (fluidsynth)"""
+    lib, _, name = sid.partition(":")
+    if lib != "gs":
+        return Path(SS.sound_path(sid, [lib]))
+    import mido
+    import subprocess
+    bank, patch = (int(x) for x in name.split(":"))
+    ch = 9 if bank == 128 else 0
+    mid = mido.MidiFile(ticks_per_beat=480)
+    t = mido.MidiTrack()
+    mid.tracks.append(t)
+    if ch == 0:
+        t.append(mido.Message("control_change", channel=ch, control=0, value=bank))
+    t.append(mido.Message("program_change", channel=ch, program=patch))
+    notes = [36, 38, 42, 46, 49] if ch == 9 else [60, 64, 67, 72]
+    for p in notes:
+        t.append(mido.Message("note_on", channel=ch, note=p, velocity=96))
+        t.append(mido.Message("note_off", channel=ch, note=p, time=360))
+    for p in notes[:3]:
+        t.append(mido.Message("note_on", channel=ch, note=p, velocity=80))
+    t.append(mido.Message("note_off", channel=ch, note=notes[0], time=960))
+    for p in notes[1:3]:
+        t.append(mido.Message("note_off", channel=ch, note=p))
+    folder = Path(folder)
+    out = folder / f"{sid.replace(':', '_')}.wav"
+    mid.save(folder / "audition.mid")
+    subprocess.run(["fluidsynth", "-ni", "-q", "-a", "null", "-r", "44100", "-g", "0.6", "-F", str(out), str(SS.SF2),
+                    str(folder / "audition.mid")], check=True, capture_output=True, timeout=60)
+    return out

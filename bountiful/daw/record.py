@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import random
 import subprocess
+import tempfile
 from pathlib import Path
 
 from PySide6.QtCore import QRectF, QSize, Qt, QUrl, Signal
 from PySide6.QtGui import QColor, QDesktopServices, QFont, QPainter, QPen
-from PySide6.QtWidgets import (QFormLayout, QHBoxLayout, QInputDialog, QLabel, QLineEdit, QPushButton, QScrollArea,
-                               QSplitter, QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QComboBox, QFormLayout, QHBoxLayout, QInputDialog, QLabel, QLineEdit, QListWidget,
+                               QListWidgetItem, QPushButton, QScrollArea, QSplitter, QTabWidget, QTreeWidget,
+                               QTreeWidgetItem, QVBoxLayout, QWidget)
 
 import record_desk as R
 import songspec as SS
@@ -98,6 +100,151 @@ def _how(bar: dict, lane: str) -> str | None:
     return next((q.partition(":")[2] for q in bar["plays"] if q.partition(":")[0] == lane), None)
 
 
+class SoundsPage(QWidget):
+    """The record's drum samples and instrument voices; swap one for another cleared sound, after hearing it."""
+
+    def __init__(self, panel):
+        super().__init__()
+        self.panel, self.S, self.cat = panel, None, []
+        self.tmp = Path(tempfile.mkdtemp(prefix="bountiful-hear-"))
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(0, 0, 0, 0)
+        self.note = QLabel()
+        self.note.setWordWrap(True)
+        self.note.setStyleSheet("color: #8c87a3")
+        lay.addWidget(self.note)
+        split = QSplitter()
+        self.slots = QTreeWidget()
+        self.slots.setHeaderLabels(["Part", "Sound", "Label"])
+        self.slots.setRootIsDecorated(False)
+        self.slots.currentItemChanged.connect(lambda it, _: self.pick_slot())
+        split.addWidget(self.slots)
+        right = QWidget()
+        rl = QVBoxLayout(right)
+        rl.setContentsMargins(0, 0, 0, 0)
+        row = QHBoxLayout()
+        self.lib = QComboBox()
+        self.lib.setToolTip("only the libraries this record's [sounds] allow, and that fit this part")
+        self.lib.currentIndexChanged.connect(self.fill)
+        row.addWidget(self.lib)
+        self.filter = QLineEdit()
+        self.filter.setPlaceholderText("filter …")
+        self.filter.textChanged.connect(self.fill)
+        row.addWidget(self.filter, 1)
+        rl.addLayout(row)
+        self.cands = QListWidget()
+        self.cands.itemDoubleClicked.connect(lambda _: self.hear())
+        rl.addWidget(self.cands, 1)
+        row = QHBoxLayout()
+        self.b_hear = QPushButton("▶ Hear")
+        self.b_hear.setToolTip("the sample, or the instrument playing a few notes (double-click does it too)")
+        self.b_hear.clicked.connect(self.hear)
+        self.b_use = QPushButton("Use this sound")
+        self.b_use.setToolTip("write it into the record's TOML; a take gets just this line")
+        self.b_use.clicked.connect(self.use)
+        row.addWidget(self.b_hear)
+        row.addWidget(self.b_use)
+        rl.addLayout(row)
+        split.addWidget(right)
+        split.setSizes([300, 400])
+        lay.addWidget(split, 1)
+
+    def load(self, S, keep: tuple | None = None):
+        self.S = S
+        self.slots.clear()
+        found = R.slots(S) if S else []
+        for s in found:
+            it = QTreeWidgetItem([f"{'drum' if s['kind'] == 'sample' else 'voice'} {s['name']}", s["sound"], s["label"]])
+            it.setData(0, Qt.UserRole, s)
+            self.slots.addTopLevelItem(it)
+            if keep == (s["table"], s["name"]):
+                self.slots.setCurrentItem(it)
+        for i in range(3):
+            self.slots.resizeColumnToContents(i)
+        if not S:
+            self.note.setText("")
+        elif not found:
+            self.note.setText(f"{S['meta']['title']} uses the {S['meta'].get('engine', 'spec')} engine: its sounds are "
+                              "set in its code, not in the TOML, so there is nothing to swap here.")
+        else:
+            self.note.setText("Every sound here is cleared for release (the libraries in the record's [sounds] allow). "
+                              "Pick a part, then hear and use another sound for it.")
+        if found and not self.slots.currentItem():
+            self.slots.setCurrentItem(self.slots.topLevelItem(0))
+        self.pick_slot()
+
+    def slot(self) -> dict | None:
+        it = self.slots.currentItem()
+        return it.data(0, Qt.UserRole) if it else None
+
+    def pick_slot(self):
+        s = self.slot()
+        self.lib.blockSignals(True)
+        self.lib.clear()
+        if s:
+            self.lib.addItems(R.allowed(self.S, s["kind"]))
+            lib = s["sound"].partition(":")[0]
+            if self.lib.findText(lib) >= 0:
+                self.lib.setCurrentText(lib)
+        self.lib.blockSignals(False)
+        self.fill()
+
+    def fill(self):
+        self.cands.clear()
+        s, lib = self.slot(), self.lib.currentText()
+        self.cat = R.catalog(lib) if s and lib else []
+        f = self.filter.text().strip().lower()
+        for sid, label in self.cat:
+            if f and f not in sid.lower() and f not in label.lower():
+                continue
+            it = QListWidgetItem(f"{label}    ({sid})" if lib == "gs" else sid.partition(":")[2])
+            it.setData(Qt.UserRole, (sid, label))
+            self.cands.addItem(it)
+            if s and sid == s["sound"]:
+                self.cands.setCurrentItem(it)
+        if self.cands.currentItem():
+            self.cands.scrollToItem(self.cands.currentItem())
+        for b in (self.b_hear, self.b_use):
+            b.setEnabled(bool(s))
+
+    def chosen(self) -> tuple | None:
+        it = self.cands.currentItem()
+        return it.data(Qt.UserRole) if it else None
+
+    def hear(self, then=None):
+        c = self.chosen() or ((self.slot() or {}).get("sound"), None)
+        if not c[0]:
+            return
+        win = self.panel.win
+
+        def go():
+            import soundfile as sf
+            return sf.read(str(R.audition(c[0], self.tmp)), dtype="float32")
+
+        def done(r):
+            if isinstance(r, Exception):
+                self.panel.status.setText(f"can't play {c[0]}: {r}")
+            else:
+                win.play_array(r[0], c[0], r[1])
+            if then:
+                then(r)
+        win.jobs.run(f"hearing {c[0]}", go, done, done)
+
+    def use(self):
+        s, c = self.slot(), self.chosen()
+        if not s or not c:
+            return None
+        try:
+            done = R.set_sound(self.panel.path, s["table"], s["name"], c[0], c[1] if c[0].startswith("gs:") else None)
+        except (SS.SpecError, OSError) as e:
+            self.panel.status.setText(f"not changed: {e}")
+            return None
+        self.panel.status.setText(f"{s['name']} is now {done}")
+        self.panel.reload(self.panel.path)
+        self.load(self.panel.S, (s["table"], s["name"]))
+        return done
+
+
 class RecordPanel(QWidget):
     def __init__(self, win):
         super().__init__()
@@ -153,10 +300,18 @@ class RecordPanel(QWidget):
         scroll = QScrollArea()
         scroll.setWidget(self.map)
         scroll.setMinimumHeight(160)
-        rl.addWidget(scroll, 1)
+        page = QWidget()
+        pl = QVBoxLayout(page)
+        pl.setContentsMargins(0, 0, 0, 0)
+        pl.addWidget(scroll, 1)
         self.bar_info = QLabel("click a bar to see what plays in it")
         self.bar_info.setWordWrap(True)
-        rl.addWidget(self.bar_info)
+        pl.addWidget(self.bar_info)
+        self.tabs = QTabWidget()
+        self.tabs.addTab(page, "Bar map")
+        self.sounds = SoundsPage(self)
+        self.tabs.addTab(self.sounds, "Sounds")
+        rl.addWidget(self.tabs, 1)
         row = QHBoxLayout()
         self.b_run = {}
         for mode, text, tip in (("check", "✓ Check", "compose it and check it, without rendering"),
@@ -212,6 +367,7 @@ class RecordPanel(QWidget):
         except Exception as e:
             self.S, self.bars = None, []
             self.map.set_bars([])
+            self.sounds.load(None)
             self.info.setText(f"{path.name} doesn't load: {e}")
             return
         for k, e in self.fields.items():
@@ -221,6 +377,7 @@ class RecordPanel(QWidget):
                           f"{s['backend']} render" + (f"  ·  a take on {s['extends']}" if s["extends"] else "") + "\n" +
                           "  →  ".join(f"{n} {b}" for n, b, _ in s["sections"]))
         self.map.set_bars(self.bars)
+        self.sounds.load(self.S)
         self.last = R.track_dir(self.S, "build")
         self.b_open.setEnabled(R.final_wav(self.last) is not None)
 

@@ -681,6 +681,24 @@ def smoke(win: Window, app: QApplication) -> int:
         A.wait_until(lambda: (app.processEvents(), bool(ran))[1], 120)
         if ran != [0] or "bar 1:" not in rp.bar_info.text() or rp.changes():
             problems.append(f"record tab check: {ran} {rp.status.text()}")
+        # its Sounds page: the record's parts, only allowed libraries, and an instrument to hear
+        moss = RP.SS.RECORDS / "moss-radio.toml"
+        if moss.exists():
+            rp.reload(moss)
+            sp = rp.sounds
+            voice = next((sp.slots.topLevelItem(i) for i in range(sp.slots.topLevelItemCount())
+                          if sp.slots.topLevelItem(i).text(0).startswith("voice ")), None)
+            if voice is None:
+                problems.append("record sounds: no voices for moss radio")
+            else:
+                sp.slots.setCurrentItem(voice)
+                libs = [sp.lib.itemText(i) for i in range(sp.lib.count())]
+                heard = []
+                sp.hear(then=lambda r: heard.append(r))
+                A.wait_until(lambda: (app.processEvents(), bool(heard))[1], 60)
+                if libs != ["gs"] or sp.cands.count() < 100 or not sp.chosen() or not heard \
+                        or isinstance(heard[0], Exception) or len(heard[0][0]) < 44100:
+                    problems.append(f"record sounds: {libs} {sp.cands.count()} {heard[:1]!r:.80}")
     # the Start page and plain tab names
     if win.tabs.tabText(0) != "Start" or "Game music" not in [win.tabs.tabText(i) for i in range(win.tabs.count())]:
         problems.append("tab names")

@@ -101,6 +101,39 @@ try:
     R.set_meta(take, {"bpm": 90})
     check("edit a take", [] if SS.load(take)["meta"]["bpm"] == 90 and SS.load(moss)["meta"]["bpm"] == 80 else ["wrong file"])
 
+    # sounds: only cleared ones, in the file in place; a take gets just the line it changes
+    moss.write_text(before)
+    iowa = R.catalog("iowa")
+    check("catalog", [x for x, ok in [("gs presets", ("gs:0:73", "Flute") in R.catalog("gs")),
+                                      ("no iowa raw", iowa and not any(s.startswith("iowa:raw/") for s, _ in iowa)),
+                                      ("dm", ("dm:r_n_b/old_kik", "r_n_b/old_kik.wav") in R.catalog("dm"))] if not ok])
+    R.set_sound(moss, "drums.kit", "kick", "dm:tr808/kick")
+    R.set_sound(moss, "voices", "flute", "gs:0:72", "Clarinet")
+    after = moss.read_text()
+    S = SS.load(moss)
+    changed = [(a, b) for a, b in zip(before.splitlines(), after.splitlines()) if a != b]
+    check("set_sound", [x for x, ok in [("kick", S["drums"]["kit"]["kick"] == {"sound": "dm:tr808/kick", "bus": "kick"}),
+                                        ("voice", (S["voices"]["flute"]["sound"], S["voices"]["flute"]["label"]) == ("gs:0:72", "Clarinet")),
+                                        ("fx kept", S["voices"]["flute"]["fx"] == tomllib.loads(before)["voices"]["flute"]["fx"]),
+                                        ("three lines", len(changed) == 3)] if not ok])
+    moss.write_text(before)
+    bad = [x for x, args in [("not allowed", ("drums.kit", "kick", "pixel:bitplane-blues/kick")),
+                             ("no such file", ("drums.kit", "kick", "dm:nope/kick")),
+                             ("uncleared", ("drums.kit", "kick", "breaks:amen")),
+                             ("sample as voice", ("voices", "flute", "dm:r_n_b/old_kik")),
+                             ("engine voice", ("voices", "sub", "gs:0:38")),
+                             ("raw iowa", ("drums.kit", "kick", "iowa:raw/x"))]
+           if not raises(lambda a=args: R.set_sound(moss, *a))]
+    check("uncleared or unfit sounds refused, file untouched", bad + ([] if moss.read_text() == before else ["changed"]))
+    t2 = R.new_take(moss, "Moss Radio Take 3", 5)
+    R.set_sound(t2, "drums.kit", "snare", "dm:linn/linn_snr")
+    R.set_sound(t2, "voices", "keys", "gs:0:4", "Tine EP")
+    T, P = SS.load(t2), SS.load(moss)
+    check("set_sound on a take", [x for x, ok in [
+        ("snare", T["drums"]["kit"]["snare"] == {"sound": "dm:linn/linn_snr", "bus": "snare"}),
+        ("keys", (T["voices"]["keys"]["sound"], T["voices"]["keys"]["fx"]) == ("gs:0:4", P["voices"]["keys"]["fx"])),
+        ("parent", P["drums"]["kit"]["snare"]["sound"] == "dm:acoustic/jazzsnr")] if not ok])
+
     cmd = R.command(moss, "test")
     check("commands", [x for x, ok in [("check", R.command(moss, "check")[-1] == "--dry"),
                                        ("test", cmd[-2:] == ["--as", "Moss Radio spec test"] and cmd[1] == "-I"),

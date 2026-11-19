@@ -120,7 +120,7 @@ These cost a build each time. The loader checks them in seconds, before it rende
 | a track that is silent in `test_bars` gets no auto-trim | error before rendering, naming the track (done) |
 | m11 and other rootless voicings with nothing under them | a warning, unless the section has `rootless_ok = true` (done) |
 | a grid entry without a sound name uses the layer's name | error if the kit has no sound with that name (done) |
-| a sound outside the allowed libraries | error (done). Planned: a cleared-only sound picker in the Record tab |
+| a sound outside the allowed libraries | error (done), and the Record tab's Sounds page offers only allowed ones (done) |
 | unknown chord, loop or drum layer | error naming the section (done) |
 | `targets` don't trim drum stems (hats needed +20 dB, perc +14) | planned: targets for drum buses, with `gain_db` set from the test render |
 | dict grid patterns cycle by `bar % len(keys)` | the Record tab's bar map shows which pattern each bar uses (done) |
@@ -136,6 +136,11 @@ and works on one without opening the TOML:
   of range are refused and the file is left as it was.
 - **New take …**: writes `records/<title>.toml` that `extends` the record with the next seed: the same song, played
   again. Takes are listed with ↳.
+- **Sounds**: every drum-kit sample and instrument voice that comes from a library. Pick a part, then a sound from
+  the libraries the record's `[sounds] allow` lists that fit it (samples from `dm`, `pixel`, `iowa`, `own`;
+  instruments from the `gs` SoundFont, by preset). **▶ Hear** plays the sample, or the instrument playing a few notes
+  and a chord (fluidsynth). **Use this sound** writes only that line; on a take it adds just that entry, and the rest
+  still comes from the record it extends. Records on the beats engine set their sounds in code, so the page is empty.
 - **✓ Check** composes and lints without rendering (`--dry`). **Test build** builds into `tracks/<title>-spec-test`.
   **● Build record** builds the record itself. **Open in Arrange** opens the result.
 
