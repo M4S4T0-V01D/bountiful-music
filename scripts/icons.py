@@ -1,6 +1,6 @@
 """Render the logo (bountiful/daw/logo.svg) into the hicolor icon theme: PNGs at the usual sizes plus the SVG.
 
-    python scripts/icons.py [icon theme dir, default ~/.local/share/icons/hicolor]
+    python scripts/icons.py [icon theme dir, default ~/.local/share/icons/hicolor] [--sizes 16,32,...]
 """
 import os
 import shutil
@@ -17,10 +17,16 @@ SVG = Path(__file__).resolve().parent.parent / "bountiful" / "daw" / "logo.svg"
 
 
 def main():
-    theme = Path(sys.argv[1]) if len(sys.argv) > 1 else Path.home() / ".local/share/icons/hicolor"
+    args = sys.argv[1:]
+    sizes = (16, 22, 24, 32, 48, 64, 128, 256, 512)
+    if "--sizes" in args:
+        i = args.index("--sizes")
+        sizes = tuple(int(n) for n in args[i + 1].split(","))
+        del args[i:i + 2]
+    theme = Path(args[0]) if args else Path.home() / ".local/share/icons/hicolor"
     _app = QGuiApplication([])
     r = QSvgRenderer(str(SVG))
-    for n in (16, 22, 24, 32, 48, 64, 128, 256, 512):
+    for n in sizes:
         img = QImage(n, n, QImage.Format_ARGB32)
         img.fill(Qt.transparent)
         p = QPainter(img)
