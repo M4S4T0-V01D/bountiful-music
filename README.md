@@ -148,10 +148,17 @@ Tests: `$PY tests/test_electronium.py` (Electronium, credits, friends), `$PY tes
 - `genres/`: presets and drum kits
 - `songs/`: composed skeletons. `tracks/`: produced tracks. `synthesis/demos/`: the Lab's demos.
 - `tools/`: the first-generation scripts (am2mid, analyze, tells, arrange) that made Downtown Protocol and Kosmodrom
-- `upstream/`: the original composer, unmodified
+- `vendor/`: the original composer, unmodified
 
 ## Credit
 
-The composer core is **Abundant Music** by Per Nyblom (2012–2017), MIT License (`upstream/abundant-music/LICENSE`), sparse-checked out from github.com/pernyblom/pernyblom.github.io. Bountiful runs its `composeworkersource.js` unmodified in a Node sandbox. Two changes are made around it, not inside it: its 76 per-aspect seeds are derived from the song seed (upstream defaults them all to the same value), and its output is re-performed by the genre producer.
+The composer core is **Abundant Music** by Per Nyblom (2012–2017), MIT License (`vendor/abundant-music/LICENSE`), sparse-checked out from github.com/pernyblom/pernyblom.github.io. Bountiful runs its `composeworkersource.js` unmodified in a Node sandbox. Two changes are made around it, not inside it: its 76 per-aspect seeds are derived from the song seed (upstream defaults them all to the same value), and its output is re-performed by the genre producer.
 
 Rendering uses `renderer/`, a copy of the intelligent-jungle renderer (`scripts/sync-renderer.sh` refreshes it; `engine` in the config or `BOUNTIFUL_ENGINE` picks another). The LMMS parts need LMMS installed. The sounds come as packs (`bountiful/packs.py list`, `install starter`, `install iowa`): the starter pack (70 MB) and the optional Iowa instruments (470 MB) unpack into the data folder's `samples/`; `docs/sample-audit.md` says what may ship. Python 3.11 with numpy, scipy, soundfile, mido and pyloudnorm, plus Node 22 and LAME.
+
+## Licence
+
+Bountiful is free software under the GNU General Public License v3.0 (`LICENSE`): you may use, study, share and change
+it, and copies or changed versions you pass on must stay under the same licence with their source. Copyright (C) 2026
+M4S4T0. The vendored Abundant Music keeps its MIT licence. The sound packs carry their own credits and licences
+(`docs/sample-audit.md`), and music you make with Bountiful is yours.
