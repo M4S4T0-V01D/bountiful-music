@@ -551,7 +551,11 @@ class Window(QMainWindow):
             return
 
         def done(ok):
-            if ok is True:
+            if ok is True and updater.BUNDLE:
+                QMessageBox.information(self, "Bountiful", "The new version is downloaded and open. Bountiful closes "
+                                        "now so it can be replaced; start it again when that's done.")
+                self.close()
+            elif ok is True:
                 if QMessageBox.question(self, "Bountiful", "Updated. Restart now?") == QMessageBox.Yes:
                     updater.restart()
                     self.close()

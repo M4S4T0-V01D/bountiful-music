@@ -29,7 +29,10 @@ def check_missing():
     try:
         r = SC.report()
         assert not r["ready"] and set(r["missing"]) == set(SC.TOOLS)
-        assert r["hint"] == "install lmms, fluidsynth, node, lame, portaudio from your package manager"
+        if sys.platform == "win32":
+            assert r["hint"].startswith("download lmms from https://lmms.io"), r["hint"]
+        else:
+            assert r["hint"] == f"install {', '.join(SC.TOOLS)} from your package manager", r["hint"]
         try:
             SC.need("node")
             raise AssertionError("need() let a missing program through")
@@ -40,14 +43,24 @@ def check_missing():
         SC.find_library = found
         if lmms:
             os.environ["LMMS"] = lmms
+    if sys.platform == "win32":   # (the fake package managers below are shell scripts)
+        return
     with tempfile.TemporaryDirectory() as t:   # a package manager on PATH gets its own command and names
         (Path(t) / "apt").write_text("#!/bin/sh\n")
         (Path(t) / "apt").chmod(0o755)
         os.environ["PATH"] = t
+        platform = sys.platform
         try:
+            sys.platform = "linux"
             assert SC.install_hint(["node", "lame", "portaudio"]) == "sudo apt install nodejs lame libportaudio2"
+            sys.platform = "win32"
+            assert SC.install_hint(["node"]) == "download node from https://nodejs.org"
+            (Path(t) / "brew").write_text("#!/bin/sh\n")
+            (Path(t) / "brew").chmod(0o755)
+            sys.platform = "darwin"
+            assert SC.install_hint(["lmms", "node"]) == "brew install node && brew install --cask lmms"
         finally:
-            os.environ["PATH"] = path
+            os.environ["PATH"], sys.platform = path, platform
 
 
 if __name__ == "__main__":

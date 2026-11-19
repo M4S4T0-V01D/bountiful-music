@@ -24,6 +24,12 @@ def check_pick():
     best = U.latest_release(releases)
     assert best["tag"] == "v0.3.0" and best["sha256_url"].endswith(".sha256"), best
     assert U.latest_release([rel("packs-v1", ())]) is None
+    # each platform picks its own download; a release without one is skipped
+    both = [rel("v0.5.0", ("windows-x86_64-setup.exe", "macos-arm64.dmg")), rel("v0.6.0", ("macos-arm64.dmg",))]
+    assert U.latest_release(both, "-windows-x86_64-setup.exe")["tag"] == "v0.5.0"
+    assert U.latest_release(both, "-macos-arm64.dmg")["url"].endswith("0.6.0-macos-arm64.dmg")
+    assert U.latest_release(both, "-x86_64.AppImage") is None
+    assert U.asset_suffix() == "-x86_64.AppImage" or sys.platform != "linux"
     assert U.vtuple("v0.10.0") > U.vtuple("0.9.9-3-gabc") > U.vtuple("garbage")
 
 
@@ -62,8 +68,38 @@ def check_download():
         U._get, U.APPIMAGE = get, None
 
 
+
+def check_bundle():
+    """Windows/macOS: the new installer lands in Downloads and is opened, nothing is replaced in place."""
+    new = b"new installer"
+    served = {"https://example/Bountiful-0.3.0-macos-arm64.dmg": new,
+              "https://example/x.sha256": hashlib.sha256(new).hexdigest().encode()}
+    get, popen, platform = U._get, U.subprocess.Popen, U.sys.platform
+    opened = []
+    U._get = lambda url, timeout=30: io.BytesIO(served[url])
+    U.subprocess.Popen = lambda cmd, **kw: opened.append(cmd)
+    U.sys.platform = "darwin"
+    try:
+        with tempfile.TemporaryDirectory() as t:
+            home = U.Path.home
+            U.Path.home = staticmethod(lambda: Path(t))
+            (Path(t) / "Downloads").mkdir()
+            try:
+                r = {"tag": "v0.3.0", "url": "https://example/Bountiful-0.3.0-macos-arm64.dmg",
+                     "sha256_url": "https://example/x.sha256", "size": len(new), "page": "https://example/page"}
+                logs = []
+                assert U.update_bundle(r, logs.append), logs
+                got = Path(t) / "Downloads" / "Bountiful-0.3.0-macos-arm64.dmg"
+                assert got.read_bytes() == new and opened == [["open", str(got)]], (opened, logs)
+            finally:
+                U.Path.home = home
+    finally:
+        U._get, U.subprocess.Popen, U.sys.platform = get, popen, platform
+
+
 if __name__ == "__main__":
     check_pick()
     check_status()
     check_download()
+    check_bundle()
     print("all pass")

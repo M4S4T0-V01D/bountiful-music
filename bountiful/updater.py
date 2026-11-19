@@ -7,7 +7,8 @@ Your music is not in the app folder, so an update never touches it.
 
 The AppImage (scripts/appimage.sh) can't pull: it asks GitHub for the newest release tagged vX.Y.Z, and updating
 downloads that release's AppImage, checks it against the .sha256 published beside it, and puts it in place of the
-running one (which keeps running until it's restarted).
+running one (which keeps running until it's restarted). The Windows installer and the macOS disk image
+(scripts/bundle.py) check the same way; updating downloads the new installer or disk image, checks it, and opens it.
 
     python bountiful/updater.py            check
     python bountiful/updater.py --update   update
@@ -18,6 +19,7 @@ import argparse
 import hashlib
 import json
 import os
+import platform
 import re
 import subprocess
 import sys
@@ -26,7 +28,8 @@ from pathlib import Path
 
 from paths import APPIMAGE, CODE, REPO
 
-VERSION_FILE = CODE / "bountiful" / "VERSION"   # written by scripts/appimage.sh: "<version> <commit> <date>"
+VERSION_FILE = CODE / "bountiful" / "VERSION"   # written by the release builds: "<version> <commit> <date>"
+BUNDLE = not APPIMAGE and VERSION_FILE.exists() and not (CODE / ".git").exists()   # the Windows or macOS build
 
 LAUNCHER = os.path.expanduser("~/.local/bin/bountiful")
 
@@ -53,8 +56,20 @@ def _get(url: str, timeout: float = 30):
     return urllib.request.urlopen(req, timeout=timeout)
 
 
-def latest_release(releases: list | None = None) -> dict | None:
-    """The newest published vX.Y.Z release that has an x86_64 AppImage: {tag, notes, page, url, sha256_url, size}."""
+def asset_suffix() -> str:
+    """How this platform's download is named in a release."""
+    arch = {"amd64": "x86_64", "aarch64": "arm64"}.get(platform.machine().lower(), platform.machine().lower())
+    if sys.platform == "win32":
+        return f"-windows-{arch}-setup.exe"
+    if sys.platform == "darwin":
+        return f"-macos-{arch}.dmg"
+    return f"-{arch}.AppImage"
+
+
+def latest_release(releases: list | None = None, suffix: str | None = None) -> dict | None:
+    """The newest published vX.Y.Z release with a download for this platform: {tag, notes, page, url, sha256_url,
+    size}."""
+    suffix = suffix or asset_suffix()
     if releases is None:
         with _get(f"https://api.github.com/repos/{REPO}/releases?per_page=30") as r:
             releases = json.load(r)
@@ -63,7 +78,7 @@ def latest_release(releases: list | None = None) -> dict | None:
         if rel.get("draft") or rel.get("prerelease") or not re.fullmatch(r"v\d+\.\d+\.\d+", rel.get("tag_name", "")):
             continue
         assets = {a["name"]: a for a in rel.get("assets", [])}
-        app = next((a for n, a in assets.items() if n.endswith("-x86_64.AppImage")), None)
+        app = next((a for n, a in assets.items() if n.endswith(suffix)), None)
         if app and (best is None or vtuple(rel["tag_name"]) > vtuple(best["tag"])):
             sha = assets.get(app["name"] + ".sha256")
             best = {"tag": rel["tag_name"], "notes": rel.get("body") or "", "page": rel.get("html_url", ""),
@@ -94,8 +109,8 @@ def check_release(fetch: bool = True, releases: list | None = None) -> dict:
     return out
 
 
-def update_appimage(rel: dict, log=print, progress=None) -> bool:
-    target = Path(APPIMAGE)
+def download(rel: dict, target: Path, log=print, progress=None) -> bool:
+    """Fetch the release's file to target (through target.part), checked against its published .sha256."""
     part = target.with_name(target.name + ".part")
     try:
         want = ""
@@ -115,18 +130,48 @@ def update_appimage(rel: dict, log=print, progress=None) -> bool:
         if want and h.hexdigest() != want:
             raise ValueError("the download doesn't match its published checksum")
         part.chmod(0o755)
-        os.replace(part, target)   # the running copy is mounted already, so it keeps working until the restart
+        os.replace(part, target)
     except (OSError, ValueError) as e:
         part.unlink(missing_ok=True)
         log(f"Update failed: {e}. Get it from {rel['page']}")
+        return False
+    return True
+
+
+def update_appimage(rel: dict, log=print, progress=None) -> bool:
+    # the running copy is mounted already, so it keeps working until the restart
+    if not download(rel, Path(APPIMAGE), log, progress):
         return False
     log(f"Updated to {rel['tag']}: restart to use it")
     return True
 
 
+def update_bundle(rel: dict, log=print, progress=None) -> bool:
+    """Windows and macOS: the installed files can't be swapped under the running app, so fetch the new installer
+    (or disk image) into Downloads and open it."""
+    folder = Path.home() / "Downloads"
+    if not folder.is_dir():
+        folder = Path.home()
+    target = folder / rel["url"].rsplit("/", 1)[-1]
+    if not download(rel, target, log, progress):
+        return False
+    try:
+        if sys.platform == "win32":
+            os.startfile(target)   # the installer offers to close Bountiful, then replaces it
+        else:
+            subprocess.Popen(["open", str(target)])
+    except OSError as e:
+        log(f"Downloaded {target}, but couldn't open it ({e}): open it yourself to finish")
+        return True
+    log(f"Opened {target.name}: "
+        + ("follow the installer (it closes Bountiful)" if sys.platform == "win32"
+           else "drag Bountiful into Applications, replacing the old one, then start it again"))
+    return True
+
+
 def check(fetch: bool = True) -> dict:
     """{"ok", "behind", "ahead", "changes": [...], "remote", "branch", "message"}"""
-    if APPIMAGE:
+    if APPIMAGE or BUNDLE:
         return check_release(fetch)
     out = {"ok": False, "behind": 0, "ahead": 0, "changes": [], "remote": "", "branch": "", "message": ""}
     if not (CODE / ".git").exists():
@@ -158,6 +203,11 @@ def update(log=print) -> bool:
     st = check()
     if APPIMAGE and st["ok"] and st["behind"]:
         return update_appimage(st["release"], log)
+    if BUNDLE and st["ok"] and st["behind"]:
+        return update_bundle(st["release"], log)
+    if BUNDLE:
+        log(st["message"])
+        return st["ok"]
     if not st["ok"]:
         log(st["message"])
         return False
