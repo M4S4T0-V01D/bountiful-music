@@ -33,6 +33,7 @@ from bountiful.daw import model as M  # noqa: E402
 from bountiful.daw import observatory as OB  # noqa: E402
 from bountiful.daw import panels as P  # noqa: E402
 from bountiful.daw import record as RP  # noqa: E402
+from bountiful.daw import setup as SU  # noqa: E402
 from bountiful.daw import views as V  # noqa: E402
 
 APP_ID = "dev.m4s4t0.bountiful"
@@ -290,6 +291,7 @@ class Window(QMainWindow):
         v.addAction(self.libdock.toggleViewAction())
         v.addAction(self.logdock.toggleViewAction())
         s = mb.addMenu("&Settings")
+        self._act(s, "Setup: sounds and programs …", self.open_setup)
         self._act(s, "Music folder …", self.set_data)
         h = mb.addMenu("&Help")
         self._act(h, "Check for updates …", lambda: self.check_updates(quiet=False))
@@ -512,6 +514,15 @@ class Window(QMainWindow):
             self.log(f"MIDI Studio not found at {studio}")
 
     # ---- settings, updates, about
+    def open_setup(self):
+        if getattr(self, "setup", None) is None:
+            self.setup = SU.SetupDialog(self)
+        else:
+            self.setup.refresh()
+        self.setup.show()
+        self.setup.raise_()
+        return self.setup
+
     def set_data(self):
         d = QFileDialog.getExistingDirectory(self, "Where your music lives (tracks, albums, sessions)", str(paths.DATA))
         if d:
@@ -707,6 +718,14 @@ def smoke(win: Window, app: QApplication) -> int:
         problems.append("show_panel through a help page")
     if win.start.recent.count() < 1:
         problems.append("start page recent list")
+    # setup: one row per pack and program, matching the report
+    su = win.open_setup()
+    r = su.report
+    if set(su.pack_rows) != set(SU.packs.PACKS) or set(su.tool_rows) != set(SU.SC.TOOLS) \
+            or any((su.tool_rows[t][0].text() == SU.OK) != v["ok"] for t, v in r["tools"].items()) \
+            or ("Ready" in su.summary.text()) != r["ready"]:
+        problems.append(f"setup dialog: {su.summary.text()}")
+    su.hide()
     tmp = Path(tempfile.mkdtemp())
     t = M.Track(tmp, "Smoke", 120.0, {"lead": [M.Note(0, 1, 60, 0.8)], "drums": [M.Note(0, 0.25, 36, 0.9)]})
     t.save_midi()
@@ -736,6 +755,8 @@ def main():
         sys.exit(smoke(win, app))
     if a.track:
         win.open_track(a.track)
+    if SU.should_show():
+        QTimer.singleShot(300, win.open_setup)
     sys.exit(app.exec())
 
 

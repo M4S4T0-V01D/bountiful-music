@@ -34,7 +34,8 @@ class StartPanel(QWidget):
         hi.setStyleSheet("font-size: 22px; font-weight: bold; color: #ffb347")
         lay.addWidget(hi)
         sub = QLabel("Every song comes from a Bounty: a number or a word. The same Bounty always gives the same song, "
-                     "so you can share it or come back to it. Nothing is downloaded and nothing needs the internet.")
+                     "so you can share it or come back to it. Songs are made on this computer; only the sound packs "
+                     "are downloaded, once, in Settings → Setup.")
         sub.setWordWrap(True)
         sub.setStyleSheet("color: #8c87a3; padding-bottom: 8px")
         lay.addWidget(sub)
