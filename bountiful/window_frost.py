@@ -39,10 +39,11 @@ import soundfile as sf
 from scipy import signal
 
 import iowa_lead
+import paths
 
 ROOT = Path(__file__).resolve().parent.parent
-SF2 = ROOT / "samples" / "sf2" / "GeneralUser-GS.sf2"
-VINYL = ROOT / "samples" / "lofi" / "vinyl_crackle_4bar_80.wav"
+SF2 = paths.SAMPLES / "sf2" / "GeneralUser-GS.sf2"
+VINYL = paths.SAMPLES / "lofi" / "vinyl_crackle_4bar_80.wav"
 OUT = ROOT / "tracks" / "window-frost"
 TITLE, ARTIST = "Window Frost", "M4S4T0"
 
@@ -660,7 +661,7 @@ def vinyl(length: int) -> np.ndarray:
     return np.stack([v, np.roll(v, 517)], axis=1)
 
 
-KIT = ROOT / "samples" / "drummachines"
+KIT = paths.SAMPLES / "drummachines"
 
 HIPHOP = ("A1", "A2", "B1", "solo", "B2", "A3")    # sections where the sampled beat plays
 BEAT_GAIN, SUB_GAIN = -10.0, -19.5

@@ -25,6 +25,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import lmms_tracks as LT  # noqa: E402
+import paths  # noqa: E402
 import producer as PR  # noqa: E402
 
 import mido  # noqa: E402
@@ -32,7 +33,7 @@ import numpy as np  # noqa: E402
 
 ROOT = HERE.parent
 RECORDS = LT.B.DATA / "records" if (LT.B.DATA / "records").is_dir() else ROOT / "records"   # yours, else the examples
-SAMPLES = ROOT / "samples"
+SAMPLES = paths.SAMPLES
 SF2 = SAMPLES / "sf2" / "GeneralUser-GS.sf2"
 # the cleared library (docs/sample-audit.md). A sound id is "<library>:<name>"
 LIBRARIES = {

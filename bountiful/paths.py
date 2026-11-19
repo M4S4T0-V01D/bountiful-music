@@ -52,6 +52,7 @@ def _engine() -> Path:
 DATA = _data()
 ENGINE = _engine()
 TRACKS, SONGS, SESSIONS = DATA / "tracks", DATA / "songs", DATA / "sessions"
+SAMPLES = DATA / "samples" if (DATA / "samples").is_dir() else CODE / "samples"   # not in git: it lives with the data
 
 
 def _toml_val(v) -> str:

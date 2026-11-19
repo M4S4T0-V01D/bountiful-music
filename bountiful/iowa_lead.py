@@ -23,10 +23,11 @@ from pathlib import Path
 import numpy as np
 import pyloudnorm as pyln
 import soundfile as sf
+import paths  # noqa: E402
 from scipy import signal
 
 ROOT = Path(__file__).resolve().parent.parent
-BASE = ROOT / "samples" / "iowa"
+BASE = paths.SAMPLES / "iowa"
 SR = 44100
 NAMES = {"C": 0, "Db": 1, "D": 2, "Eb": 3, "E": 4, "F": 5, "Gb": 6, "G": 7, "Ab": 8, "A": 9, "Bb": 10, "B": 11}
 # instrument: (raw file prefix, kind, layer levels in dB)
