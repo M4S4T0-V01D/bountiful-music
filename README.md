@@ -18,6 +18,12 @@ Other install commands: `scripts/install.sh --uninstall` removes the app, launch
 
 **The AppImage.** `scripts/appimage.sh` builds `dist/Bountiful-<version>-x86_64.AppImage` from the committed code (the version is the newest `vX.Y.Z` tag): one file with its own Python and Qt. Download it, `chmod +x` it and run it. The first time, Settings → Setup downloads the sound packs and says which programs to install: LMMS, FluidSynth, Node and PortAudio (LAME too, for MP3 export; on X11 desktops, Qt also needs `libxcb-cursor0`). ⬆ Update checks GitHub releases and replaces the AppImage file with the new one.
 
+**Windows and macOS.** Each release also has `Bountiful-<version>-windows-x86_64-setup.exe` and `Bountiful-<version>-macos-arm64.dmg`, built by `scripts/bundle.py` (CI builds and tests all three on every push; `.github/workflows/build.yml`). Both builds are unsigned:
+- **Windows:** SmartScreen shows a warning. Click *More info → Run anyway*. The installer needs no admin rights. Install LMMS from lmms.io, FluidSynth from its GitHub releases, and Node from nodejs.org; Setup links to each.
+- **macOS:** right-click the app and choose *Open*, or use *System Settings → Privacy & Security → Open Anyway*. You can also clear the quarantine flag with `xattr -dr com.apple.quarantine /Applications/Bountiful.app`. Get the programs with `brew install fluidsynth node lame && brew install --cask lmms`.
+
+On both, ⬆ Update downloads the new installer into Downloads and opens it. Your music lives in `~/Music/Bountiful` (on Windows, `Music\Bountiful` in your user folder), so updates and uninstalls leave it alone.
+
 | View | What it does |
 |---|---|
 | **Start** | Make a new song in one click, jump to the main jobs, or reopen a recent track. Every tab has a short help line, and hovering over a control shows a hint. |
