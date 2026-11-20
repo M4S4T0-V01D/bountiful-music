@@ -2,6 +2,7 @@
 
     $PY -I tests/test_songspec.py
 """
+import os
 import sys
 from pathlib import Path
 
@@ -18,13 +19,19 @@ import songspec as SS  # noqa: E402
 
 
 def plain(x):
-    """tuples -> lists, Paths -> str, so the script's SPEC and the loader's compare as data"""
+    """tuples -> lists, Paths -> str, so the script's SPEC and the loader's compare as data. The old scripts look for
+    sounds in the repo's samples/ and the port in the data folder's (paths.SAMPLES); those are one place when the
+    music lives in the repo, so either is written as samples/..."""
     if isinstance(x, dict):
         return {k: plain(v) for k, v in x.items()}
     if isinstance(x, (list, tuple)):
         return [plain(v) for v in x]
     if isinstance(x, Path):
-        return str(x)
+        x = str(x)
+    if isinstance(x, str):
+        for root in (str(SS.SAMPLES), str(ROOT / "samples")):
+            if x.startswith(root + os.sep):
+                return "samples/" + Path(x[len(root) + 1:]).as_posix()
     return x
 
 
