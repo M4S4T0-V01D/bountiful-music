@@ -59,13 +59,7 @@ jobs:
           if [ "$RUNNER_OS" = Linux ]; then bash scripts/appimage.sh
           else uv run --no-project --python 3.13 scripts/bundle.py; fi
 
-      - name: tests (with the bundled Python)
-        run: |
-          for t in setup packs songspec record_desk; do "${{ matrix.py }}" -I tests/test_$t.py; done
-          "${{ matrix.py }}" tests/test_updater.py
-          "${{ matrix.py }}" tests/test_app.py
-
-      - name: smoke test of the bundle
+      - name: the starter pack (tests and the smoke test need its sounds)
         run: |
           gh release download packs-v1 --repo "$GITHUB_REPOSITORY" --pattern bountiful-starter.tar.gz --dir "$RUNNER_TEMP/packs"
           case "$RUNNER_OS" in
@@ -75,6 +69,20 @@ jobs:
           esac
           "${{ matrix.py }}" "$APP/bountiful/packs.py" install starter --from "$RUNNER_TEMP/packs/bountiful-starter.tar.gz"
           "${{ matrix.py }}" "$APP/bountiful/setup_check.py" || true
+
+      - name: tests (with the bundled Python)
+        run: |
+          for t in setup packs songspec record_desk; do "${{ matrix.py }}" -I tests/test_$t.py; done
+          "${{ matrix.py }}" tests/test_updater.py
+          "${{ matrix.py }}" tests/test_app.py
+
+      - name: smoke test of the bundle
+        run: |
+          case "$RUNNER_OS" in
+            Linux)   APP=build/appimage/AppDir/usr/app ;;
+            Windows) APP=build/bundle/Bountiful/app ;;
+            macOS)   APP=build/bundle/Bountiful.app/Contents/Resources/app ;;
+          esac
           if [ "$RUNNER_OS" = Linux ]; then dist/Bountiful-*-x86_64.AppImage --smoke
           elif [ "$RUNNER_OS" = macOS ]; then build/bundle/Bountiful.app/Contents/MacOS/Bountiful --smoke
           else "${{ matrix.py }}" -E -s "$APP/bountiful/daw/main.py" --smoke; fi
