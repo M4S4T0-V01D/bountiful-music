@@ -46,7 +46,7 @@ jobs:
           case "$RUNNER_OS" in
             Linux) export DEBIAN_FRONTEND=noninteractive
                    timeout 600 sudo -E apt-get update -qq
-                   timeout 900 sudo -E apt-get install -y -qq --no-install-recommends fluidsynth libportaudio2 libxcb-cursor0 ;;
+                   timeout 900 sudo -E apt-get install -y -qq --no-install-recommends fluidsynth libportaudio2 libxcb-cursor0 libegl1 libgl1 libxkbcommon0 libfontconfig1 ;;
             macOS) brew install fluidsynth ;;
             Windows)
               mkdir -p "$RUNNER_TEMP/fluidsynth"

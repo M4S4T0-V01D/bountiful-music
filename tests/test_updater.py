@@ -29,7 +29,6 @@ def check_pick():
     assert U.latest_release(both, "-windows-x86_64-setup.exe")["tag"] == "v0.5.0"
     assert U.latest_release(both, "-macos-arm64.dmg")["url"].endswith("0.6.0-macos-arm64.dmg")
     assert U.latest_release(both, "-x86_64.AppImage") is None
-    assert U.asset_suffix() == "-x86_64.AppImage" or sys.platform != "linux"
     assert U.vtuple("v0.10.0") > U.vtuple("0.9.9-3-gabc") > U.vtuple("garbage")
 
 
@@ -98,6 +97,9 @@ def check_bundle():
 
 
 if __name__ == "__main__":
+    real = U.asset_suffix()
+    assert real == "-x86_64.AppImage" or sys.platform != "linux", real
+    U.asset_suffix = lambda: "-x86_64.AppImage"  # the made-up releases are AppImage ones, whatever runs the test
     check_pick()
     check_status()
     check_download()
