@@ -73,12 +73,14 @@ jobs:
           "${{ matrix.py }}" "$APP/bountiful/setup_check.py" || true
 
       - name: tests (with the bundled Python)
+        timeout-minutes: 15
         run: |
           for t in setup packs songspec record_desk; do "${{ matrix.py }}" -I tests/test_$t.py; done
           "${{ matrix.py }}" tests/test_updater.py
-          timeout 600 "${{ matrix.py }}" tests/test_app.py
+          "${{ matrix.py }}" tests/test_app.py
 
       - name: smoke test of the bundle
+        timeout-minutes: 5
         run: |
           case "$RUNNER_OS" in
             Linux)   APP=build/appimage/AppDir/usr/app ;;
