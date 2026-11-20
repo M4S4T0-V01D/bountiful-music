@@ -58,7 +58,7 @@ def check_download():
                  "size": len(new), "page": "https://example/page"}
             logs = []
             assert U.update_appimage(r, logs.append), logs
-            assert target.read_bytes() == new and target.stat().st_mode & 0o111
+            assert target.read_bytes() == new and (target.stat().st_mode & 0o111 or sys.platform == "win32")  # no exec bit there
             served["https://example/app"] = b"tampered"
             assert not U.update_appimage(r, logs.append)
             assert target.read_bytes() == new and not (Path(t) / "Bountiful.AppImage.part").exists()
