@@ -103,9 +103,9 @@ try:
 
     # sounds: only cleared ones, in the file in place; a take gets just the line it changes
     moss.write_text(before)
-    iowa = R.catalog("iowa")
+    iowa = R.catalog("iowa")  # empty without the Iowa pack (CI only installs the starter pack)
     check("catalog", [x for x, ok in [("gs presets", ("gs:0:73", "Flute") in R.catalog("gs")),
-                                      ("no iowa raw", iowa and not any(s.startswith("iowa:raw/") for s, _ in iowa)),
+                                      ("no iowa raw", (iowa or not (SS.SAMPLES / "iowa").is_dir()) and not any(s.startswith("iowa:raw/") for s, _ in iowa)),
                                       ("dm", ("dm:r_n_b/old_kik", "r_n_b/old_kik.wav") in R.catalog("dm"))] if not ok])
     R.set_sound(moss, "drums.kit", "kick", "dm:tr808/kick")
     R.set_sound(moss, "voices", "flute", "gs:0:72", "Clarinet")

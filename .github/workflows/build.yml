@@ -25,6 +25,7 @@ jobs:
           - os: macos-latest
             py: build/bundle/Bountiful.app/Contents/Resources/python/bin/python3
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
     defaults:
       run:
         shell: bash
@@ -43,8 +44,9 @@ jobs:
       - name: programs the app uses
         run: |
           case "$RUNNER_OS" in
-            Linux) sudo apt-get update -qq
-                   sudo apt-get install -y -qq fluidsynth libportaudio2 libxcb-cursor0 >/dev/null ;;
+            Linux) export DEBIAN_FRONTEND=noninteractive
+                   timeout 600 sudo -E apt-get update -qq
+                   timeout 900 sudo -E apt-get install -y -qq --no-install-recommends fluidsynth libportaudio2 libxcb-cursor0 ;;
             macOS) brew install fluidsynth ;;
             Windows)
               mkdir -p "$RUNNER_TEMP/fluidsynth"
@@ -74,7 +76,7 @@ jobs:
         run: |
           for t in setup packs songspec record_desk; do "${{ matrix.py }}" -I tests/test_$t.py; done
           "${{ matrix.py }}" tests/test_updater.py
-          "${{ matrix.py }}" tests/test_app.py
+          timeout 600 "${{ matrix.py }}" tests/test_app.py
 
       - name: smoke test of the bundle
         run: |
