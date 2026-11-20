@@ -70,6 +70,7 @@ def test_audio_sources():
         s.solo.clear()
         out = s.bounce(Path(tmp) / "mix.wav", log=lambda *_: None)
         assert sf.info(str(out)).frames == 44100
+        s.close()                                                     # Windows can't delete open files
         p = A.Player(log=lambda *_: None)
         p.set_source(A.ArraySource(np.zeros(4410, np.float32)))
         assert A.wait_until(lambda: len(p.q) >= 1, 3)                 # the feeder renders ahead
