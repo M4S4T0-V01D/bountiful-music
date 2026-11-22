@@ -83,6 +83,15 @@ def compose(genre: dict, count: int = 0, seeds: list[int] | None = None, out: Pa
             pin: Path | None = None, reroll: list[str] | None = None, log=print) -> list[Path]:
     out = out or DATA / "songs" / genre["id"]
     out.mkdir(parents=True, exist_ok=True)
+    import composer
+    if composer.available():   # the composer in an embedded V8: same songs as under Node, no Node needed
+        prefix = Path(pin).name.replace(".am.json", "") + "-" + "+".join(reroll or ["melody"]) if pin else genre["id"]
+        files = []
+        for f, _, beats, sections in composer.compose_songs(genre.get("composer", {}), seeds or [], count, out, prefix,
+                                                            pin, (reroll or ["melody"]) if pin else None):
+            files.append(f)
+            log(f"composed {f.name}: {sections} sections, {beats:.0f} beats")
+        return files
     with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
         json.dump(genre.get("composer", {}), f)
         settings = f.name
