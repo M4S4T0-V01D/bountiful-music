@@ -24,6 +24,37 @@ def write_audio(path: Path, x: np.ndarray, fmt: str = "WAV") -> None:
 
 
 def mp3(wav: Path, out: Path, meta: dict) -> bool:
+    """320 kbps CBR with ID3v2.3 tags (and the cover), as `lame -b 320` wrote them: libsndfile (it carries LAME's
+    encoder) for the audio, mutagen for the tags; the lame program only where libsndfile can't write MP3."""
+    if "MP3" not in sf.available_formats():
+        return _lame(wav, out, meta)
+    try:
+        with sf.SoundFile(str(wav)) as src, sf.SoundFile(str(out), "w", src.samplerate, src.channels, format="MP3",
+                                                         bitrate_mode="CONSTANT", compression_level=0.0) as dst:
+            for block in src.blocks(65536, dtype="float32"):
+                dst.write(block)
+    except (sf.LibsndfileError, OSError, RuntimeError) as e:
+        print(f"MP3: {e}")
+        return False
+    try:
+        from mutagen.id3 import APIC, ID3, TALB, TCOM, TCON, TIT2, TPE1, TPE2, TRCK, TYER
+    except ImportError:
+        return True   # the audio's there, untagged
+    t = ID3()
+    for frame, text in [(TIT2, meta["title"]), (TPE1, meta["artist"]), (TALB, meta["album"]), (TYER, meta.get("year", 2026)),
+                        (TRCK, meta.get("track", 1)), (TCON, meta.get("genre", "Electronic")), (TCOM, meta.get("composer", "")),
+                        (TPE2, meta.get("album_artist", meta["artist"]))]:
+        if str(text):
+            t.add(frame(encoding=1, text=str(text)))
+    cover = Path(meta["cover"]) if meta.get("cover") else None
+    if cover and cover.is_file():
+        mime = "image/png" if cover.suffix.lower() == ".png" else "image/jpeg"
+        t.add(APIC(encoding=0, mime=mime, type=3, desc="", data=cover.read_bytes()))
+    t.save(str(out), v2_version=3)
+    return True
+
+
+def _lame(wav: Path, out: Path, meta: dict) -> bool:
     cmd = ["lame", "--quiet", "-b", "320", "-q", "0", "--add-id3v2",
            "--tt", meta["title"], "--ta", meta["artist"], "--tl", meta["album"], "--ty", str(meta.get("year", 2026)),
            "--tn", str(meta.get("track", 1)), "--tg", meta.get("genre", "Electronic"),
@@ -31,7 +62,11 @@ def mp3(wav: Path, out: Path, meta: dict) -> bool:
     if meta.get("cover") and Path(meta["cover"]).exists():
         cmd += ["--ti", str(meta["cover"])]
     cmd += [str(wav), str(out)]
-    return subprocess.run(cmd).returncode == 0
+    try:
+        return subprocess.run(cmd).returncode == 0
+    except FileNotFoundError:
+        print("MP3: this soundfile can't write MP3 and LAME isn't installed")
+        return False
 
 
 # ---------------------------------------------------------------- MIDI

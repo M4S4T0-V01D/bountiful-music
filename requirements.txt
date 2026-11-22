@@ -6,3 +6,4 @@ sounddevice
 mido
 pyloudnorm
 mini-racer
+mutagen
