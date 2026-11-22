@@ -56,6 +56,31 @@ def niced(cmd: list, n: int = 15) -> list:
     return ["nice", "-n", str(n), *cmd] if shutil.which("nice") else cmd
 
 
+LIBFLUID = {"win32": ("libfluidsynth-3.dll",), "darwin": ("libfluidsynth.3.dylib", "libfluidsynth.dylib")}.get(
+    sys.platform, ("libfluidsynth.so.3", "libfluidsynth.so"))
+
+
+def find_libfluidsynth() -> str | None:
+    """$LIBFLUIDSYNTH, the copy shipped with the app (a fluidsynth/ folder near the Python running it), Homebrew's,
+    or the system's. On Windows the DLL's folder is added to the DLL search path for its dependencies."""
+    import ctypes.util
+    env = os.environ.get("LIBFLUIDSYNTH")
+    if env:
+        return env if Path(env).is_file() else None
+    exe = Path(sys.executable).resolve()
+    dirs = [d / "fluidsynth" / sub for d in (exe.parent, *exe.parents[:3]) for sub in ("bin", "lib", "")]
+    if sys.platform == "darwin":
+        dirs += [Path("/opt/homebrew/lib"), Path("/usr/local/lib")]
+    for d in dirs:
+        for name in LIBFLUID:
+            if (d / name).is_file():
+                if sys.platform == "win32":
+                    os.add_dll_directory(str(d))
+                return str(d / name)
+    found = ctypes.util.find_library("fluidsynth") or ctypes.util.find_library("libfluidsynth-3")
+    return found
+
+
 def lmms_bin() -> str:
     exe = find_lmms()
     if not exe:

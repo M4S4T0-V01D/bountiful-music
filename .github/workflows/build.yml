@@ -75,7 +75,7 @@ jobs:
       - name: tests (with the bundled Python)
         timeout-minutes: 15
         run: |
-          for t in setup packs songspec record_desk; do "${{ matrix.py }}" -I tests/test_$t.py; done
+          for t in setup packs songspec record_desk native; do "${{ matrix.py }}" -I tests/test_$t.py; done
           "${{ matrix.py }}" tests/test_updater.py
           "${{ matrix.py }}" tests/test_app.py
 

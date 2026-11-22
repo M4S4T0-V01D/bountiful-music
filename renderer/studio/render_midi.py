@@ -26,6 +26,7 @@ from __future__ import annotations
 import argparse
 import inspect
 import json
+import os
 import re
 import sys
 import time
@@ -238,11 +239,21 @@ def render_lmms(jobs: dict, bpm, n, t0, log) -> dict[str, np.ndarray]:
     """jobs: track -> (cfg, notes). One headless LMMS run for all; on failure one run per track; the
     result is level-normalised (LMMS presets vary by 30 dB) so gain_db means the same as for engine sounds."""
     from engine import lmms as LM
+    from engine import native as NV
     parts = {k: (dict(c["voice"], **({"fx": c["lmms_fx"]} if c.get("lmms_fx") else {})), lmms_notes(ns, bpm, t0, c.get("transpose", 0)))
              for k, (c, ns) in jobs.items()}
     out = {}
+    own = {} if os.environ.get("BOUNTIFUL_LMMS") == "1" else {k: v for k, v in parts.items() if NV.can_play(v[0])}
+    for k, v in own.items():                      # sf2player and sample voices: no LMMS needed
+        try:
+            out.update(NV.render_parts({k: v}, bpm, n, SR))
+            del parts[k]
+        except Exception as ex:
+            log(f"  ! {k}: built-in player failed ({str(ex)[:160]}); trying LMMS")
+    if own:
+        log(f"  built-in players: {', '.join(k for k in own if k in out)}")
     try:
-        out = LM.render_parts(parts, bpm, n, SR, timeout=1800)
+        out.update(LM.render_parts(parts, bpm, n, SR, timeout=1800) if parts else {})
     except Exception as ex:
         log(f"  LMMS batch failed ({str(ex)[:120]}); trying tracks one by one")
         for k, v in parts.items():
@@ -572,7 +583,7 @@ def render(midi: Path, cfg: dict, base: Path, out_dir: Path, stem_dir: Path | No
     lm_jobs = {k: (tracks[k], by[k]) for k in play if k != "drums" and tracks[k].get("kind") == "lmms"}
     lm_audio = {}
     if lm_jobs:
-        log(f"  LMMS: playing {', '.join(lm_jobs)} (headless)")
+        log(f"  instruments: {', '.join(lm_jobs)}")
         lm_audio = render_lmms(lm_jobs, bpm, n, t0, log)
     for k in play:
         if k == "drums":

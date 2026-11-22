@@ -317,32 +317,19 @@ def set_sound(path, table: str, name: str, sid: str, label: str | None = None) -
 
 
 def audition(sid: str, folder) -> Path:
-    """a WAV to hear a sound by: the sample itself, or an instrument playing a few notes (fluidsynth)"""
+    """a WAV to hear a sound by: the sample itself, or an instrument playing a few notes (FluidSynth)"""
     lib, _, name = sid.partition(":")
     if lib != "gs":
         return Path(SS.sound_path(sid, [lib]))
-    import mido
-    import subprocess
+    import soundfile as sf
+    from paths import bundled_engine             # the app's own renderer (a configured engine may be an older copy)
+    native = bundled_engine("native")
     bank, patch = (int(x) for x in name.split(":"))
-    ch = 9 if bank == 128 else 0
-    mid = mido.MidiFile(ticks_per_beat=480)
-    t = mido.MidiTrack()
-    mid.tracks.append(t)
-    if ch == 0:
-        t.append(mido.Message("control_change", channel=ch, control=0, value=bank))
-    t.append(mido.Message("program_change", channel=ch, program=patch))
-    notes = [36, 38, 42, 46, 49] if ch == 9 else [60, 64, 67, 72]
-    for p in notes:
-        t.append(mido.Message("note_on", channel=ch, note=p, velocity=96))
-        t.append(mido.Message("note_off", channel=ch, note=p, time=360))
-    for p in notes[:3]:
-        t.append(mido.Message("note_on", channel=ch, note=p, velocity=80))
-    t.append(mido.Message("note_off", channel=ch, note=notes[0], time=960))
-    for p in notes[1:3]:
-        t.append(mido.Message("note_off", channel=ch, note=p))
-    folder = Path(folder)
-    out = folder / f"{sid.replace(':', '_')}.wav"
-    mid.save(folder / "audition.mid")
-    subprocess.run(["fluidsynth", "-ni", "-q", "-a", "null", "-r", "44100", "-g", "0.6", "-F", str(out), str(SS.SF2),
-                    str(folder / "audition.mid")], check=True, capture_output=True, timeout=60)
+    keys = [24, 26, 30, 34, 37] if bank == 128 else [48, 52, 55, 60]   # LMMS keys: MIDI - 12 (drums: kick ... crash)
+    tpb = 48                                     # at 120 bpm: a run of notes, then a chord
+    notes = [(i * 36, 36, k, 152) for i, k in enumerate(keys)] + [(len(keys) * 36, 96, k, 127) for k in keys[:3]]
+    voice = {"plugin": "sf2player", "attrs": {"src": str(SS.SF2), "bank": bank, "patch": patch, "gain": 0.6}}
+    x = native.sf2(voice, notes, 120, int((len(keys) * 36 + 96 + tpb * 2) / tpb * 0.5 * 44100), 44100)
+    out = Path(folder) / f"{sid.replace(':', '_')}.wav"
+    sf.write(str(out), x, 44100)
     return out

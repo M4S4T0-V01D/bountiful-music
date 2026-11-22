@@ -80,6 +80,21 @@ def _load_share():   # the bundled renderer's LMMS lookup (per platform), so the
     return mod
 
 
+def bundled_engine(module: str):
+    """engine.<module> from the bundled renderer, under its own package name, so it can't clash with a configured
+    engine already imported as `engine`"""
+    import importlib
+    import importlib.util
+    name = "_bountiful_engine"
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, BUNDLED / "engine" / "__init__.py",
+                                                      submodule_search_locations=[str(BUNDLED / "engine")])
+        pkg = importlib.util.module_from_spec(spec)
+        sys.modules[name] = pkg
+        spec.loader.exec_module(pkg)
+    return importlib.import_module(f"{name}.{module}")
+
+
 _share = _load_share()
 find_lmms = _share.find_lmms
 LMMS_SAMPLES = _share.SAMPLES
