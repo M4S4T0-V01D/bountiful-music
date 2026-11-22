@@ -47,7 +47,7 @@ jobs:
             Linux) export DEBIAN_FRONTEND=noninteractive
                    timeout 600 sudo -E apt-get update -qq
                    timeout 900 sudo -E apt-get install -y -qq --no-install-recommends fluidsynth libportaudio2 libxcb-cursor0 libegl1 libgl1 libxkbcommon0 libfontconfig1 ;;
-            macOS) brew install fluidsynth ;;
+            macOS) brew install fluidsynth dylibbundler ;;
             Windows)
               mkdir -p "$RUNNER_TEMP/fluidsynth"
               gh release download --repo FluidSynth/fluidsynth --pattern '*win10-x64*.zip' --dir "$RUNNER_TEMP/fs-zip"
@@ -71,6 +71,10 @@ jobs:
           esac
           "${{ matrix.py }}" "$APP/bountiful/packs.py" install starter --from "$RUNNER_TEMP/packs/bountiful-starter.tar.gz"
           "${{ matrix.py }}" "$APP/bountiful/setup_check.py" || true
+          if [ "$RUNNER_OS" != Linux ]; then
+            "${{ matrix.py }}" -I -c "import sys; sys.path.insert(0, sys.argv[1]); from engine.share import find_libfluidsynth
+          p = find_libfluidsynth(); print('libfluidsynth:', p); sys.exit(not (p and 'build' in p))" "$APP/renderer"
+          fi
 
       - name: tests (with the bundled Python)
         timeout-minutes: 15

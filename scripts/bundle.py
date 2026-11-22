@@ -1,12 +1,14 @@
 """Build the Windows installer or the macOS disk image: a standalone Python (from uv) with the app's packages and the
-code at HEAD, like scripts/appimage.sh does for Linux. LMMS, FluidSynth, Node (and LAME) stay separate programs; the
-app's Setup dialog says where to get whichever are missing. Sound packs are downloaded by the app, not bundled.
+code at HEAD, like scripts/appimage.sh does for Linux, and FluidSynth's library for the SoundFont voices (on Windows
+from the official build whose fluidsynth.exe is on PATH, on macOS Homebrew's, relinked by dylibbundler). LMMS stays a
+separate, optional program. Sound packs are downloaded by the app, not bundled.
 
   python scripts/bundle.py            build dist/Bountiful-<version>-windows-x86_64-setup.exe  (on Windows)
                                       or    dist/Bountiful-<version>-macos-<arch>.dmg          (on macOS)
   python scripts/bundle.py --dir      only lay out build/bundle/ (no installer or image)
 
-Needs uv and git; on Windows also Inno Setup 6 (ISCC.exe on PATH or in Program Files), on macOS iconutil and hdiutil.
+Needs uv and git; on Windows also Inno Setup 6 (ISCC.exe on PATH or in Program Files), on macOS iconutil, hdiutil and
+dylibbundler (brew install fluidsynth dylibbundler).
 The bundle in build/bundle/ can be tried before packaging:  <bundle python> <bundle app>/bountiful/daw/main.py --smoke
 """
 from __future__ import annotations
@@ -116,6 +118,52 @@ def add_code(L: dict, version: str, commit: str, date: str):
                     str(L["lib"] / "site-packages")], capture_output=True)
 
 
+def add_fluidsynth(L: dict):
+    """FluidSynth (LGPL-2.1-or-later, unmodified) in a fluidsynth/ folder, where engine.share.find_libfluidsynth looks
+    first, with its licence and where its source is"""
+    exe = shutil.which("fluidsynth")
+    if WINDOWS:
+        dest = L["root"] / "fluidsynth" / "bin"
+        src = Path(exe).parent if exe else None
+        if not src or not (src / "libfluidsynth-3.dll").is_file():
+            print("note: no FluidSynth build on PATH; SoundFont voices will need LMMS or a FluidSynth install")
+            return
+        dest.mkdir(parents=True)
+        for dll in src.glob("*.dll"):
+            shutil.copy(dll, dest)
+        roots = [src.parent, src.parent.parent]
+    elif MACOS:
+        lib = next((p for p in (Path("/opt/homebrew/lib/libfluidsynth.3.dylib"), Path("/usr/local/lib/libfluidsynth.3.dylib"))
+                    if p.is_file()), None)
+        if not lib or not shutil.which("dylibbundler"):
+            print("note: Homebrew's fluidsynth or dylibbundler is missing; SoundFont voices will need a FluidSynth install")
+            return
+        dest = L["app"].parent / "fluidsynth" / "lib"
+        dest.mkdir(parents=True)
+        shutil.copy(lib.resolve(), dest / lib.name)
+        (dest / lib.name).chmod(0o755)
+        run("dylibbundler", "-of", "-b", "-x", dest / lib.name, "-d", dest, "-p", "@loader_path/")
+        for d in dest.glob("*.dylib"):
+            run("codesign", "--force", "--sign", "-", d)
+        roots = [Path(run("brew", "--prefix", "fluidsynth"))]
+    else:
+        return
+    top = dest.parent
+    lic = next((f for r in roots for n in ("LICENSE", "COPYING", "LICENSE.txt", "COPYING.txt") for f in [r / n] if f.is_file()), None)
+    if lic:
+        shutil.copy(lic, top / "LICENSE.txt")
+    elif shutil.which("gh"):
+        (top / "LICENSE.txt").write_text(run("gh", "api", "-H", "Accept: application/vnd.github.raw",
+                                             "repos/FluidSynth/fluidsynth/contents/LICENSE"), encoding="utf-8")
+    try:
+        version = run(exe, "--version").splitlines()[0]
+    except (subprocess.CalledProcessError, OSError, IndexError, TypeError):
+        version = "FluidSynth"
+    (top / "README.txt").write_text(f"{version}\nhttps://www.fluidsynth.org - LGPL-2.1-or-later (LICENSE.txt), unmodified.\n"
+                                    "Source: https://github.com/FluidSynth/fluidsynth\n", encoding="utf-8")
+    print(f"bundled {version} ({sum(f.stat().st_size for f in dest.iterdir()) / 2**20:.0f} MB)")
+
+
 def render_icons(L: dict, sizes) -> Path:
     d = OUT / "icons"
     rm(d)
@@ -205,7 +253,7 @@ def macos(L: dict, version: str, commit: str):
     contents = L["root"] / "Contents"
     (contents / "MacOS").mkdir(parents=True, exist_ok=True)
     launcher = contents / "MacOS" / "Bountiful"
-    # apps opened from Finder get a bare PATH; Homebrew's is where LMMS's helpers, FluidSynth, Node and LAME live
+    # apps opened from Finder get a bare PATH; Homebrew's is where LMMS and its helpers live
     launcher.write_text("""#!/bin/sh
 RES="$(cd "$(dirname "$0")/../Resources" && pwd)"
 unset PYTHONHOME PYTHONPATH
@@ -252,6 +300,7 @@ def main() -> int:
     copy_python(L)
     prune(L)
     add_code(L, version, commit, date)
+    add_fluidsynth(L)
     if only_dir:
         print(f"bundle in {L['root']}\n  python {L['exe']}\n  app    {L['app']}")
         return 0
