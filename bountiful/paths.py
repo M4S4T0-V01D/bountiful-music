@@ -97,6 +97,7 @@ def bundled_engine(module: str):
 
 _share = _load_share()
 find_lmms = _share.find_lmms
+find_libfluidsynth = _share.find_libfluidsynth
 LMMS_SAMPLES = _share.SAMPLES
 FONT_DIRS = ("/usr/share/fonts", "/usr/local/share/fonts", "~/.local/share/fonts", "~/.fonts", "/Library/Fonts",
              "/System/Library/Fonts", "~/Library/Fonts", os.path.join(os.environ.get("WINDIR", "C:/Windows"), "Fonts"))

@@ -11,19 +11,31 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import composer  # noqa: E402
 import packs  # noqa: E402
 import paths  # noqa: E402
 
-# tool -> (what it's for, needed for the basics?)
+
+def _mp3_built_in() -> bool:
+    try:
+        import soundfile
+        return "MP3" in soundfile.available_formats()
+    except (ImportError, OSError):
+        return False
+
+
+# tool -> (what it's for, needed for the basics?); Node and LAME only where the built-in composer / MP3 encoder aren't
 TOOLS = {
-    "lmms": ("the LMMS instruments most songs are played on, and rendering", True),
-    "fluidsynth": ("the General MIDI voices, and hearing them in the sound picker", True),
-    "node": ("writing new songs from a Bounty (the composer runs in Node)", True),
-    "lame": ("exporting MP3s (WAV export works without it)", False),
+    "fluidsynth": ("the SoundFont voices most songs are played on, and hearing them in the sound picker", True),
+    "lmms": ("LMMS projects, and the LMMS synths and effects some tracks use (optional)", False),
 }
+if not composer.available():
+    TOOLS["node"] = ("writing new songs from a Bounty (the composer's Python package, mini-racer, isn't installed)", True)
+if not _mp3_built_in():
+    TOOLS["lame"] = ("exporting MP3s (this soundfile can't write them; WAV export works without it)", False)
 if sys.platform.startswith("linux"):   # elsewhere the sounddevice wheel carries its own PortAudio
     TOOLS["portaudio"] = ("playing sound through your speakers (a library; without it the app is silent)", True)
-LIBRARIES = {"portaudio"}   # found with the system's library lookup, not on PATH
+LIBRARIES = {"portaudio", "fluidsynth"}   # found as libraries, not on PATH
 PACKAGES = {   # package manager -> install command prefix, and package names that differ from the tool's
     "pacman": ("sudo pacman -S", {"node": "nodejs"}),
     "apt": ("sudo apt install", {"node": "nodejs", "portaudio": "libportaudio2"}),
@@ -44,7 +56,12 @@ def find_library(name: str) -> str | None:
     return ctypes.util.find_library(name)
 
 
+find_fluidsynth = paths.find_libfluidsynth   # the app's own copy first, as the renderer looks
+
+
 def which(tool: str) -> str | None:
+    if tool == "fluidsynth":
+        return find_fluidsynth()
     if tool in LIBRARIES:
         return find_library(tool)
     if tool == "lmms":

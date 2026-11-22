@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Build dist/Bountiful-<version>-x86_64.AppImage: a standalone Python (from uv) with the app's packages and the code
-# at HEAD, in one file that runs on any recent x86_64 Linux. LMMS, FluidSynth, Node, PortAudio (and LAME) stay
-# system programs; the app's Setup dialog says how to install whichever are missing. Sound packs are downloaded by
+# at HEAD, in one file that runs on any recent x86_64 Linux. FluidSynth and PortAudio (and the optional LMMS) stay
+# system libraries and programs; the app's Setup dialog says how to install whichever are missing. Sound packs are downloaded by
 # the app, not bundled.
 #
 #   scripts/appimage.sh            build (uncommitted changes are not included: it packs HEAD)

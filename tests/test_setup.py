@@ -26,21 +26,22 @@ def check_missing():
     path, lmms = os.environ.get("PATH", ""), os.environ.pop("LMMS", None)
     os.environ["PATH"] = "/nonexistent"
     found, SC.find_library = SC.find_library, lambda name: None
+    fluid, SC.find_fluidsynth = SC.find_fluidsynth, lambda: None
     try:
         r = SC.report()
         assert not r["ready"] and set(r["missing"]) == set(SC.TOOLS)
         if sys.platform == "win32":
-            assert r["hint"].startswith("download lmms from https://lmms.io"), r["hint"]
+            assert r["hint"].startswith("download fluidsynth from https://github.com/FluidSynth"), r["hint"]
         else:
             assert r["hint"] == f"install {', '.join(SC.TOOLS)} from your package manager", r["hint"]
         try:
-            SC.need("node")
+            SC.need("fluidsynth")
             raise AssertionError("need() let a missing program through")
         except SC.Missing as e:
-            assert "node" in str(e) and "Setup" in str(e)
+            assert "fluidsynth" in str(e) and "Setup" in str(e)
     finally:
         os.environ["PATH"] = path
-        SC.find_library = found
+        SC.find_library, SC.find_fluidsynth = found, fluid
         if lmms:
             os.environ["LMMS"] = lmms
     if sys.platform == "win32":   # (the fake package managers below are shell scripts)
@@ -63,7 +64,14 @@ def check_missing():
             os.environ["PATH"], sys.platform = path, platform
 
 
+def check_optional():   # LMMS is never needed for the basics; Node and LAME only without the built-in composer / encoder
+    assert not SC.TOOLS["lmms"][1]
+    assert ("node" in SC.TOOLS) != SC.composer.available()
+    assert ("lame" in SC.TOOLS) != SC._mp3_built_in()
+
+
 if __name__ == "__main__":
     check_packs()
+    check_optional()
     check_missing()
     print("all pass")
